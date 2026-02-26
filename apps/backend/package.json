@@ -1,0 +1,33 @@
+{
+  "name": "@repo/backend",
+  "version": "1.0.0",
+  "description": "Express API backend for ERP",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.2.0",
+    "@repo/auth-config": "workspace:*",
+    "@repo/db": "workspace:*",
+    "better-auth": "^1.2.0",
+    "cors": "^2.8.6",
+    "dotenv": "^16.5.0",
+    "express": "^5.2.1",
+    "jose": "^6.1.3"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "eslint": "^9.39.1",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.15.3",
+    "tsx": "^4.21.0",
+    "typescript": "5.9.2"
+  }
+}

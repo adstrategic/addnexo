@@ -1,0 +1,1961 @@
+// ===============================================
+// BUSINESS SCHEMA (ERP models, enums, dashboard)
+// ===============================================
+// Location, inventory, orders, invoices, payments, etc.
+
+// ===============================================
+// TABLAS DE UBICACIÓN GEOGRÁFICA
+// ===============================================
+
+model Pais {
+  id             Int     @id @default(autoincrement())
+  organizationId String?
+  nombre         String
+  codigo         String
+
+  // Relaciones
+  estados      Estado[]
+  acumulados   AcumuladoPais[]
+  Organization Organization?   @relation(fields: [organizationId], references: [id])
+
+  @@map("paises")
+  @@schema("business")
+}
+
+model Estado {
+  id             Int     @id @default(autoincrement())
+  organizationId String?
+  paisId         Int
+  nombre         String
+
+  // Relaciones
+  pais         Pais              @relation(fields: [paisId], references: [id])
+  ciudades     Ciudad[]
+  acumulados   AcumuladoEstado[]
+  Organization Organization?     @relation(fields: [organizationId], references: [id])
+
+  @@unique([nombre, paisId], name: "nombre_paisId")
+  @@map("estados")
+  @@schema("business")
+}
+
+model Ciudad {
+  id             Int     @id @default(autoincrement())
+  organizationId String?
+  estadoId       Int
+  nombre         String
+
+  // Relaciones
+  estado       Estado        @relation(fields: [estadoId], references: [id])
+  Organization Organization? @relation(fields: [organizationId], references: [id])
+
+  acumulados            AcumuladoCiudad[]
+  Mproved               Mproved[]
+  clientes              Cltemae[]
+  // almacenes   Almacen[]
+  Pclteg                Pclteg[]
+  comprasProveedor      Proved[]
+  organizationesActivas OrganizationCiudad[]
+  Almacen               Almacen[]
+  KardexLote            KardexLote[]
+  Movkar                Movkar[]
+  KardexDet             KardexDet[]
+  Facturag              Facturag[]
+  dispatchOrderGs       DispatchOrderG[]
+
+  @@unique([nombre, estadoId], name: "nombre_estadoId")
+  @@map("ciudades")
+  @@schema("business")
+}
+
+// Tabla de Lotes: en este sistema, un lote se asocia a una ciudad de origen por producto
+// model Lote {
+//   id             Int    @id @default(autoincrement())
+//   organizationId String
+//   invcaruniId    Int
+//   ciudadId       Int
+
+//   codigo String? @db.VarChar(30)
+
+//   Organization Organization @relation(fields: [organizationId], references: [id])
+//   producto     Invcaruni    @relation(fields: [invcaruniId], references: [CKId])
+//   ciudad       Ciudad       @relation(fields: [ciudadId], references: [id])
+
+//   kardexLotes KardexLote[]
+//   movimientos Movkar[]
+
+//   @@unique([organizationId, invcaruniId, ciudadId])
+//   @@map("lotes")
+// }
+
+model OrganizationCiudad {
+  organizationId String
+  ciudadId       Int
+
+  // Relaciones
+  organization Organization @relation(fields: [organizationId], references: [id])
+  ciudad       Ciudad       @relation(fields: [ciudadId], references: [id])
+
+  // Clave primaria compuesta para asegurar una única entrada por org/ciudad
+  @@id([organizationId, ciudadId])
+  @@map("organization_ciudad")
+  @@schema("business")
+}
+
+// ===============================================
+// TABLAS DE ACUMULADOS POR UBICACIÓN
+// ===============================================
+
+model AcumuladoPais {
+  id             Int    @id @default(autoincrement())
+  organizationId String
+  paisId         Int
+  mes            Int    @db.SmallInt // 1-12
+  ano            Int    @db.SmallInt
+
+  // Métricas de negocio
+  acumuladoCompras Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relaciones
+  pais         Pais         @relation(fields: [paisId], references: [id])
+  Organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([paisId, mes, ano])
+  @@map("acumulados_pais")
+  @@schema("business")
+}
+
+model AcumuladoEstado {
+  id             Int    @id @default(autoincrement())
+  organizationId String
+
+  estadoId Int
+  mes      Int @db.SmallInt // 1-12
+  ano      Int @db.SmallInt
+
+  // Métricas de negocio
+  acumuladoCompras Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relaciones
+  estado       Estado       @relation(fields: [estadoId], references: [id])
+  Organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([estadoId, mes, ano])
+  @@map("acumulados_estado")
+  @@schema("business")
+}
+
+model AcumuladoCiudad {
+  id             Int    @id @default(autoincrement())
+  organizationId String
+  ciudadId       Int
+
+  mes Int @db.SmallInt // 1-12
+  ano Int @db.SmallInt
+
+  // Métricas de negocio
+  acumuladoCompras Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relaciones
+  ciudad       Ciudad       @relation(fields: [ciudadId], references: [id])
+  Organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([ciudadId, mes, ano])
+  @@map("acumulados_ciudad")
+  @@schema("business")
+}
+
+// TODO: agregar campo de creadoOModificado y usuario
+
+model UnidadMedida {
+  UMId             Int    @id @default(autoincrement())
+  UMOrganizationId String
+
+  UMNombre       String
+  UMDescripcion  String @db.VarChar(30)
+  UMOrgSecuencia Int
+
+  // Auditoria:
+  creadoOModificado DateTime @default(now())
+  usuario           String   @db.VarChar(50)
+
+  organization Organization @relation(fields: [UMOrganizationId], references: [id])
+
+  invcaruni Invcaruni[]
+
+  @@unique([UMOrganizationId, UMOrgSecuencia])
+  @@map("unidades_medida")
+  @@schema("business")
+}
+
+// Modelo para las clasificaciones de almacenes (CLASEALM)
+model ClaseAlmacen {
+  CAId             Int    @id @default(autoincrement())
+  CAOrganizationId String
+
+  CACodigo      String @db.VarChar(1)
+  CADescripcion String @db.VarChar(20)
+
+  // Relaciones
+  organization Organization @relation(fields: [CAOrganizationId], references: [id])
+  // almacenes    Almacen[] // Una clase puede tener muchos almacenes
+
+  @@unique([CAOrganizationId, CACodigo])
+  @@map("clases_almacen")
+  @@schema("business")
+}
+
+model Almacen {
+  ALId             Int    @id @default(autoincrement())
+  ALOrganizationId String
+  // ALClaseId        Int
+  ALCiudadId       Int
+
+  // codigo         String @db.VarChar(3)
+  ALNombre         String
+  ALResponsable    String
+  ALDireccion      String
+  ALTelefono       String
+  ALCuentaContable String @default("")
+  ALOrgSecuencia   Int
+
+  // Auditoria
+  creadoOModificado DateTime @default(now())
+  usuario           String
+
+  // Relaciones
+  organization Organization @relation(fields: [ALOrganizationId], references: [id])
+  ciudad       Ciudad       @relation(fields: [ALCiudadId], references: [id])
+
+  kardex     Kardex[]
+  pdsucu     Pdsucu[]
+  // pedidosSucursal PDSUCU[]
+  // ClaseAlmacen ClaseAlmacen @relation(fields: [ALClaseId], references: [CAId])
+  Movkar     Movkar[]
+  KardexLote KardexLote[]
+  KardexDet  KardexDet[]
+
+  // @@unique([organizationId, codigo])
+  @@unique([ALOrganizationId, ALOrgSecuencia])
+  @@map("almacenes")
+  @@schema("business")
+}
+
+// 23. PDSUCU - Pedidos de Sucursales
+model Pdsucu {
+  PSId             Int    @id @default(autoincrement())
+  PSOrganizationId String
+  PSAlmacenId      Int
+  PSInvcaruniId    Int
+
+  PSCantidadPedida     Decimal
+  PSCantidadEntregada  Decimal
+  PSValorUnitario      Decimal  @db.Decimal(11, 3)
+  PSAProbado           Boolean
+  PSPedido             String   @db.VarChar(5)
+  PSFechaPedido        DateTime @db.Date
+  PSFechaUltimaEntrega DateTime @db.Date
+  PSOrgSecuencia       Int
+
+  almacen      Almacen      @relation(fields: [PSAlmacenId], references: [ALId])
+  Invcaruni    Invcaruni    @relation(fields: [PSInvcaruniId], references: [CKId])
+  organization Organization @relation(fields: [PSOrganizationId], references: [id])
+
+  @@unique([PSOrganizationId, PSOrgSecuencia])
+  @@map("pedidos_sucursal")
+  @@schema("business")
+}
+
+model Invcaruni {
+  CKId             Int    @id @default(autoincrement())
+  CKGrupoId        Int
+  CKOrganizationId String
+  CKUnidadMedidaId Int
+
+  // CKGrupo  Int
+  // CKGrupo  Decimal @db.Decimal(3, 0)
+  // CKCodigo Decimal @db.Decimal(5, 0)
+  // CKUnidad               Decimal @db.Decimal(3, 0)
+  // digitoChequeo  Int     @db.SmallInt
+
+  CKCodigo               Int
+  CKDescripcion          String  @db.VarChar(40)
+  CKOrigen               String  @default("N/A") @db.VarChar(20)
+  CKPrecioPublico        Decimal @db.Decimal(9, 2)
+  CKPrecioVenta1         Decimal @db.Decimal(9, 2)
+  CKPrecioVenta2         Decimal @db.Decimal(9, 2)
+  CKPorcenMargen         Decimal @db.Decimal(4, 2)
+  CKPorcenMargenTopeDesc Decimal @default(0) @db.Decimal(4, 2)
+  CKTopeDescuento        Decimal @default(0) @db.Decimal(9, 2)
+  CKIva                  Decimal @default(0) @db.Decimal(4, 2)
+  CKExento               Boolean @default(false)
+  CKOrgSecuencia         Int
+
+  // Product Variant System
+  CKProductoPadreId Int?
+  productoPadre     Invcaruni?  @relation("ProductVariants", fields: [CKProductoPadreId], references: [CKId])
+  variantes         Invcaruni[] @relation("ProductVariants")
+
+  // Auditoria
+  creadoOModificado DateTime @default(now())
+  usuario           String   @db.VarChar(50)
+
+  organization   Organization @relation(fields: [CKOrganizationId], references: [id])
+  grupo          Invgrupos    @relation(fields: [CKGrupoId], references: [GId])
+  unidadDeMedida UnidadMedida @relation(fields: [CKUnidadMedidaId], references: [UMId])
+
+  proved   Proved[]
+  pclteu   Pclteu[]
+  facturau Facturau[]
+  kardex   Kardex[]
+  pdsucu   Pdsucu[]
+
+  // cambiosPrecios   CTPRECAR[]
+  Movkar                Movkar[]
+  KardexLote            KardexLote[]
+  KardexDet             KardexDet[]
+  dispatchOrderUs       DispatchOrderU[]
+  inventoryReservations InventoryReservation[]
+
+  // @@unique([CKGrupo, CKCodigo])
+  @@unique([CKOrganizationId, CKGrupoId, CKCodigo])
+  @@unique([CKOrganizationId, CKOrgSecuencia])
+  @@index([CKOrganizationId, CKDescripcion])
+  @@index([CKOrganizationId, CKOrigen])
+  @@map("invcaruni")
+  @@schema("business")
+}
+
+// 4. GRUPOS - Grupos de Inventario
+model Invgrupos {
+  GId             Int    @id @default(autoincrement())
+  GOrganizationId String
+
+  // nro            Decimal @unique @db.Decimal(3, 0) // 001-999
+  GNro          Int // 001-999
+  GDescripcion  String @db.VarChar(30)
+  GOrgSecuencia Int
+
+  // Auditoria
+  creadoOModificado DateTime @default(now())
+  usuario           String   @db.VarChar(50)
+
+  organization Organization @relation(fields: [GOrganizationId], references: [id])
+
+  invcaruni Invcaruni[]
+
+  @@unique([GNro, GOrganizationId])
+  @@unique([GOrganizationId, GOrgSecuencia])
+  @@map("grupos")
+  @@schema("business")
+}
+
+// 5. KARDEX - Control de Inventario
+// 1. KARDEX - Tabla padre (nivel producto-almacén)
+model Kardex {
+  KId             Int    @id @default(autoincrement())
+  KInvcaruniId    Int
+  KOrganizationId String
+  KAlmacenId      Int
+
+  KExistenciaInicial   Decimal   @default(0) @db.Decimal(9, 2)
+  KEntradas            Decimal   @default(0) @db.Decimal(7, 2)
+  KValorEntradas       Decimal   @default(0) @db.Decimal(9, 2)
+  KSalidas             Decimal   @default(0) @db.Decimal(7, 2)
+  KValorSalidas        Decimal   @default(0) @db.Decimal(9, 2)
+  KExistenciaFin       Decimal   @default(0) @db.Decimal(9, 2)
+  KCostoUltimo         Decimal   @default(0) @db.Decimal(9, 2)
+  KCostoPromedio       Decimal   @default(0) @db.Decimal(9, 2)
+  KLValorCostoUltimo   Decimal   @default(0) @db.Decimal(9, 2)
+  KLValorCostoPromedio Decimal   @default(0) @db.Decimal(9, 2)
+  KFechaUltimoConteo   DateTime? @db.Date
+  KUltimoConteo        Decimal?  @default(0) @db.Decimal(9, 2)
+  KMes                 Int       @db.SmallInt
+  KAno                 Int       @db.SmallInt
+
+  KExistenciaMin    Int    @default(0)
+  KExistenciaMax    Int    @default(0)
+  KTiempoReposicion Int    @default(0)
+  KNroTarjeta       String @db.VarChar(6)
+  KUltimoDetalle    String @db.VarChar(20)
+  KOrgSecuencia     Int
+
+  // Auditoria
+  creadoOModificado DateTime @default(now())
+  usuario           String   @db.VarChar(50)
+
+  // Relaciones
+  invcaruni    Invcaruni    @relation(fields: [KInvcaruniId], references: [CKId])
+  organization Organization @relation(fields: [KOrganizationId], references: [id])
+  almacen      Almacen      @relation(fields: [KAlmacenId], references: [ALId])
+
+  // Hijos
+  kardexLotes KardexLote[]
+  paprovee    Paprovee[]
+  rotado      Rotado[]
+  karrev      Karrev[]
+
+  // CONSTRAINT PRINCIPAL: Replica KTORGANIZACION + KTID + KTGRUPO + KTCODIGO
+  // En nuestro caso: ORGANIZACION + PRODUCTO + ALMACEN (GRUPO y CODIGO están en el producto)
+  @@unique([KOrganizationId, KInvcaruniId, KAlmacenId, KMes, KAno], name: "kardex_business_key")
+  @@unique([KOrganizationId, KOrgSecuencia], name: "kardex_sequence")
+  @@index([KOrganizationId, KExistenciaFin])
+  @@map("kardex")
+  @@schema("business")
+}
+
+// 2. KARDEX_LOTE - Nivel intermedio (producto-almacén-lote-ciudad)
+// AQUÍ VA ciudadId porque el lote está asociado a una ciudad específica
+model KardexLote {
+  KLId             Int    @id @default(autoincrement())
+  KLKardexId       Int // Solo referencia al padre
+  KLCiudadId       Int // ÚNICA ubicación donde debe estar ciudadId
+  KLOrganizationId String
+  KLInvcaruniId    Int
+  KAlmacenId       Int
+
+  KLLote               Int
+  KLNroDocumento       String    @db.VarChar(50) // Document number to differentiate lots
+  KLExistenciaInicial  Decimal   @default(0) @db.Decimal(9, 2)
+  KLEntradas           Decimal   @default(0) @db.Decimal(7, 2)
+  KLValorEntradas      Decimal   @default(0) @db.Decimal(9, 2)
+  KLSalidas            Decimal   @default(0) @db.Decimal(7, 2)
+  KLValorSalidas       Decimal   @default(0) @db.Decimal(9, 2)
+  KLExistenciaFin      Decimal   @default(0) @db.Decimal(9, 2)
+  KLCostoUltimo        Decimal   @default(0) @db.Decimal(9, 2)
+  KLCostoPromedio      Decimal   @default(0) @db.Decimal(9, 2)
+  KLValorCostoUltimo   Decimal   @default(0) @db.Decimal(9, 2)
+  KLValorCostoPromedio Decimal   @default(0) @db.Decimal(9, 2)
+  KLFechaUltimaEntrada DateTime
+  KLFechaUltimoConteo  DateTime? @db.Date
+  KLUltimoConteo       Decimal?  @default(0) @db.Decimal(9, 2)
+  KLMes                Int       @db.SmallInt
+  KLAno                Int       @db.SmallInt
+
+  // Auditoria
+  creadoOModificado DateTime @default(now())
+  usuario           String   @db.VarChar(50)
+
+  // Relaciones - Solo las necesarias
+  kardex       Kardex       @relation(fields: [KLKardexId], references: [KId])
+  ciudad       Ciudad       @relation(fields: [KLCiudadId], references: [id])
+  organization Organization @relation(fields: [KLOrganizationId], references: [id])
+  invcaruni    Invcaruni    @relation(fields: [KLInvcaruniId], references: [CKId])
+  almacen      Almacen      @relation(fields: [KAlmacenId], references: [ALId])
+
+  // Hijos
+  kardexDet             KardexDet[]
+  inventoryReservations InventoryReservation[]
+
+  // CONSTRAINT PRINCIPAL: Replica KLORGANIZACION + KLID + KLGRUPO + KLCODIGO + KLORIGENPAIS + KLLOTE
+  // En nuestro caso: ORGANIZACION + PRODUCTO + ALMACEN + CIUDAD + LOTE + DOCUMENTO
+  @@unique([KLKardexId, KLCiudadId, KLLote, KLNroDocumento, KLMes, KLAno], name: "kardex_lote_business_key")
+  @@index([KLExistenciaFin])
+  @@map("kardex_lote")
+  @@schema("business")
+}
+
+// 3. KARDEX_DET - Nivel más específico (por fecha)
+// SIN ciudadId - se obtiene a través de KardexLote
+model KardexDet {
+  KDId             Int    @id @default(autoincrement())
+  KDKardexLoteId   Int // Solo referencia al padre KardexLote
+  KDOrganizationId String
+  KDAlmacenId      Int
+  KDInvcaruniId    Int
+  KDCiudadId       Int
+  KDLote           Int // Agregamos el lote para el constraint completo
+
+  KDFecha             DateTime @db.Date
+  KDExistenciaInicial Decimal  @default(0) @db.Decimal(9, 2)
+  KDEntradas          Decimal  @default(0) @db.Decimal(7, 2)
+  KDValorEntradas     Decimal  @default(0) @db.Decimal(9, 2)
+  KDSalidas           Decimal  @default(0) @db.Decimal(7, 2)
+  KDValorSalidas      Decimal  @default(0) @db.Decimal(9, 2)
+  KDExistenciaFin     Decimal  @default(0) @db.Decimal(9, 2)
+  KDCostoUltimo       Decimal  @default(0) @db.Decimal(9, 2)
+  KDCostoPromedio     Decimal  @default(0) @db.Decimal(9, 2)
+  KDMes               Int      @db.SmallInt
+  KDAno               Int      @db.SmallInt
+
+  creadoOModificado DateTime @default(now())
+  usuario           String   @db.VarChar(50)
+
+  // Relaciones - Solo la necesaria
+  kardexLote   KardexLote   @relation(fields: [KDKardexLoteId], references: [KLId])
+  organization Organization @relation(fields: [KDOrganizationId], references: [id])
+  invcaruni    Invcaruni    @relation(fields: [KDInvcaruniId], references: [CKId])
+  almacen      Almacen      @relation(fields: [KDAlmacenId], references: [ALId])
+  ciudad       Ciudad       @relation(fields: [KDCiudadId], references: [id])
+
+  // Hijos
+  movkar Movkar[]
+
+  // CONSTRAINT OPTIMIZADO: KDKardexLoteId ya contiene toda la jerarquía
+  // Solo necesitamos agregar KDFecha para garantizar unicidad por fecha
+  @@unique([KDKardexLoteId, KDFecha, KDMes, KDAno], name: "kardex_det_fecha_key")
+  // INDICES DE PERFORMANCE para queries directas
+  @@index([KDFecha], name: "idx_kardex_det_fecha")
+  @@map("kardex_det")
+  @@schema("business")
+}
+
+// 4. MOVKAR - Movimientos individuales (nivel transacción)
+model Movkar {
+  MVId               Int    @id @default(autoincrement())
+  MVKardexDetId      Int // Solo referencia al padre KardexDet
+  MVTipoMovimientoId Int
+  MVLote             Int
+  MVLoteNroDocumento String
+  MVProveedorId      Int?
+  MVClienteId        Int?
+  MVAlmacenId        Int
+  MVInvcaruniId      Int
+  MVOrganizationId   String
+  MVCiudadId         Int
+
+  MVSecuencial          Int
+  MVFecha               DateTime
+  MVPedido              Decimal  @db.Decimal(3, 0)
+  MVNroDocumento        String
+  MVCantidad            Decimal  @db.Decimal(7, 0)
+  MVCostoSalida         Decimal? @db.Decimal(9, 2)
+  MVCostoUltimo         Decimal  @db.Decimal(9, 2)
+  MVCostoPrecio         Decimal  @db.Decimal(9, 2)
+  MVDescuento           Decimal  @db.Decimal(6, 2)
+  MVImpuesto            Decimal  @db.Decimal(6, 2)
+  MVEsCostoTemporalCero Boolean  @default(false)
+  MVOrgSecuencia        Int
+
+  // Auditoria
+  creadoOModificado DateTime @default(now())
+  usuario           String   @db.VarChar(50)
+
+  // Relaciones - Optimizadas
+  kardexDet    KardexDet    @relation(fields: [MVKardexDetId], references: [KDId])
+  tmovkar      Tmovkar      @relation(fields: [MVTipoMovimientoId], references: [TId])
+  mproved      Mproved?     @relation(fields: [MVProveedorId], references: [MPId], onDelete: Restrict)
+  cltemae      Cltemae?     @relation(fields: [MVClienteId], references: [CId], onDelete: Restrict)
+  organization Organization @relation(fields: [MVOrganizationId], references: [id])
+  invcaruni    Invcaruni    @relation(fields: [MVInvcaruniId], references: [CKId])
+  almacen      Almacen      @relation(fields: [MVAlmacenId], references: [ALId])
+  ciudad       Ciudad       @relation(fields: [MVCiudadId], references: [id])
+
+  // NOTA: MVSecuencial único por organización ya garantiza unicidad total
+  // No necesitamos constraint operacional adicional - Performance optimizado
+
+  // CONSTRAINTS OPTIMIZADOS:
+  // 1. URL/API: Secuencia única para referencias externas
+  @@unique([MVOrganizationId, MVOrgSecuencia], name: "movkar_sequence_key")
+  // 2. BUSINESS: Secuencial único por organización (COBOL compatible)
+  @@unique([MVOrganizationId, MVSecuencial], name: "movkar_business_sequence")
+  // INDICES DE PERFORMANCE para queries directas
+  @@index([MVTipoMovimientoId, MVFecha], name: "idx_movkar_tipo_fecha")
+  @@index([MVTipoMovimientoId, MVNroDocumento], name: "idx_movkar_tipo_doc")
+  @@index([MVOrganizationId, MVFecha], name: "idx_movkar_org_fecha")
+  @@index([MVOrganizationId, MVInvcaruniId, MVAlmacenId], name: "idx_movkar_org_inventario")
+  @@map("movkar")
+  @@schema("business")
+}
+
+enum TipoPropositoMovkar {
+  DISPATCH_ORDER
+  DISPATCH_ORDER_DEVOLUCION
+  DISPATCH_ORDER_ANULACION
+  FACTURA_DEVOLUCION
+  NOTA_CREDITO
+  NOTA_CREDITO_CON_DEVOLUCION
+  NOTA_DEBITO
+  ABONO
+  @@schema("business")
+}
+
+// 17. TMOVKAR - Tipos de Movimiento
+model Tmovkar {
+  TId             Int    @id @default(autoincrement())
+  TOrganizationId String
+
+  TProposito    TipoPropositoMovkar?
+  TTipo         Int
+  TClase        Int
+  TDescripcion  String               @db.VarChar(30)
+  TAbreviatura  String               @db.VarChar(10)
+  TValor        Int
+  TAfecta       Boolean              @default(true)
+  TRequiere     Boolean              @default(false)
+  TPedido       Boolean              @default(false)
+  TFactura      Boolean              @default(false)
+  TProv         Boolean              @default(false)
+  TRecalcular   Boolean              @default(false)
+  TOrgSecuencia Int
+
+  // Auditoria
+  creadoOModificado DateTime @default(now())
+  usuario           String   @db.VarChar(50)
+
+  organization Organization @relation(fields: [TOrganizationId], references: [id])
+
+  movkar         Movkar[]
+  dispatchOrderU DispatchOrderU[]
+  movCXC         MovCXC[]
+
+  @@unique([TOrganizationId, TOrgSecuencia])
+  @@unique([TOrganizationId, TProposito])
+  @@unique([TOrganizationId, TTipo, TClase])
+  @@map("tmovkar")
+  @@schema("business")
+}
+
+// 10. ROTADO - Rotación de Inventario
+model Rotado {
+  RId             Int     @id @default(autoincrement())
+  ROrganizationId String
+  RInvcaruniId    Int
+  RKardexId       Int
+  // RGrupo       Decimal  @db.Decimal(3, 0)
+  // RCodigo      Int
+  RTipoIO         Decimal @db.Decimal(1, 0)
+  RClase          Decimal @db.Decimal(1, 0)
+  RMes            Int     @db.SmallInt
+  RAno            Int     @db.SmallInt
+  RMesCantidad    Decimal @db.Decimal(9, 2)
+  RMesPrecio      Decimal @db.Decimal(9, 2)
+  RMesCosto       Decimal @db.Decimal(9, 2)
+  RAnoCantidad    Decimal @db.Decimal(9, 2)
+  RAnoPrecio      Decimal @db.Decimal(9, 2)
+  RAnoCosto       Decimal @db.Decimal(9, 2)
+  ROrgSecuencia   Int
+
+  // Auditoria
+  creadoOModificado DateTime @default(now())
+  usuario           String   @db.VarChar(50)
+
+  organization Organization @relation(fields: [ROrganizationId], references: [id])
+  kardex       Kardex       @relation(fields: [RKardexId], references: [KId])
+
+  // @@id([RGrupo, RCodigo, RTipoIO, RClase])
+  @@unique([ROrganizationId, ROrgSecuencia])
+  @@map("rotado")
+  @@schema("business")
+}
+
+// 19. KARREV - Reservas de Kardex
+model Karrev {
+  RKId             Int      @id @default(autoincrement())
+  RKKardexId       Int
+  RKOrganizationId String
+  // Consecutivo de 3 cifras
+  // RKSecuencial Int      @default(autoincrement())
+  // RKGrupo      Decimal  @db.Decimal(3, 0)
+  // RKCodigo     Int
+  // TODO: daemon function to validate date
+  RKCantidad       Decimal  @db.Decimal(9, 2)
+  RKCaracter       Boolean
+  RKFecha          DateTime @db.Date
+  RKOrgSecuencia   Int
+
+  // Auditoria
+  creadoOModificado DateTime @default(now())
+  usuario           String   @db.VarChar(50)
+
+  kardex       Kardex       @relation(fields: [RKKardexId], references: [KId])
+  organization Organization @relation(fields: [RKOrganizationId], references: [id])
+
+  // @@id([RKGrupo, RKCodigo])
+  @@unique([RKOrganizationId, RKOrgSecuencia])
+  @@map("karrev")
+  @@schema("business")
+}
+
+// TABLA DE PROVEEDORES:
+
+model MprovedAcum {
+  MPAId             Int    @id @default(autoincrement())
+  MPAOrganizationId String
+  MPAProveedorId    Int
+
+  // MPNro       Decimal @unique @db.Decimal(13, 0)
+  MPAMes          Int     @db.SmallInt
+  MPAAno          Int     @db.SmallInt
+  MPAAcumMes      Decimal @default(0) @db.Decimal(9, 2)
+  MPAAcumAno      Decimal @default(0) @db.Decimal(9, 2)
+  MPAOrgSecuencia Int
+
+  // Auditoria
+  creadoOModificado DateTime @default(now())
+  usuario           String   @db.VarChar(50)
+
+  organization Organization @relation(fields: [MPAOrganizationId], references: [id])
+  mproved      Mproved      @relation(fields: [MPAProveedorId], references: [MPId])
+
+  @@unique([MPAOrganizationId, MPAOrgSecuencia])
+  @@schema("business")
+}
+
+// 7. MPROVED - Maestro de Proveedores
+model Mproved {
+  MPId             Int    @id @default(autoincrement())
+  MPOrganizationId String
+  MPCiudadId       Int
+
+  // MPNro         Decimal @db.Decimal(13, 0)
+  MPNro          String   @db.VarChar(13)
+  MPDescripcion  String   @db.VarChar(40)
+  MPResponsable  String   @db.VarChar(30)
+  MPDireccion    String   @db.VarChar(50)
+  MPTelefono1    String
+  MPTelefono2    String?
+  MPCorreo1      String
+  MPCorreo2      String?
+  MPRetencion    String   @db.VarChar(2)
+  MPFechaCreado  DateTime @default(now()) @db.Date
+  MPOrgSecuencia Int
+
+  // Auditoria
+  creadoOModificado DateTime @default(now())
+  usuario           String   @db.VarChar(50)
+
+  ciudad       Ciudad       @relation(fields: [MPCiudadId], references: [id])
+  organization Organization @relation(fields: [MPOrganizationId], references: [id])
+
+  proved      Proved[]
+  paprovee    Paprovee[]
+  mprovedAcum MprovedAcum[]
+  movkar      Movkar[]
+
+  @@unique([MPNro, MPOrganizationId])
+  @@unique([MPOrganizationId, MPOrgSecuencia])
+  @@map("mproved")
+  @@schema("business")
+}
+
+// 16. PROVED - Compras a Proveedor
+model Proved {
+  PId             Int    @id @default(autoincrement())
+  POrganizationId String
+  PProveedorId    Int
+  PInvcaruniId    Int
+  PCiudadId       Int
+
+  // PGrupo       Decimal  @db.Decimal(3, 0)
+  // PCodigo      Int
+  PNro          BigInt
+  PCostoUltimo  Decimal  @db.Decimal(9, 3)
+  PFecha        DateTime @default(now())
+  POrgSecuencia Int
+
+  // Auditoria
+  creadoOModificado DateTime @default(now())
+  usuario           String   @db.VarChar(50)
+
+  organization Organization @relation(fields: [POrganizationId], references: [id])
+  ciudad       Ciudad       @relation(fields: [PCiudadId], references: [id])
+  invcaruni    Invcaruni    @relation(fields: [PInvcaruniId], references: [CKId])
+  mproved      Mproved      @relation(fields: [PProveedorId], references: [MPId])
+
+  @@unique([POrganizationId, POrgSecuencia])
+  @@index([PInvcaruniId, PFecha])
+  @@map("proved")
+  @@schema("business")
+}
+
+// 26. PAPROVEE - Pedidos a Proveedores
+model Paprovee {
+  PPId             Int    @id @default(autoincrement())
+  PPOrganizationId String
+  PPProveedorId    Int
+  PPKardexId       Int
+
+  // secuencial          Int      @default(autoincrement())
+  // PPGrupo               Decimal  @db.Decimal(3, 0)
+  // PPCodigo              Int
+
+  PPNro               Int
+  PPTipo              String   @db.VarChar(1)
+  PPCantidadPedida    Decimal  @db.Decimal(5, 2)
+  PPCantidadEntregada Decimal  @db.Decimal(5, 2)
+  PPValorUnitario     Decimal  @db.Decimal(11, 2)
+  PPAprueba           String   @db.VarChar(1)
+  PPFechaPedido       DateTime @db.Date
+  PPFechaUltimaCompra DateTime @db.Date
+  PPOrgSecuencia      Int
+
+  // Auditoria
+  creadoOModificado DateTime @default(now())
+  usuario           String   @db.VarChar(50)
+
+  organization Organization @relation(fields: [PPOrganizationId], references: [id])
+  kardex       Kardex       @relation(fields: [PPKardexId], references: [KId])
+  mproved      Mproved      @relation(fields: [PPProveedorId], references: [MPId])
+
+  // kardex  KARDEX  @relation(fields: [grupo, codigo], references: [KGrupo, KCodigo])
+  // MProved MPROVED @relation(fields: [PPNro], references: [MPNro])
+
+  // @@id([PPNro, secuencial])
+  // @@index([grupo, codigo])
+  @@unique([PPNro, PPOrganizationId])
+  @@unique([PPOrganizationId, PPOrgSecuencia])
+  @@map("paprovee")
+  @@schema("business")
+}
+
+// 20. PCLTEU - Pedidos Cliente Detalle
+model Pclteu {
+  PUId             Int    @id @default(autoincrement())
+  PUOrganizationId String
+  PUInvcaruniId    Int
+  PUPedidoId       Int
+
+  PUNroPedido    Int
+  PUSecuencia    Int
+  PUGrupo        Decimal @db.Decimal(3, 0)
+  PUCodigo       Decimal @db.Decimal(5, 0)
+  PUPedido       Decimal @db.Decimal(1, 0)
+  PURegistro     Decimal @db.Decimal(7, 0)
+  PUCantidad     Decimal @db.Decimal(6, 2)
+  PUFacturado    Decimal @db.Decimal(6, 2)
+  PUEntregada    Decimal @db.Decimal(6, 2)
+  PUDescuento    Decimal @db.Decimal(4, 0)
+  PUImpuesto     Decimal @db.Decimal(4, 0)
+  PUVrUnitario   Decimal @db.Decimal(6, 2)
+  PUOrgSecuencia Int
+
+  // Auditoria
+  creadoOModificado DateTime @default(now())
+  usuario           String   @db.VarChar(50)
+
+  organization  Organization @relation(fields: [PUOrganizationId], references: [id])
+  // TODO: hacer relaciones por id y usar punro y organization id con unique constraint
+  pedidoGeneral Pclteg       @relation(fields: [PUNroPedido, PUOrganizationId], references: [PGNro, PGOrganizationId])
+  invcaruni     Invcaruni    @relation(fields: [PUInvcaruniId], references: [CKId])
+
+  @@unique([PUOrganizationId, PUOrgSecuencia])
+  @@map("pclteu")
+  @@schema("business")
+}
+
+// 21. PCLTEG - Pedidos Cliente General
+model Pclteg {
+  // id             Int    @id @default(autoincrement())
+  PGCiudadId       Int
+  PGOrganizationId String
+  PGClienteId      Int
+  PGVendedorId     Int?
+  // PGNro        Decimal @db.Decimal(6, 0)
+
+  PGNro              Int
+  PGNitCliente       BigInt
+  PGPago             Decimal  @db.Decimal(1, 0)
+  PGComprador        String   @db.VarChar(30)
+  PGNitCedula        Decimal  @db.Decimal(10, 0)
+  PGDireccion        String   @db.VarChar(30)
+  PGTipo             Decimal  @db.Decimal(1, 0)
+  PGZona             Decimal  @db.Decimal(2, 0)
+  PGAprobado         String   @db.VarChar(5)
+  PGDespachado       String   @db.VarChar(5)
+  PGTelefono1        Decimal  @db.Decimal(11, 0)
+  PGTelefono2        Decimal  @db.Decimal(11, 0)
+  PGPedido           Decimal  @db.Decimal(6, 3)
+  PGOrdenCompra      Decimal  @db.Decimal(6, 3)
+  PGFechaEntrega     DateTime @db.Date
+  PGFechaVencimiento DateTime @db.Date
+  PGCondicion1       String   @db.VarChar(40)
+  PGCondicion2       String   @db.VarChar(40)
+  PGCondicion3       String   @db.VarChar(40)
+  PGCodigo           Decimal  @db.Decimal(2, 0)
+  PGVrMercancia      Decimal  @db.Decimal(9, 2)
+  PGMCIA             Decimal  @db.Decimal(9, 2)
+  PGNMeses           Decimal  @db.Decimal(2, 0)
+  PGCuota            Decimal  @db.Decimal(11, 0)
+  PGFecha            DateTime @db.Date
+  PGDescuento        Decimal  @db.Decimal(11, 3)
+  PGOrgSecuencia     Int
+
+  // Auditoria
+  creadoOModificado DateTime @default(now())
+  usuario           String   @db.VarChar(50)
+
+  ciudad       Ciudad       @relation(fields: [PGCiudadId], references: [id])
+  cliente      Cltemae      @relation(fields: [PGClienteId], references: [CId])
+  organization Organization @relation(fields: [PGOrganizationId], references: [id])
+  vendedor     Vendedor?    @relation(fields: [PGVendedorId], references: [VId])
+
+  pclteu Pclteu[]
+
+  @@id([PGNro, PGOrganizationId])
+  @@unique([PGOrganizationId, PGOrgSecuencia])
+  @@index([PGNitCliente])
+  @@index([PGPago])
+  @@index([PGFechaEntrega])
+  @@map("pclteg")
+  @@schema("business")
+}
+
+model Vendedor {
+  VId             Int    @id @default(autoincrement())
+  VOrganizationId String
+  VNombre         String
+  VCorreo         String
+  VTelefono       String
+  VNitCedula      String
+  VOrgSecuencia   Int
+
+  // Auditoria
+  creadoOModificado DateTime @default(now())
+  usuario           String   @db.VarChar(50)
+
+  cltemae  Cltemae[]
+  facturag Facturag[]
+  rclteg   Rclteg[]
+  pclteg   Pclteg[]
+
+  organization    Organization     @relation(fields: [VOrganizationId], references: [id])
+  dispatchOrderGs DispatchOrderG[]
+
+  @@unique([VOrganizationId, VOrgSecuencia])
+  @@unique([VCorreo, VOrganizationId])
+  @@unique([VTelefono, VOrganizationId])
+  @@unique([VNitCedula, VOrganizationId])
+  @@map("vendedores")
+  @@schema("business")
+}
+
+// 29. CLTEMAE - Clientes
+model Cltemae {
+  CId             Int    @id @default(autoincrement())
+  CCiudadId       Int
+  COrganizationId String
+  CVendedorVId    Int?
+
+  // CDistrito                Decimal  @db.Decimal(2, 0)
+  // CActividad               Decimal  @db.Decimal(2, 0)
+  // CAsociado                String   @db.VarChar(1)
+  // CCupoAutorizado          Decimal  @db.Decimal(7, 2)
+  // CAbonos                  Decimal  @db.Decimal(7, 2)
+
+  CNitCedula               String
+  CRazonSocial             String   @db.VarChar(30)
+  CNombreCliente           String
+  CDireccion               String   @db.VarChar(30)
+  CTelefono1               String
+  CTelefono2               String?
+  CCorreo1                 String
+  CCorreo2                 String?
+  CDiasParaVencerFactura   Decimal  @db.Decimal(2, 0)
+  CRecordatorioPostVencido Decimal  @db.Decimal(2, 0)
+  CCupoAutorizado          Int      @default(0)
+  CAbonos                  Int      @default(0)
+  CFechaIngreso            DateTime
+  COrgSecuencia            Int
+
+  // Auditoria
+  creadoOModificado DateTime @default(now())
+  usuario           String   @db.VarChar(50)
+
+  pclteg   Pclteg[]
+  movkar   Movkar[]
+  facturag Facturag[]
+  rclteg   Rclteg[]
+
+  ciudad          Ciudad           @relation(fields: [CCiudadId], references: [id])
+  organization    Organization     @relation(fields: [COrganizationId], references: [id])
+  vendedor        Vendedor?        @relation(fields: [CVendedorVId], references: [VId])
+  dispatchOrderGs DispatchOrderG[]
+
+  // @@index([CVendedor, CRazonSocial])
+  // @@index([CActividad])
+  // @@index([CDistrito, CRazonSocial])
+  @@unique([CNitCedula, COrganizationId])
+  @@unique([COrganizationId, COrgSecuencia])
+  @@index([CRazonSocial])
+  @@map("cltemae")
+  @@schema("business")
+}
+
+// 22. KARFAC - Kardex Facturación
+model KardexFacturacion {
+  id             Int    @id @default(autoincrement())
+  organizationId String
+  invcaruniId    Int
+
+  grupo             Int     @db.SmallInt
+  codigo            Int
+  cantidadPedida    Decimal @db.Decimal(11, 0)
+  cantidadEntregada Decimal @db.Decimal(11, 0)
+
+  orgSecuencia Int
+
+  // Auditoria
+  creadoOModificado DateTime @default(now())
+  usuario           String   @db.VarChar(50)
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([grupo, codigo])
+  @@unique([organizationId, orgSecuencia])
+  @@map("kardex_facturacion")
+  @@schema("business")
+}
+
+// Enum for invoice state
+enum EstadoDispatchOrder {
+  DRAFT // Borrador
+  EMITTED // Emitido (inventario descargado, mercancía en tránsito)
+  INVOICED // Facturado (se convirtió en factura, ya no es dispatch order)
+  DISPATCHED
+  ANULATED // Anulado (was CANCELLED)
+
+  @@schema("business")
+}
+
+enum EstadoReserva {
+  ACTIVE // Reserva activa
+  EXPIRED // Expirada (liberada automáticamente)
+  RELEASED // Liberada manualmente
+  CONSUMED // Consumida (dispatch emitido/facturado)
+
+  @@schema("business")
+}
+
+enum ModoSalida {
+  MANUAL // manual o automatico
+  AUTOMATICO // automatico
+
+  @@schema("business")
+}
+
+enum DocumentType {
+  DISPATCH_ORDER
+  PURCHASE_ORDER
+  INVOICE
+  @@schema("business")
+}
+
+// Unified Documents Model
+model Document {
+  DOCId               Int          @id @default(autoincrement())
+  DOCOrganizationId   String
+  DOCDocumentType     DocumentType
+  DOCDocumentId       Int // ID of the related document (dispatch order, purchase order, or invoice)
+  DOCFileName         String // System-generated name following convention
+  DOCOriginalFileName String // Original uploaded filename
+  DOCFileKey          String // S3 key
+  DOCFileSize         Int // Size in bytes
+  DOCMimeType         String // image/png, image/jpeg, application/pdf
+  DOCUploadedAt       DateTime     @default(now())
+  DOCUploadedBy       String       @db.VarChar(50) // Usuario que subió
+
+  // Relations
+  organization Organization @relation(fields: [DOCOrganizationId], references: [id])
+
+  @@index([DOCOrganizationId, DOCDocumentType, DOCDocumentId])
+  @@index([DOCOrganizationId, DOCDocumentType])
+  @@map("documents")
+  @@schema("business")
+}
+
+enum OutboxStatus {
+  PENDING
+  PROCESSING
+  PROCESSED
+  FAILED
+  @@schema("business")
+}
+
+enum OutboxEventType {
+  INVOICE_CREATED
+  DISPATCH_ORDER_EMITTED
+  @@schema("business")
+}
+
+enum AggregateType {
+  FACTURA
+  DISPATCH_ORDER
+  @@schema("business")
+}
+
+// Transactional Outbox Pattern - Events for async processing
+model OutboxEvent {
+  id             Int             @id @default(autoincrement())
+  organizationId String
+  eventType      OutboxEventType // 'INVOICE_CREATED', 'DISPATCH_ORDER_EMITTED', etc.
+  aggregateType  AggregateType // 'FACTURA', 'DISPATCH_ORDER'
+  aggregateId    Int // FGId or DOGId
+  payload        Json? // Optional extra data (secuencia, clienteEmail, nro)
+  status         OutboxStatus    @default(PENDING) // PENDING, PROCESSING, PROCESSED, FAILED
+  attempts       Int             @default(0)
+  maxAttempts    Int             @default(3)
+  lastError      String?         @db.Text
+  processAfter   DateTime        @default(now()) // For delayed/retry scheduling
+  createdAt      DateTime        @default(now())
+  processedAt    DateTime?
+
+  // Step tracking for idempotency
+  s3Uploaded Boolean @default(false)
+  emailSent  Boolean @default(false)
+
+  // Email tracking improvements
+  emailSkipped Boolean @default(false) // True if all emails had permanent failures
+  emailResults Json? // Per-email results: { sent: [], permanentFailed: [] }
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([status, processAfter])
+  @@index([organizationId, eventType])
+  @@map("outbox_events")
+  @@schema("business")
+}
+
+// Dispatch Order Documents
+// model DispatchOrderDocument {
+//   DODId               Int      @id @default(autoincrement())
+//   DODOrganizationId   String
+//   DODDispatchOrderGId Int
+//   DODFileName         String // Original filename
+//   DODFileKey          String // S3 key
+//   DODFileSize         Int // Size in bytes
+//   DODMimeType         String // image/png, image/jpeg, application/pdf
+//   DODUploadedAt       DateTime @default(now())
+//   DODUploadedBy       String   @db.VarChar(50) // Usuario que subió
+
+//   // Relations
+//   organization   Organization   @relation(fields: [DODOrganizationId], references: [id])
+//   dispatchOrderG DispatchOrderG @relation(fields: [DODDispatchOrderGId], references: [DOGId])
+
+//   @@index([DODOrganizationId, DODDispatchOrderGId])
+//   @@map("dispatch_order_documents")
+// }
+
+// 25. FACTURAG - Facturas General
+model DispatchOrderG {
+  DOGId              Int    @id @default(autoincrement())
+  DOGOrganizationId  String
+  DOGPurchaseOrderId Int?
+  DOGVendedorId      Int
+  DOGClienteId       Int
+  DOGCiudadId        Int
+
+  // Numeración
+  // DOGNro              Decimal  @db.Decimal(6, 0)
+  DOGNro           Int
+  DOGOrgSecuencia  Int
+  DOGPurchaseOrder String?
+
+  // Información comercial
+  DOGTipo            Int     @db.SmallInt
+  DOGZona            Int     @db.SmallInt
+  DOGValorTotalNeto  Decimal @db.Decimal(9, 2)
+  DOGValorTotalBruto Decimal @db.Decimal(9, 2)
+  DOGTotalDescuento  Decimal @db.Decimal(9, 2)
+  DOGTotalIVA        Decimal @db.Decimal(9, 2)
+  // DOGCostoPromedio   Decimal  @db.Decimal(9, 2)
+
+  // Estados y aprobaciones
+  DOGEstado     EstadoDispatchOrder @default(DRAFT)
+  DOGAprobado   String              @db.VarChar(5)
+  DOGDespachado String              @db.VarChar(5)
+
+  // Fechas del ciclo de vida
+  DOGFechaCreado      DateTime
+  DOGFechaEmision     DateTime?
+  DOGFechaDespacho    DateTime?
+  DOGFechaFacturacion DateTime?
+
+  // Información de contacto y entrega
+  DOGTelefono1        String
+  DOGTelefono2        String?
+  DOGCorreo1          String
+  DOGCorreo2          String?
+  DOGDireccionEntrega String  @db.VarChar(50)
+
+  // Condiciones comerciales
+  DOGCondicion1 String? @db.VarChar(40)
+  DOGCondicion2 String? @db.VarChar(40)
+  DOGCondicion3 String? @db.VarChar(40)
+
+  // Auditoria:
+  creadoOModificado DateTime @default(now())
+  usuario           String   @db.VarChar(50) // Usuario de Keycloak
+
+  // pedido       PCLTEG?      @relation(fields: [pedidoId], references: [id])
+  // Relaciones
+  organization Organization @relation(fields: [DOGOrganizationId], references: [id])
+  cltemae      Cltemae      @relation(fields: [DOGClienteId], references: [CId])
+  vendedor     Vendedor     @relation(fields: [DOGVendedorId], references: [VId])
+  ciudad       Ciudad       @relation(fields: [DOGCiudadId], references: [id])
+
+  dispatchOrderU DispatchOrderU[]
+  facturag       Facturag?
+  // dispatchOrderDocuments DispatchOrderDocument[]
+
+  @@unique([DOGOrganizationId, DOGOrgSecuencia])
+  @@unique([DOGOrganizationId, DOGNro])
+  @@index([DOGEstado])
+  @@index([DOGOrganizationId, DOGEstado])
+  @@map("dispatch_order_g")
+  @@schema("business")
+}
+
+// 24. FACTURAU - Facturas Detalle
+model DispatchOrderU {
+  DOUId               Int        @id @default(autoincrement())
+  DOUOrganizationId   String
+  DOUDispatchOrderGId Int
+  DOUInvcaruniId      Int
+  DOUTipoMovimientoId Int
+  DOUModoSalida       ModoSalida @default(AUTOMATICO)
+
+  DOUNro           Int
+  DOUCantidad      Decimal @db.Decimal(9, 2)
+  DOUDescuento     Decimal @db.Decimal(9, 2)
+  DOUVrNeto        Decimal @db.Decimal(9, 2)
+  DOUVrBruto       Decimal @db.Decimal(9, 2)
+  DOUVrUnitario    Decimal @db.Decimal(9, 2)
+  DOUDetalle       String
+  DOUTieneImpuesto Boolean @default(false)
+  DOUReservado     Boolean @default(false)
+  DOUCostoPromedio Decimal @db.Decimal(9, 2)
+  DOULote          Int // Store manual lot selection: [{ lote: number, cantidad: number }]
+  DOUNroDocumento  String  @db.VarChar(50) // Document number for lot lookup (composite key with DOULote)
+
+  // Auditoria
+  creadoOModificado DateTime @default(now())
+  usuario           String   @db.VarChar(50)
+
+  // Relaciones
+  organization          Organization           @relation(fields: [DOUOrganizationId], references: [id])
+  dispatchOrderG        DispatchOrderG         @relation(fields: [DOUDispatchOrderGId], references: [DOGId])
+  invcaruni             Invcaruni              @relation(fields: [DOUInvcaruniId], references: [CKId])
+  tipoMovimiento        Tmovkar                @relation(fields: [DOUTipoMovimientoId], references: [TId])
+  inventoryReservations InventoryReservation[]
+
+  @@map("dispatch_order_u")
+  @@schema("business")
+}
+
+// ============================================
+// MÓDULO: RESERVAS DE INVENTARIO
+// ============================================
+
+model ReservationConfig {
+  RCId             Int    @id @default(autoincrement())
+  RCOrganizationId String
+
+  RCDiasExpiracion       Int     @default(3)
+  RCNotificarAntes       Int     @default(1)
+  RCAutoLiberarExpiradas Boolean @default(true)
+
+  creadoOModificado DateTime @default(now())
+  usuario           String   @db.VarChar(50)
+
+  organization Organization @relation(fields: [RCOrganizationId], references: [id])
+
+  @@unique([RCOrganizationId])
+  @@map("reservation_config")
+  @@schema("business")
+}
+
+model InventoryReservation {
+  IRId                Int           @id @default(autoincrement())
+  IROrganizationId    String
+  IRDispatchOrderUId  Int
+  IRInvcaruniId       Int
+  IRKardexLoteId      Int // Link to specific KardexLote for lote-level tracking
+  IRCantidadReservada Int
+  IRFechaReserva      DateTime      @db.Date
+  IRFechaExpiracion   DateTime      @db.Date
+  IRFechaLiberacion   DateTime?     @db.Date
+  IREstado            EstadoReserva @default(ACTIVE)
+  IRMotivo            String?       @db.VarChar(100)
+  IROrgSecuencia      Int
+
+  creadoOModificado DateTime @default(now())
+  usuario           String   @db.VarChar(50)
+
+  organization   Organization   @relation(fields: [IROrganizationId], references: [id])
+  dispatchOrderU DispatchOrderU @relation(fields: [IRDispatchOrderUId], references: [DOUId])
+  invcaruni      Invcaruni      @relation(fields: [IRInvcaruniId], references: [CKId])
+  kardexLote     KardexLote     @relation(fields: [IRKardexLoteId], references: [KLId])
+
+  @@unique([IROrganizationId, IROrgSecuencia])
+  @@index([IREstado, IRFechaExpiracion])
+  @@index([IROrganizationId, IRInvcaruniId, IREstado])
+  @@index([IRKardexLoteId, IREstado])
+  @@map("inventory_reservations")
+  @@schema("business")
+}
+
+// ============================================
+// MÓDULO: FACTURAS (Invoicing)
+// ============================================
+
+// Estados de la Factura
+enum EstadoFactura {
+  ACTIVE // Activa
+  PAID // Pagada
+  OVERDUE // Vencida
+  ANULATED // Anulada
+
+  @@schema("business")
+}
+
+// Enum for payment type
+enum TipoPago {
+  CONTADO // Cash payment (simple)
+  CANJE // Exchange/trade-in (simple)
+  CREDITO // Credit payment (simple)
+  WALLET // Digital wallet payment (detailed)
+  CREDIT_CARD // Credit card payment (detailed)
+  TRANSFER // Bank transfer payment (detailed)
+  CHECK // Check payment (detailed)
+
+  @@schema("business")
+}
+
+// 25. FACTURAG - Facturas General
+model Facturag {
+  FGId               Int    @id @default(autoincrement())
+  FGOrganizationId   String
+  FGPurchaseOrderId  Int?
+  FGDispatchOrderGId Int?   @unique
+  FGVendedorId       Int
+  FGClienteId        Int
+  FGCiudadId         Int
+
+  // Numeración fiscal
+  FGNro           Int
+  FGOrgSecuencia  Int
+  FGPurchaseOrder String?
+
+  // Información comercial
+  // FGTipo            Int      @db.SmallInt
+  // FGZona            Int      @db.SmallInt
+  FGPago            TipoPago
+  FGValorTotalNeto  Decimal  @db.Decimal(9, 2)
+  FGValorTotalBruto Decimal  @db.Decimal(9, 2)
+  FGTotalDescuento  Decimal  @db.Decimal(9, 2)
+  FGTotalIVA        Decimal  @db.Decimal(9, 2)
+  FGSaldo           Decimal  @db.Decimal(9, 2)
+  // FGCostoPromedio   Decimal  @db.Decimal(9, 2)
+
+  // Estados y aprobaciones
+  FGEstado         EstadoFactura @default(ACTIVE)
+  FGFacturaDeSaldo Boolean       @default(false)
+
+  // Fechas del ciclo de vida
+  // FGFechaEmision     DateTime? @db.Date
+  // FGFechaFacturacion DateTime? @db.Date
+  FGFechaCreado      DateTime
+  FGFechaVencimiento DateTime // cuando vence la factura
+  FGFechaPago        DateTime?
+
+  // Información de contacto y entrega
+  FGTelefono1        String
+  FGTelefono2        String?
+  FGCorreo1          String
+  FGCorreo2          String?
+  FGDireccionEntrega String  @db.VarChar(50)
+
+  // Condiciones comerciales
+  FGCondicion1 String? @db.VarChar(40)
+  FGCondicion2 String? @db.VarChar(40)
+  FGCondicion3 String? @db.VarChar(40)
+
+  // Auditoria:
+  creadoOModificado DateTime @default(now())
+  usuario           String   @db.VarChar(50) // Usuario de Keycloak
+
+  // pedido       PCLTEG?      @relation(fields: [pedidoId], references: [id])
+  organization   Organization    @relation(fields: [FGOrganizationId], references: [id])
+  dispatchOrderG DispatchOrderG? @relation(fields: [FGDispatchOrderGId], references: [DOGId])
+  cltemae        Cltemae         @relation(fields: [FGClienteId], references: [CId])
+  vendedor       Vendedor        @relation(fields: [FGVendedorId], references: [VId])
+  ciudad         Ciudad          @relation(fields: [FGCiudadId], references: [id])
+
+  // Detalles
+  facturau Facturau[]
+  movCXC   MovCXC[]
+
+  @@unique([FGOrganizationId, FGOrgSecuencia])
+  @@unique([FGOrganizationId, FGNro, FGFacturaDeSaldo])
+  @@index([FGPago])
+  @@index([FGEstado])
+  @@index([FGOrganizationId, FGEstado])
+  @@map("facturag")
+  @@schema("business")
+}
+
+model MovCXC {
+  MCId               Int    @id @default(autoincrement())
+  MCOrganizationId   String
+  MCFacturaId        Int
+  MCTipoMovimientoId Int
+
+  MCNro          Int
+  MCNroDocumento String
+  MCDescripcion  String
+  MCValor        Decimal  @db.Decimal(9, 2)
+  MCTipoPago     TipoPago
+  MCFecha        DateTime
+  MCSecuencia    Int
+
+  // Auditoria
+  creadoOModificado DateTime @default(now())
+  usuario           String   @db.VarChar(50)
+
+  // Relaciones
+  organization       Organization @relation(fields: [MCOrganizationId], references: [id])
+  facturag           Facturag     @relation(fields: [MCFacturaId], references: [FGId])
+  tipoMovimiento     Tmovkar      @relation(fields: [MCTipoMovimientoId], references: [TId])
+  facturaReturnItems Facturau[]
+
+  // Payment details relations (one-to-one, optional)
+  walletPayment     WalletPayment?
+  creditCardPayment CreditCardPayment?
+  transferPayment   TransferPayment?
+  checkPayment      CheckPayment?
+
+  @@unique([MCOrganizationId, MCFacturaId, MCSecuencia])
+  @@map("mov_cxc")
+  @@schema("business")
+}
+
+// ============================================
+// MÓDULO: BANKS
+// ============================================
+
+model Bank {
+  BId             Int    @id @default(autoincrement())
+  BOrganizationId String
+  BNombre         String
+  BOrgSecuencia   Int
+
+  // Auditoria
+  creadoOModificado DateTime @default(now())
+  usuario           String   @db.VarChar(50)
+
+  organization       Organization        @relation(fields: [BOrganizationId], references: [id])
+  walletPayments     WalletPayment[]
+  creditCardPayments CreditCardPayment[]
+  transferPayments   TransferPayment[]
+  checkPayments      CheckPayment[]
+
+  @@unique([BOrganizationId, BNombre])
+  @@unique([BOrganizationId, BOrgSecuencia])
+  @@map("banks")
+  @@schema("business")
+}
+
+// ============================================
+// MÓDULO: PAYMENT DETAILS
+// ============================================
+
+// Wallet Payment Details
+model WalletPayment {
+  WPId             Int    @id @default(autoincrement())
+  WPMovCXCId       Int    @unique
+  WPOrganizationId String
+
+  WPBancoId        Int // FK to Bank
+  WPNombreWallet   String @db.VarChar(100) // Wallet name (e.g., "Zelle", "Nequi")
+  WPTelefonoOClave String @db.VarChar(50) // Phone number or key
+
+  creadoOModificado DateTime @default(now())
+  usuario           String   @db.VarChar(50)
+
+  movCXC       MovCXC       @relation(fields: [WPMovCXCId], references: [MCId], onDelete: Cascade)
+  organization Organization @relation(fields: [WPOrganizationId], references: [id])
+  bank         Bank         @relation(fields: [WPBancoId], references: [BId])
+
+  @@map("wallet_payments")
+  @@schema("business")
+}
+
+// Credit Card Payment Details
+model CreditCardPayment {
+  CCPId             Int    @id @default(autoincrement())
+  CCPMovCXCId       Int    @unique
+  CCPOrganizationId String
+
+  CCPBancoId         Int // FK to Bank
+  CCPMarca           String @db.VarChar(50) // Brand (Visa, Mastercard, Amex, etc.)
+  CCPUltimos4Digitos String @db.VarChar(4) // Last 4 digits only
+
+  creadoOModificado DateTime @default(now())
+  usuario           String   @db.VarChar(50)
+
+  movCXC       MovCXC       @relation(fields: [CCPMovCXCId], references: [MCId], onDelete: Cascade)
+  organization Organization @relation(fields: [CCPOrganizationId], references: [id])
+  bank         Bank         @relation(fields: [CCPBancoId], references: [BId])
+
+  @@map("credit_card_payments")
+  @@schema("business")
+}
+
+// Transfer Payment Details
+model TransferPayment {
+  TPId             Int    @id @default(autoincrement())
+  TPMovCXCId       Int    @unique
+  TPOrganizationId String
+
+  TPBancoId      Int // FK to Bank
+  TPTipoCuenta   String @db.VarChar(50) // Account type (Checking, Savings, etc.)
+  TPNumeroCuenta String @db.VarChar(50) // Account number
+
+  creadoOModificado DateTime @default(now())
+  usuario           String   @db.VarChar(50)
+
+  movCXC       MovCXC       @relation(fields: [TPMovCXCId], references: [MCId], onDelete: Cascade)
+  organization Organization @relation(fields: [TPOrganizationId], references: [id])
+  bank         Bank         @relation(fields: [TPBancoId], references: [BId])
+
+  @@map("transfer_payments")
+  @@schema("business")
+}
+
+// Check Payment Details
+model CheckPayment {
+  CHPId             Int    @id @default(autoincrement())
+  CHPMovCXCId       Int    @unique
+  CHPOrganizationId String
+
+  CHPBancoId      Int // FK to Bank
+  CHPNumeroCheque String   @db.VarChar(50) // Check number
+  CHPFechaCheque  DateTime // Check due date
+
+  creadoOModificado DateTime @default(now())
+  usuario           String   @db.VarChar(50)
+
+  movCXC       MovCXC       @relation(fields: [CHPMovCXCId], references: [MCId], onDelete: Cascade)
+  organization Organization @relation(fields: [CHPOrganizationId], references: [id])
+  bank         Bank         @relation(fields: [CHPBancoId], references: [BId])
+
+  @@map("check_payments")
+  @@schema("business")
+}
+
+// 24. FACTURAU - Facturas Detalle
+model Facturau {
+  FUId             Int    @id @default(autoincrement())
+  FUOrganizationId String
+  FUFacturaId      Int
+  FUInvcaruniId    Int
+
+  FUNro              Int
+  FUCantidad         Decimal @db.Decimal(9, 2)
+  FUDescuento        Decimal @db.Decimal(9, 2)
+  FUVrNeto           Decimal @db.Decimal(9, 2)
+  FUVrBruto          Decimal @db.Decimal(9, 2)
+  FUVrUnitario       Decimal @db.Decimal(9, 2)
+  FUDetalle          String
+  FUTieneImpuesto    Boolean @default(false)
+  FULote             Int
+  FULoteNroDocumento String  @db.VarChar(50)
+  FUMovCXCId         Int?
+  FUCostoPromedio    Decimal @db.Decimal(9, 2)
+
+  // Auditoria
+  creadoOModificado DateTime @default(now())
+  usuario           String   @db.VarChar(50)
+
+  // Relaciones
+  organization Organization @relation(fields: [FUOrganizationId], references: [id])
+  facturag     Facturag     @relation(fields: [FUFacturaId], references: [FGId])
+  invcaruni    Invcaruni    @relation(fields: [FUInvcaruniId], references: [CKId])
+  movCXCReturn MovCXC?      @relation(fields: [FUMovCXCId], references: [MCId])
+
+  @@map("facturau")
+  @@schema("business")
+}
+
+// 27. RCLTEG - Remisiones Cliente General (similar a pedidos)
+model Rclteg {
+  RGId             Int    @id @default(autoincrement())
+  RGOrganizationId String
+  RGClienteId      Int
+
+  RGVendedorId       Int?
+  RGNro              Decimal  @db.Decimal(6, 0)
+  RGNitCliente       BigInt
+  RGPago             Int      @db.SmallInt
+  RGComprador        String   @db.VarChar(30)
+  RGNitCedula        Decimal  @db.Decimal(10, 3)
+  RGDireccion        String   @db.VarChar(30)
+  RGTipo             Int      @db.SmallInt
+  RGZona             Int      @db.SmallInt
+  RGAprobado         String   @db.VarChar(5)
+  RGDespachado       String   @db.VarChar(5)
+  RGTelefono1        Decimal  @db.Decimal(7, 3)
+  RGTelefono2        Decimal  @db.Decimal(7, 3)
+  RGCiudad           String   @db.VarChar(12)
+  RGPedido           Decimal  @db.Decimal(6, 3)
+  RGOrdenCompra      Decimal  @db.Decimal(6, 3)
+  RGFechaEntrega     DateTime @db.Date
+  RGFechaVencimiento DateTime @db.Date
+  RGCondicion1       String   @db.VarChar(40)
+  RGCondicion2       String   @db.VarChar(40)
+  RGCondicion3       String   @db.VarChar(40)
+  RGOrgSecuencia     Int
+
+  // Auditoria:
+  creadoOModificado DateTime @default(now())
+  usuario           String   @db.VarChar(50) // Usuario de Keycloak
+
+  organization Organization @relation(fields: [RGOrganizationId], references: [id])
+
+  cltemae  Cltemae?  @relation(fields: [RGClienteId], references: [CId])
+  vendedor Vendedor? @relation(fields: [RGVendedorId], references: [VId])
+
+  rclteu Rclteu[]
+
+  @@unique([RGOrganizationId, RGOrgSecuencia])
+  @@index([RGNitCliente])
+  @@index([RGPago])
+  @@index([RGFechaEntrega])
+  @@map("rclteg")
+  @@schema("business")
+}
+
+// 28. RCLTEU - Remisiones Cliente Detalle
+model Rclteu {
+  RUId             Int    @id @default(autoincrement())
+  RUOrganizationId String
+  RURemisionId     Int
+
+  RUNroRemision Decimal @db.Decimal(6, 0)
+  RUSecuencia   Int     @db.SmallInt
+  RUGrupo       Int     @db.SmallInt
+  RUCodigo      Int
+  RUCantidad    Decimal @db.Decimal(8, 3)
+  RUVrUnitario  Decimal @db.Decimal(8, 3)
+
+  // Auditoria:
+  creadoOModificado DateTime @default(now())
+  usuario           String   @db.VarChar(50) // Usuario de Keycloak
+
+  organization Organization @relation(fields: [RUOrganizationId], references: [id])
+  rclteg       Rclteg       @relation(fields: [RURemisionId], references: [RGId])
+
+  @@unique([RUNroRemision, RUSecuencia])
+  @@index([RUGrupo, RUCodigo, RUNroRemision])
+  @@map("rclteu")
+  @@schema("business")
+}
+
+// 31. MOVKAR1 - Movimientos de Kardex (archivo adicional con misma estructura)
+// model MovimientoKardex1 {
+//   secuencial      Int      @id @default(autoincrement())
+//   grupo           Int      @db.SmallInt
+//   codigo          Int
+//   fecha           DateTime @db.Date
+//   tipoIO          Int      @db.SmallInt
+//   clase           Int      @db.SmallInt
+//   nroDocumento    Int
+//   centro          Int      @db.SmallInt
+//   cuentas         Decimal  @db.Decimal(10, 3)
+//   codigoProveedor BigInt
+//   pedido          Int
+//   cantidad        Decimal  @db.Decimal(9, 3)
+//   costoPrecio     Decimal  @db.Decimal(11, 3)
+//   costoPromedio   Decimal  @db.Decimal(14, 3)
+//   descuento       Decimal  @db.Decimal(5, 3)
+//   impoVenta       Decimal  @db.Decimal(5, 3)
+//   almacenRecibe   String   @db.VarChar(3)
+//   factura         Int
+//   concepto        Int      @db.SmallInt
+
+//   @@index([grupo, codigo, fecha, tipoIO])
+//   @@index([tipoIO, clase, nroDocumento])
+//   @@index([centro, cuentas, tipoIO, clase, nroDocumento])
+//   @@index([codigoProveedor, tipoIO, clase, nroDocumento])
+//   @@map("movimientos_kardex_1")
+// }
+
+// DASHBOARD MODELS
+
+// Accounts Receivable Model - Based on Excel structure
+model AccountsReceivable {
+  id                             Int      @id @default(autoincrement())
+  date                           DateTime @db.Date
+  customer                       String   @db.VarChar(50)
+  country                        String   @db.VarChar(50)
+  seller                         String   @db.VarChar(50)
+  upcoming_amount_receivable_usd Decimal? @db.Decimal(12, 2)
+  due_date                       DateTime @db.Date
+  method_of_payment              String   @db.VarChar(10)
+  upcoming_due_days              Int?
+  days_expired_1_a_30            Decimal? @db.Decimal(12, 2)
+  days_expired_31_a_60           Decimal? @db.Decimal(12, 2)
+  days_expired_61_a_90           Decimal? @db.Decimal(12, 2)
+  days_expired_mas_de_90         Decimal? @db.Decimal(12, 2)
+
+  // Auditoria
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("accounts_receivable")
+  @@schema("business")
+}
+
+// DSO (Days Sales Outstanding) Model - Based on Excel structure
+model DSO {
+  id                 Int      @id @default(autoincrement())
+  fecha_periodo      DateTime @db.Date
+  cuentas_por_cobrar Decimal  @db.Decimal(12, 2)
+  ventas_a_credito   Decimal  @db.Decimal(12, 2)
+  periodo            Int
+  dso                Decimal  @db.Decimal(8, 2)
+
+  // Auditoria
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("dso")
+  @@schema("business")
+}
+
+// InventoryFis Models - Based on Excel structure
+
+// Caruni (Product Catalog) Model
+model InventoryFisCaruni {
+  id           Int     @id @default(autoincrement())
+  cgrupo       Int
+  ccodigo      Int
+  cdescripcion String  @db.VarChar(50)
+  cunidad      String  @db.VarChar(20)
+  cprecio_pub  Decimal @db.Decimal(8, 2)
+  cmargen      Decimal @db.Decimal(4, 2)
+  ctope_desc   Decimal @db.Decimal(4, 2)
+
+  // Auditoria
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("inventory_fis_caruni")
+  @@schema("business")
+}
+
+// Kardex (Inventory Control) Model
+model InventoryFisKardex {
+  id                Int     @id @default(autoincrement())
+  ckgrupo           Int
+  ckcodigo          Int
+  cdescripcion      String  @db.VarChar(50)
+  kexistencia_fis_i Decimal @db.Decimal(9, 2)
+  kentradas         Decimal @db.Decimal(9, 2)
+  kvalor_entradas   Decimal @db.Decimal(12, 2)
+  ksalidas          Decimal @db.Decimal(9, 2)
+  kvalor_salidas    Decimal @db.Decimal(12, 2)
+  kexistencia_fis_f Decimal @db.Decimal(9, 2)
+  kcosto_ult        Decimal @db.Decimal(8, 2)
+
+  // Auditoria
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("inventory_fis_kardex")
+  @@schema("business")
+}
+
+// KardexLote (Inventory by Lot) Model
+model InventoryFisKardexLote {
+  id                  Int     @id @default(autoincrement())
+  cklgrupo            Int
+  cklcodigo           Int
+  ckldescripcion      String  @db.VarChar(50)
+  cklpaisorigen       Int
+  cklpaisorigenn      String  @db.VarChar(30)
+  ckllote             Int
+  cklexistencia_fis_i Decimal @db.Decimal(9, 2)
+  cklentradas         Decimal @db.Decimal(9, 2)
+  cklvalor_entradas   Decimal @db.Decimal(12, 2)
+  cklsalidas          Decimal @db.Decimal(9, 2)
+  cklvalor_salidas    Decimal @db.Decimal(12, 2)
+  cklexistencia_fis_f Decimal @db.Decimal(9, 2)
+  cklcosto_ult        Decimal @db.Decimal(8, 2)
+
+  // Auditoria
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("inventory_fis_kardex_lote")
+  @@schema("business")
+}
+
+// Movkar (Inventory Movements) Model
+model InventoryFisMovkar {
+  id             Int      @id @default(autoincrement())
+  mvseq          Int
+  mvgrupo        Int
+  mvcodigo       Int
+  cdescripcion   String   @db.VarChar(50)
+  mvfecha        DateTime @db.Date
+  mvpedido_fac   Int
+  mvtipo         Int
+  mvclase        Int
+  mvdesctm       String   @db.VarChar(30)
+  mvnro_doc      Int
+  mvpaisorigen   Int
+  mvpaisorigenn  String   @db.VarChar(30)
+  mvprov_cliente Int
+  mvdescprov     String   @db.VarChar(50)
+  mvcantidad     Decimal  @db.Decimal(9, 2)
+  mvcosto        Decimal  @db.Decimal(8, 2)
+  mvprecio       Decimal  @db.Decimal(8, 2)
+
+  // Auditoria
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("inventory_fis_movkar")
+  @@schema("business")
+}
+
+// InventoryRotacion (Inventory Rotation) Model
+model InventoryRotacion {
+  id                Int      @id @default(autoincrement())
+  purchase_date     DateTime @db.Date
+  product           String   @db.VarChar(50)
+  country_of_origin String   @db.VarChar(30)
+  stock_ini         Decimal  @db.Decimal(9, 2)
+  ending_stocks     Decimal  @db.Decimal(9, 2)
+  days_of_period    Int
+  cost_mont         Decimal  @db.Decimal(12, 2)
+  inv_prom          Decimal  @db.Decimal(9, 2)
+  rotacion          Decimal  @db.Decimal(8, 2)
+  year              Int
+  month             Int
+  year_mont         String   @db.VarChar(10)
+
+  // Auditoria
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("inventory_rotacion")
+  @@schema("business")
+}
+
+// Liquidaciones Models - Based on Excel structure
+
+// LiquidacionesEncabezado (Header) Model
+model LiquidacionesEncabezado {
+  id       Int      @id @default(autoincrement())
+  nro_lote String   @db.VarChar(20)
+  date     DateTime @db.Date
+  stock    Decimal  @db.Decimal(9, 2)
+  supplier String   @db.VarChar(50)
+  origen   String   @db.VarChar(30)
+
+  // Auditoria
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("liquidaciones_encabezado")
+  @@schema("business")
+}
+
+// Gastos (Expenses) Model
+model LiquidacionesGastos {
+  id              Int     @id @default(autoincrement())
+  nro_lote        String  @db.VarChar(20)
+  transaction_gto String  @db.VarChar(30)
+  cod_concep_gto  Int
+  description_gto String  @db.VarChar(50)
+  nro_dcto_gto    Int
+  amount_gtos     Decimal @db.Decimal(12, 2)
+
+  // Auditoria
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("liquidaciones_gastos")
+  @@schema("business")
+}
+
+// Costos (Costs) Model
+model LiquidacionesCostos {
+  id              Int     @id @default(autoincrement())
+  nro_lote        String  @db.VarChar(20)
+  transaction_cto String  @db.VarChar(30)
+  cod_concep_cto  Int
+  description_cto String  @db.VarChar(50)
+  nro_dcto_cto    Int
+  amount_ctos     Decimal @db.Decimal(12, 2)
+
+  // Auditoria
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("liquidaciones_costos")
+  @@schema("business")
+}
+
+// Ventas (Sales) Model
+model LiquidacionesVentas {
+  id              Int     @id @default(autoincrement())
+  nro_lote        String  @db.VarChar(20)
+  transaction_vta String  @db.VarChar(30)
+  cod_concep_vta  Int
+  description_vta String  @db.VarChar(50)
+  nro_dcto_vta    Int
+  amount_vtas     Decimal @db.Decimal(12, 2)
+
+  // Auditoria
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("liquidaciones_ventas")
+  @@schema("business")
+}
+
+// Resumen (Summary) Model
+model LiquidacionesResumen {
+  id               Int     @id @default(autoincrement())
+  nro_lote         String  @db.VarChar(20)
+  t_amount_gtos    Decimal @db.Decimal(12, 2)
+  t_amount_ctos    Decimal @db.Decimal(12, 2)
+  t_sum_gtos_ctos  Decimal @db.Decimal(12, 2)
+  t_amount_vtas    Decimal @db.Decimal(12, 2)
+  t_amount_rta     Decimal @db.Decimal(12, 2)
+  t_amount_rta_pct Decimal @db.Decimal(8, 4)
+
+  // Auditoria
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("liquidaciones_resumen")
+  @@schema("business")
+}
+
+// SalesAc Model - Based on Excel structure
+model SalesAc {
+  id              Int      @id @default(autoincrement())
+  date            DateTime @db.Date
+  customer        String   @db.VarChar(50)
+  invoice_number  Int
+  product         String   @db.VarChar(100)
+  region          String   @db.VarChar(30)
+  seller          String   @db.VarChar(30)
+  units_sold      Int
+  unit_price_usd  Decimal  @db.Decimal(10, 2)
+  total_sales_usd Decimal  @db.Decimal(12, 2)
+  year            Int
+  month           Int
+  year_month      String   @db.VarChar(10)
+
+  // Auditoria
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("sales_ac")
+  @@schema("business")
+}

@@ -1,0 +1,1774 @@
+// generator client {
+//   provider   = "prisma-client"
+//   output     = "../src/generated/prisma"
+//   engineType = "client"
+// }
+
+// datasource db {
+//   provider = "postgresql"
+// }
+
+// model User {
+//   id            String       @id
+//   name          String
+//   email         String
+//   emailVerified Boolean      @default(false)
+//   image         String?
+//   createdAt     DateTime     @default(now())
+//   updatedAt     DateTime     @updatedAt
+//   sessions      Session[]
+//   accounts      Account[]
+//   members       Member[]
+//   invitations   Invitation[]
+
+//   @@unique([email])
+//   @@map("user")
+// }
+
+// model Session {
+//   id                   String   @id
+//   expiresAt            DateTime
+//   token                String
+//   createdAt            DateTime @default(now())
+//   updatedAt            DateTime @updatedAt
+//   ipAddress            String?
+//   userAgent            String?
+//   userId               String
+//   user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+//   activeOrganizationId String?
+
+//   @@unique([token])
+//   @@index([userId])
+//   @@map("session")
+// }
+
+// model Account {
+//   id                    String    @id
+//   accountId             String
+//   providerId            String
+//   userId                String
+//   user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+//   accessToken           String?
+//   refreshToken          String?
+//   idToken               String?
+//   accessTokenExpiresAt  DateTime?
+//   refreshTokenExpiresAt DateTime?
+//   scope                 String?
+//   password              String?
+//   createdAt             DateTime  @default(now())
+//   updatedAt             DateTime  @updatedAt
+
+//   @@index([userId])
+//   @@map("account")
+// }
+
+// model Verification {
+//   id         String   @id
+//   identifier String
+//   value      String
+//   expiresAt  DateTime
+//   createdAt  DateTime @default(now())
+//   updatedAt  DateTime @updatedAt
+
+//   @@index([identifier])
+//   @@map("verification")
+// }
+
+// model Organization {
+//   id          String       @id
+//   name        String
+//   slug        String
+//   logo        String?
+//   createdAt   DateTime
+//   metadata    String?
+//   members     Member[]
+//   invitations Invitation[]
+
+//   @@unique([slug])
+//   @@map("organization")
+// }
+
+// model Member {
+//   id             String       @id
+//   organizationId String
+//   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+//   userId         String
+//   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+//   role           String       @default("member")
+//   createdAt      DateTime
+
+//   @@index([organizationId])
+//   @@index([userId])
+//   @@map("member")
+// }
+
+// model Invitation {
+//   id             String       @id
+//   organizationId String
+//   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+//   email          String
+//   role           String?
+//   status         String       @default("pending")
+//   expiresAt      DateTime
+//   createdAt      DateTime     @default(now())
+//   inviterId      String
+//   user           User         @relation(fields: [inviterId], references: [id], onDelete: Cascade)
+
+//   @@index([organizationId])
+//   @@index([email])
+//   @@map("invitation")
+// }
+
+// // ===============================================
+// // TABLAS DE UBICACIÓN GEOGRÁFICA
+// // ===============================================
+
+// model Pais {
+//     id              Int     @id @default(autoincrement())
+//     organization_id String?
+//     name            String
+//     code            String
+
+//     estados      Estado[]
+//     acumulados   AcumuladoPais[]
+//     organization Organization?   @relation(fields: [organization_id], references: [id])
+
+//     @@map("paises")
+// }
+
+// model Estado {
+//     id              Int     @id @default(autoincrement())
+//     organization_id String?
+//     country_id      Int
+//     name            String
+
+//     country      Pais              @relation(fields: [country_id], references: [id])
+//     ciudades     Ciudad[]
+//     acumulados   AcumuladoEstado[]
+//     organization Organization?     @relation(fields: [organization_id], references: [id])
+
+//     @@unique([name, country_id], name: "nombre_pais_id")
+//     @@map("estados")
+// }
+
+// model Ciudad {
+//     id              Int     @id @default(autoincrement())
+//     organization_id String?
+//     state_id        Int
+//     name            String
+
+//     state        Estado        @relation(fields: [state_id], references: [id])
+//     organization Organization? @relation(fields: [organization_id], references: [id])
+
+//     acumulados             AcumuladoCiudad[]
+//     m_proved               Mproved[]
+//     clientes               Cltemae[]
+//     pclteg                 Pclteg[]
+//     compras_proveedor      Proved[]
+//     organizationes_activas OrganizationCiudad[]
+//     almacen                Almacen[]
+//     kardex_lote            KardexLote[]
+//     movkar                 Movkar[]
+//     kardex_det             KardexDet[]
+//     facturag               Facturag[]
+//     dispatch_order_gs      DispatchOrderG[]
+
+//     @@unique([name, state_id], name: "nombre_estado_id")
+//     @@map("ciudades")
+// }
+
+// // Tabla de Lotes: en este sistema, un lote se asocia a una ciudad de origen por producto
+// // model Lote {
+// //   id             Int    @id @default(autoincrement())
+// //   organizationId String
+// //   invcaruniId    Int
+// //   ciudadId       Int
+
+// //   codigo String? @db.VarChar(30)
+
+// //   Organization Organization @relation(fields: [organizationId], references: [id])
+// //   producto     Invcaruni    @relation(fields: [invcaruniId], references: [CKId])
+// //   ciudad       Ciudad       @relation(fields: [ciudadId], references: [id])
+
+// //   kardexLotes KardexLote[]
+// //   movimientos Movkar[]
+
+// //   @@unique([organizationId, invcaruniId, ciudadId])
+// //   @@map("lotes")
+// // }
+
+// model OrganizationCiudad {
+//     organization_id String
+//     city_id         Int
+
+//     organization Organization @relation(fields: [organization_id], references: [id])
+//     city         Ciudad       @relation(fields: [city_id], references: [id])
+
+//     @@id([organization_id, city_id])
+//     @@map("organization_ciudad")
+// }
+
+// // ===============================================
+// // TABLAS DE ACUMULADOS POR UBICACIÓN
+// // ===============================================
+
+// model AcumuladoPais {
+//     id                    Int    @id @default(autoincrement())
+//     organization_id       String
+//     country_id            Int
+//     month                 Int    @db.SmallInt
+//     year                  Int    @db.SmallInt
+//     accumulated_purchases Int
+
+//     created_at DateTime @default(now())
+//     updated_at DateTime @updatedAt
+
+//     country      Pais         @relation(fields: [country_id], references: [id])
+//     organization Organization @relation(fields: [organization_id], references: [id])
+
+//     @@unique([country_id, month, year])
+//     @@map("acumulados_pais")
+// }
+
+// model AcumuladoEstado {
+//     id                    Int    @id @default(autoincrement())
+//     organization_id       String
+//     state_id              Int
+//     month                 Int    @db.SmallInt
+//     year                  Int    @db.SmallInt
+//     accumulated_purchases Int
+
+//     created_at DateTime @default(now())
+//     updated_at DateTime @updatedAt
+
+//     state        Estado       @relation(fields: [state_id], references: [id])
+//     organization Organization @relation(fields: [organization_id], references: [id])
+
+//     @@unique([state_id, month, year])
+//     @@map("acumulados_estado")
+// }
+
+// model AcumuladoCiudad {
+//     id                    Int    @id @default(autoincrement())
+//     organization_id       String
+//     city_id               Int
+//     month                 Int    @db.SmallInt
+//     year                  Int    @db.SmallInt
+//     accumulated_purchases Int
+
+//     created_at DateTime @default(now())
+//     updated_at DateTime @updatedAt
+
+//     city         Ciudad       @relation(fields: [city_id], references: [id])
+//     organization Organization @relation(fields: [organization_id], references: [id])
+
+//     @@unique([city_id, month, year])
+//     @@map("acumulados_ciudad")
+// }
+
+// // TODO: agregar campo de creadoOModificado y usuario
+
+// model UnidadMedida {
+//     id              Int    @id @default(autoincrement())
+//     organization_id String
+//     name            String
+//     description     String @db.VarChar(30)
+//     org_sequence    Int
+
+//     created_or_modified DateTime @default(now())
+//     user                String   @db.VarChar(50)
+
+//     organization Organization @relation(fields: [organization_id], references: [id])
+//     inv_caruni   Invcaruni[]
+
+//     @@unique([organization_id, org_sequence])
+//     @@map("unidades_medida")
+// }
+
+// model ClaseAlmacen {
+//     id              Int    @id @default(autoincrement())
+//     organization_id String
+//     code            String @db.VarChar(1)
+//     description     String @db.VarChar(20)
+
+//     organization Organization @relation(fields: [organization_id], references: [id])
+
+//     @@unique([organization_id, code])
+//     @@map("clases_almacen")
+// }
+
+// model Almacen {
+//     id                 Int    @id @default(autoincrement())
+//     organization_id    String
+//     city_id            Int
+//     name               String
+//     responsible        String
+//     address            String
+//     phone              String
+//     accounting_account String @default("")
+//     org_sequence       Int
+
+//     created_or_modified DateTime @default(now())
+//     user                String
+
+//     organization Organization @relation(fields: [organization_id], references: [id])
+//     city         Ciudad       @relation(fields: [city_id], references: [id])
+
+//     kardex      Kardex[]
+//     pdsucu      Pdsucu[]
+//     movkar      Movkar[]
+//     kardex_lote KardexLote[]
+//     kardex_det  KardexDet[]
+
+//     @@unique([organization_id, org_sequence])
+//     @@map("almacenes")
+// }
+
+// model Pdsucu {
+//     id                 Int      @id @default(autoincrement())
+//     organization_id    String
+//     warehouse_id       Int
+//     inv_caruni_id      Int
+//     quantity_ordered   Decimal
+//     quantity_delivered Decimal
+//     unit_value         Decimal  @db.Decimal(11, 3)
+//     approved           Boolean
+//     order_number       String   @db.VarChar(5)
+//     order_date         DateTime @db.Date
+//     last_delivery_date DateTime @db.Date
+//     org_sequence       Int
+
+//     warehouse    Almacen      @relation(fields: [warehouse_id], references: [id])
+//     inv_caruni   Invcaruni    @relation(fields: [inv_caruni_id], references: [id])
+//     organization Organization @relation(fields: [organization_id], references: [id])
+
+//     @@unique([organization_id, org_sequence])
+//     @@map("pedidos_sucursal")
+// }
+
+// model Invcaruni {
+//     id                 Int    @id @default(autoincrement())
+//     group_id           Int
+//     organization_id    String
+//     unit_of_measure_id Int
+
+//     code                    Int
+//     description             String  @db.VarChar(40)
+//     origin                  String  @default("N/A") @db.VarChar(20)
+//     public_price            Decimal @db.Decimal(9, 2)
+//     sale_price_1            Decimal @db.Decimal(9, 2)
+//     sale_price_2            Decimal @db.Decimal(9, 2)
+//     margin_percent          Decimal @db.Decimal(4, 2)
+//     margin_cap_discount_pct Decimal @default(0) @db.Decimal(4, 2)
+//     discount_cap            Decimal @default(0) @db.Decimal(9, 2)
+//     tax_percent             Decimal @default(0) @db.Decimal(4, 2)
+//     tax_exempt              Boolean @default(false)
+//     org_sequence            Int
+
+//     parent_product_id Int?
+//     parent_product    Invcaruni?  @relation("ProductVariants", fields: [parent_product_id], references: [id])
+//     variants          Invcaruni[] @relation("ProductVariants")
+
+//     created_or_modified DateTime @default(now())
+//     user                String   @db.VarChar(50)
+
+//     organization    Organization @relation(fields: [organization_id], references: [id])
+//     group           Invgrupos    @relation(fields: [group_id], references: [id])
+//     unit_of_measure UnidadMedida @relation(fields: [unit_of_measure_id], references: [id])
+
+//     proved   Proved[]
+//     pclteu   Pclteu[]
+//     facturau Facturau[]
+//     kardex   Kardex[]
+//     pdsucu   Pdsucu[]
+
+//     movkar                 Movkar[]
+//     kardex_lote            KardexLote[]
+//     kardex_det             KardexDet[]
+//     dispatch_order_us      DispatchOrderU[]
+//     inventory_reservations InventoryReservation[]
+
+//     @@unique([organization_id, group_id, code])
+//     @@unique([organization_id, org_sequence])
+//     @@index([organization_id, description])
+//     @@index([organization_id, origin])
+//     @@map("invcaruni")
+// }
+
+// model Invgrupos {
+//     id              Int    @id @default(autoincrement())
+//     organization_id String
+//     number          Int
+//     description     String @db.VarChar(30)
+//     org_sequence    Int
+
+//     created_or_modified DateTime @default(now())
+//     user                String   @db.VarChar(50)
+
+//     organization Organization @relation(fields: [organization_id], references: [id])
+//     inv_caruni   Invcaruni[]
+
+//     @@unique([number, organization_id])
+//     @@unique([organization_id, org_sequence])
+//     @@map("grupos")
+// }
+
+// model Kardex {
+//     id              Int    @id @default(autoincrement())
+//     inv_caruni_id   Int
+//     organization_id String
+//     warehouse_id    Int
+
+//     initial_stock       Decimal   @default(0) @db.Decimal(9, 2)
+//     entries             Decimal   @default(0) @db.Decimal(7, 2)
+//     entries_value       Decimal   @default(0) @db.Decimal(9, 2)
+//     exits               Decimal   @default(0) @db.Decimal(7, 2)
+//     exits_value         Decimal   @default(0) @db.Decimal(9, 2)
+//     ending_stock        Decimal   @default(0) @db.Decimal(9, 2)
+//     last_cost           Decimal   @default(0) @db.Decimal(9, 2)
+//     average_cost        Decimal   @default(0) @db.Decimal(9, 2)
+//     lot_value_last_cost Decimal   @default(0) @db.Decimal(9, 2)
+//     lot_value_avg_cost  Decimal   @default(0) @db.Decimal(9, 2)
+//     last_count_date     DateTime? @db.Date
+//     last_count          Decimal?  @default(0) @db.Decimal(9, 2)
+//     month               Int       @db.SmallInt
+//     year                Int       @db.SmallInt
+
+//     min_stock          Int    @default(0)
+//     max_stock          Int    @default(0)
+//     replenishment_time Int    @default(0)
+//     card_number        String @db.VarChar(6)
+//     last_detail        String @db.VarChar(20)
+//     org_sequence       Int
+
+//     created_or_modified DateTime @default(now())
+//     user                String   @db.VarChar(50)
+
+//     inv_caruni   Invcaruni    @relation(fields: [inv_caruni_id], references: [id])
+//     organization Organization @relation(fields: [organization_id], references: [id])
+//     warehouse    Almacen      @relation(fields: [warehouse_id], references: [id])
+
+//     kardex_lotes KardexLote[]
+//     paprovee     Paprovee[]
+//     rotado       Rotado[]
+//     karrev       Karrev[]
+
+//     @@unique([organization_id, inv_caruni_id, warehouse_id, month, year], name: "kardex_business_key")
+//     @@unique([organization_id, org_sequence], name: "kardex_sequence")
+//     @@index([organization_id, ending_stock])
+//     @@map("kardex")
+// }
+
+// model KardexLote {
+//     id              Int    @id @default(autoincrement())
+//     kardex_id       Int
+//     city_id         Int
+//     organization_id String
+//     inv_caruni_id   Int
+//     warehouse_id    Int
+
+//     lot_number          Int
+//     document_number     String    @db.VarChar(50)
+//     initial_stock       Decimal   @default(0) @db.Decimal(9, 2)
+//     entries             Decimal   @default(0) @db.Decimal(7, 2)
+//     entries_value       Decimal   @default(0) @db.Decimal(9, 2)
+//     exits               Decimal   @default(0) @db.Decimal(7, 2)
+//     exits_value         Decimal   @default(0) @db.Decimal(9, 2)
+//     ending_stock        Decimal   @default(0) @db.Decimal(9, 2)
+//     last_cost           Decimal   @default(0) @db.Decimal(9, 2)
+//     average_cost        Decimal   @default(0) @db.Decimal(9, 2)
+//     lot_value_last_cost Decimal   @default(0) @db.Decimal(9, 2)
+//     lot_value_avg_cost  Decimal   @default(0) @db.Decimal(9, 2)
+//     last_entry_date     DateTime
+//     last_count_date     DateTime? @db.Date
+//     last_count          Decimal?  @default(0) @db.Decimal(9, 2)
+//     month               Int       @db.SmallInt
+//     year                Int       @db.SmallInt
+
+//     created_or_modified DateTime @default(now())
+//     user                String   @db.VarChar(50)
+
+//     kardex       Kardex       @relation(fields: [kardex_id], references: [id])
+//     city         Ciudad       @relation(fields: [city_id], references: [id])
+//     organization Organization @relation(fields: [organization_id], references: [id])
+//     inv_caruni   Invcaruni    @relation(fields: [inv_caruni_id], references: [id])
+//     warehouse    Almacen      @relation(fields: [warehouse_id], references: [id])
+
+//     kardex_det             KardexDet[]
+//     inventory_reservations InventoryReservation[]
+
+//     @@unique([kardex_id, city_id, lot_number, document_number, month, year], name: "kardex_lote_business_key")
+//     @@index([ending_stock])
+//     @@map("kardex_lote")
+// }
+
+// model KardexDet {
+//     id              Int    @id @default(autoincrement())
+//     kardex_lote_id  Int
+//     organization_id String
+//     warehouse_id    Int
+//     inv_caruni_id   Int
+//     city_id         Int
+//     lot_number      Int
+
+//     date          DateTime @db.Date
+//     initial_stock Decimal  @default(0) @db.Decimal(9, 2)
+//     entries       Decimal  @default(0) @db.Decimal(7, 2)
+//     entries_value Decimal  @default(0) @db.Decimal(9, 2)
+//     exits         Decimal  @default(0) @db.Decimal(7, 2)
+//     exits_value   Decimal  @default(0) @db.Decimal(9, 2)
+//     ending_stock  Decimal  @default(0) @db.Decimal(9, 2)
+//     last_cost     Decimal  @default(0) @db.Decimal(9, 2)
+//     average_cost  Decimal  @default(0) @db.Decimal(9, 2)
+//     month         Int      @db.SmallInt
+//     year          Int      @db.SmallInt
+
+//     created_or_modified DateTime @default(now())
+//     user                String   @db.VarChar(50)
+
+//     kardex_lote  KardexLote   @relation(fields: [kardex_lote_id], references: [id])
+//     organization Organization @relation(fields: [organization_id], references: [id])
+//     inv_caruni   Invcaruni    @relation(fields: [inv_caruni_id], references: [id])
+//     warehouse    Almacen      @relation(fields: [warehouse_id], references: [id])
+//     city         Ciudad       @relation(fields: [city_id], references: [id])
+
+//     movkar Movkar[]
+
+//     @@unique([kardex_lote_id, date, month, year], name: "kardex_det_fecha_key")
+//     @@index([date], name: "idx_kardex_det_fecha")
+//     @@map("kardex_det")
+// }
+
+// model Movkar {
+//     id                  Int    @id @default(autoincrement())
+//     kardex_det_id       Int
+//     movement_type_id    Int
+//     lot_number          Int
+//     lot_document_number String
+//     supplier_id         Int?
+//     customer_id         Int?
+//     warehouse_id        Int
+//     inv_caruni_id       Int
+//     organization_id     String
+//     city_id             Int
+
+//     sequence               Int
+//     date                   DateTime
+//     order_number           Decimal  @db.Decimal(3, 0)
+//     document_number        String
+//     quantity               Decimal  @db.Decimal(7, 0)
+//     exit_cost              Decimal? @db.Decimal(9, 2)
+//     last_cost              Decimal  @db.Decimal(9, 2)
+//     cost_price             Decimal  @db.Decimal(9, 2)
+//     discount               Decimal  @db.Decimal(6, 2)
+//     tax                    Decimal  @db.Decimal(6, 2)
+//     is_temporary_zero_cost Boolean  @default(false)
+//     org_sequence           Int
+
+//     created_or_modified DateTime @default(now())
+//     user                String   @db.VarChar(50)
+
+//     kardex_det   KardexDet    @relation(fields: [kardex_det_id], references: [id])
+//     tmovkar      Tmovkar      @relation(fields: [movement_type_id], references: [id])
+//     m_proved     Mproved?     @relation(fields: [supplier_id], references: [id], onDelete: Restrict)
+//     cl_temae     Cltemae?     @relation(fields: [customer_id], references: [id], onDelete: Restrict)
+//     organization Organization @relation(fields: [organization_id], references: [id])
+//     inv_caruni   Invcaruni    @relation(fields: [inv_caruni_id], references: [id])
+//     warehouse    Almacen      @relation(fields: [warehouse_id], references: [id])
+//     city         Ciudad       @relation(fields: [city_id], references: [id])
+
+//     @@unique([organization_id, org_sequence], name: "movkar_sequence_key")
+//     @@unique([organization_id, sequence], name: "movkar_business_sequence")
+//     @@index([movement_type_id, date], name: "idx_movkar_tipo_fecha")
+//     @@index([movement_type_id, document_number], name: "idx_movkar_tipo_doc")
+//     @@index([organization_id, date], name: "idx_movkar_org_fecha")
+//     @@index([organization_id, inv_caruni_id, warehouse_id], name: "idx_movkar_org_inventario")
+//     @@map("movkar")
+// }
+
+// enum TipoPropositoMovkar {
+//     DISPATCH_ORDER
+//     DISPATCH_ORDER_DEVOLUCION
+//     DISPATCH_ORDER_ANULACION
+//     FACTURA_DEVOLUCION
+//     NOTA_CREDITO
+//     NOTA_CREDITO_CON_DEVOLUCION
+//     NOTA_DEBITO
+//     ABONO
+// }
+
+// model Tmovkar {
+//     id              Int                  @id @default(autoincrement())
+//     organization_id String
+//     purpose         TipoPropositoMovkar?
+//     type            Int
+//     class           Int
+//     description     String               @db.VarChar(30)
+//     abbreviation    String               @db.VarChar(10)
+//     value           Int
+//     affects         Boolean              @default(true)
+//     required        Boolean              @default(false)
+//     order_flag      Boolean              @default(false)
+//     invoice_flag    Boolean              @default(false)
+//     supplier_flag   Boolean              @default(false)
+//     recalculate     Boolean              @default(false)
+//     org_sequence    Int
+
+//     created_or_modified DateTime @default(now())
+//     user                String   @db.VarChar(50)
+
+//     organization     Organization     @relation(fields: [organization_id], references: [id])
+//     movkar           Movkar[]
+//     dispatch_order_u DispatchOrderU[]
+//     mov_cxc          MovCXC[]
+
+//     @@unique([organization_id, org_sequence])
+//     @@unique([organization_id, purpose])
+//     @@unique([organization_id, type, class])
+//     @@map("tmovkar")
+// }
+
+// model Rotado {
+//     id              Int     @id @default(autoincrement())
+//     organization_id String
+//     inv_caruni_id   Int
+//     kardex_id       Int
+//     io_type         Decimal @db.Decimal(1, 0)
+//     class           Decimal @db.Decimal(1, 0)
+//     month           Int     @db.SmallInt
+//     year            Int     @db.SmallInt
+//     month_quantity  Decimal @db.Decimal(9, 2)
+//     month_price     Decimal @db.Decimal(9, 2)
+//     month_cost      Decimal @db.Decimal(9, 2)
+//     year_quantity   Decimal @db.Decimal(9, 2)
+//     year_price      Decimal @db.Decimal(9, 2)
+//     year_cost       Decimal @db.Decimal(9, 2)
+//     org_sequence    Int
+
+//     created_or_modified DateTime @default(now())
+//     user                String   @db.VarChar(50)
+
+//     organization Organization @relation(fields: [organization_id], references: [id])
+//     kardex       Kardex       @relation(fields: [kardex_id], references: [id])
+
+//     @@unique([organization_id, org_sequence])
+//     @@map("rotado")
+// }
+
+// model Karrev {
+//     id              Int      @id @default(autoincrement())
+//     kardex_id       Int
+//     organization_id String
+//     quantity        Decimal  @db.Decimal(9, 2)
+//     character       Boolean
+//     date            DateTime @db.Date
+//     org_sequence    Int
+
+//     created_or_modified DateTime @default(now())
+//     user                String   @db.VarChar(50)
+
+//     kardex       Kardex       @relation(fields: [kardex_id], references: [id])
+//     organization Organization @relation(fields: [organization_id], references: [id])
+
+//     @@unique([organization_id, org_sequence])
+//     @@map("karrev")
+// }
+
+// model MprovedAcum {
+//     id                Int     @id @default(autoincrement())
+//     organization_id   String
+//     supplier_id       Int
+//     month             Int     @db.SmallInt
+//     year              Int     @db.SmallInt
+//     accumulated_month Decimal @default(0) @db.Decimal(9, 2)
+//     accumulated_year  Decimal @default(0) @db.Decimal(9, 2)
+//     org_sequence      Int
+
+//     created_or_modified DateTime @default(now())
+//     user                String   @db.VarChar(50)
+
+//     organization Organization @relation(fields: [organization_id], references: [id])
+//     m_proved     Mproved      @relation(fields: [supplier_id], references: [id])
+
+//     @@unique([organization_id, org_sequence])
+// }
+
+// model Mproved {
+//     id              Int      @id @default(autoincrement())
+//     organization_id String
+//     city_id         Int
+//     number          String   @db.VarChar(13)
+//     description     String   @db.VarChar(40)
+//     responsible     String   @db.VarChar(30)
+//     address         String   @db.VarChar(50)
+//     phone_1         String
+//     phone_2         String?
+//     email_1         String
+//     email_2         String?
+//     retention       String   @db.VarChar(2)
+//     created_date    DateTime @default(now()) @db.Date
+//     org_sequence    Int
+
+//     created_or_modified DateTime @default(now())
+//     user                String   @db.VarChar(50)
+
+//     city         Ciudad       @relation(fields: [city_id], references: [id])
+//     organization Organization @relation(fields: [organization_id], references: [id])
+
+//     proved        Proved[]
+//     paprovee      Paprovee[]
+//     m_proved_acum MprovedAcum[]
+//     movkar        Movkar[]
+
+//     @@unique([number, organization_id])
+//     @@unique([organization_id, org_sequence])
+//     @@map("mproved")
+// }
+
+// model Proved {
+//     id              Int      @id @default(autoincrement())
+//     organization_id String
+//     supplier_id     Int
+//     inv_caruni_id   Int
+//     city_id         Int
+//     number          BigInt
+//     last_cost       Decimal  @db.Decimal(9, 3)
+//     date            DateTime @default(now())
+//     org_sequence    Int
+
+//     created_or_modified DateTime @default(now())
+//     user                String   @db.VarChar(50)
+
+//     organization Organization @relation(fields: [organization_id], references: [id])
+//     city         Ciudad       @relation(fields: [city_id], references: [id])
+//     inv_caruni   Invcaruni    @relation(fields: [inv_caruni_id], references: [id])
+//     m_proved     Mproved      @relation(fields: [supplier_id], references: [id])
+
+//     @@unique([organization_id, org_sequence])
+//     @@index([inv_caruni_id, date])
+//     @@map("proved")
+// }
+
+// model Paprovee {
+//     id                 Int      @id @default(autoincrement())
+//     organization_id    String
+//     supplier_id        Int
+//     kardex_id          Int
+//     number             Int
+//     type               String   @db.VarChar(1)
+//     quantity_ordered   Decimal  @db.Decimal(5, 2)
+//     quantity_delivered Decimal  @db.Decimal(5, 2)
+//     unit_value         Decimal  @db.Decimal(11, 2)
+//     approved           String   @db.VarChar(1)
+//     order_date         DateTime @db.Date
+//     last_purchase_date DateTime @db.Date
+//     org_sequence       Int
+
+//     created_or_modified DateTime @default(now())
+//     user                String   @db.VarChar(50)
+
+//     organization Organization @relation(fields: [organization_id], references: [id])
+//     kardex       Kardex       @relation(fields: [kardex_id], references: [id])
+//     m_proved     Mproved      @relation(fields: [supplier_id], references: [id])
+
+//     @@unique([number, organization_id])
+//     @@unique([organization_id, org_sequence])
+//     @@map("paprovee")
+// }
+
+// model Pclteu {
+//     id              Int     @id @default(autoincrement())
+//     organization_id String
+//     inv_caruni_id   Int
+//     order_number    Int
+//     sequence        Int
+//     group           Decimal @db.Decimal(3, 0)
+//     code            Decimal @db.Decimal(5, 0)
+//     order_type      Decimal @db.Decimal(1, 0)
+//     record          Decimal @db.Decimal(7, 0)
+//     quantity        Decimal @db.Decimal(6, 2)
+//     invoiced        Decimal @db.Decimal(6, 2)
+//     delivered       Decimal @db.Decimal(6, 2)
+//     discount        Decimal @db.Decimal(4, 0)
+//     tax             Decimal @db.Decimal(4, 0)
+//     unit_value      Decimal @db.Decimal(6, 2)
+//     org_sequence    Int
+
+//     created_or_modified DateTime @default(now())
+//     user                String   @db.VarChar(50)
+
+//     organization Organization @relation(fields: [organization_id], references: [id])
+//     order_header Pclteg       @relation(fields: [order_number, organization_id], references: [order_number, organization_id])
+//     inv_caruni   Invcaruni    @relation(fields: [inv_caruni_id], references: [id])
+
+//     @@unique([organization_id, org_sequence])
+//     @@map("pclteu")
+// }
+
+// model Pclteg {
+//     city_id         Int
+//     organization_id String
+//     customer_id     Int
+//     seller_id       Int?
+
+//     order_number       Int
+//     customer_tax_id    BigInt
+//     payment_type       Decimal  @db.Decimal(1, 0)
+//     buyer              String   @db.VarChar(30)
+//     customer_id_number Decimal  @db.Decimal(10, 0)
+//     address            String   @db.VarChar(30)
+//     type               Decimal  @db.Decimal(1, 0)
+//     zone               Decimal  @db.Decimal(2, 0)
+//     approved           String   @db.VarChar(5)
+//     dispatched         String   @db.VarChar(5)
+//     phone_1            Decimal  @db.Decimal(11, 0)
+//     phone_2            Decimal  @db.Decimal(11, 0)
+//     order_ref          Decimal  @db.Decimal(6, 3)
+//     purchase_order     Decimal  @db.Decimal(6, 3)
+//     delivery_date      DateTime @db.Date
+//     due_date           DateTime @db.Date
+//     condition_1        String   @db.VarChar(40)
+//     condition_2        String   @db.VarChar(40)
+//     condition_3        String   @db.VarChar(40)
+//     code               Decimal  @db.Decimal(2, 0)
+//     merchandise_value  Decimal  @db.Decimal(9, 2)
+//     mcia               Decimal  @db.Decimal(9, 2)
+//     months             Decimal  @db.Decimal(2, 0)
+//     quota              Decimal  @db.Decimal(11, 0)
+//     date               DateTime @db.Date
+//     discount           Decimal  @db.Decimal(11, 3)
+//     org_sequence       Int
+
+//     created_or_modified DateTime @default(now())
+//     user                String   @db.VarChar(50)
+
+//     city         Ciudad       @relation(fields: [city_id], references: [id])
+//     customer     Cltemae      @relation(fields: [customer_id], references: [id])
+//     organization Organization @relation(fields: [organization_id], references: [id])
+//     seller       Vendedor?    @relation(fields: [seller_id], references: [id])
+
+//     pclteu Pclteu[]
+
+//     @@id([order_number, organization_id])
+//     @@unique([organization_id, org_sequence])
+//     @@index([customer_tax_id])
+//     @@index([payment_type])
+//     @@index([delivery_date])
+//     @@map("pclteg")
+// }
+
+// model Vendedor {
+//     id              Int    @id @default(autoincrement())
+//     organization_id String
+//     name            String
+//     email           String
+//     phone           String
+//     tax_id          String
+//     org_sequence    Int
+
+//     created_or_modified DateTime @default(now())
+//     user                String   @db.VarChar(50)
+
+//     cl_temae Cltemae[]
+//     facturag Facturag[]
+//     rclteg   Rclteg[]
+//     pclteg   Pclteg[]
+
+//     organization      Organization     @relation(fields: [organization_id], references: [id])
+//     dispatch_order_gs DispatchOrderG[]
+
+//     @@unique([organization_id, org_sequence])
+//     @@unique([email, organization_id])
+//     @@unique([phone, organization_id])
+//     @@unique([tax_id, organization_id])
+//     @@map("vendedores")
+// }
+
+// model Cltemae {
+//     id              Int    @id @default(autoincrement())
+//     city_id         Int
+//     organization_id String
+//     seller_id       Int?
+
+//     tax_id             String
+//     legal_name         String   @db.VarChar(30)
+//     customer_name      String
+//     address            String   @db.VarChar(30)
+//     phone_1            String
+//     phone_2            String?
+//     email_1            String
+//     email_2            String?
+//     days_until_due     Decimal  @db.Decimal(2, 0)
+//     reminder_after_due Decimal  @db.Decimal(2, 0)
+//     authorized_quota   Int      @default(0)
+//     payments           Int      @default(0)
+//     signup_date        DateTime
+//     org_sequence       Int
+
+//     created_or_modified DateTime @default(now())
+//     user                String   @db.VarChar(50)
+
+//     pclteg   Pclteg[]
+//     movkar   Movkar[]
+//     facturag Facturag[]
+//     rclteg   Rclteg[]
+
+//     city              Ciudad           @relation(fields: [city_id], references: [id])
+//     organization      Organization     @relation(fields: [organization_id], references: [id])
+//     seller            Vendedor?        @relation(fields: [seller_id], references: [id])
+//     dispatch_order_gs DispatchOrderG[]
+
+//     @@unique([tax_id, organization_id])
+//     @@unique([organization_id, org_sequence])
+//     @@index([legal_name])
+//     @@map("cltemae")
+// }
+
+// model KardexFacturacion {
+//     id                 Int     @id @default(autoincrement())
+//     organization_id    String
+//     inv_caruni_id      Int
+//     group              Int     @db.SmallInt
+//     code               Int
+//     quantity_ordered   Decimal @db.Decimal(11, 0)
+//     quantity_delivered Decimal @db.Decimal(11, 0)
+//     org_sequence       Int
+
+//     created_or_modified DateTime @default(now())
+//     user                String   @db.VarChar(50)
+
+//     organization Organization @relation(fields: [organization_id], references: [id])
+
+//     @@unique([group, code])
+//     @@unique([organization_id, org_sequence])
+//     @@map("kardex_facturacion")
+// }
+
+// // Enum for invoice state
+// enum EstadoDispatchOrder {
+//     DRAFT // Borrador
+//     EMITTED // Emitido (inventario descargado, mercancía en tránsito)
+//     INVOICED // Facturado (se convirtió en factura, ya no es dispatch order)
+//     DISPATCHED
+//     ANULATED // Anulado (was CANCELLED)
+// }
+
+// enum EstadoReserva {
+//     ACTIVE // Reserva activa
+//     EXPIRED // Expirada (liberada automáticamente)
+//     RELEASED // Liberada manualmente
+//     CONSUMED // Consumida (dispatch emitido/facturado)
+// }
+
+// enum ModoSalida {
+//     MANUAL // manual o automatico
+//     AUTOMATICO // automatico
+// }
+
+// enum DocumentType {
+//     DISPATCH_ORDER
+//     PURCHASE_ORDER
+//     INVOICE
+// }
+
+// model Document {
+//     id                 Int          @id @default(autoincrement())
+//     organization_id    String
+//     document_type      DocumentType
+//     document_id        Int
+//     file_name          String
+//     original_file_name String
+//     file_key           String
+//     file_size          Int
+//     mime_type          String
+//     uploaded_at        DateTime     @default(now())
+//     uploaded_by        String       @db.VarChar(50)
+
+//     organization Organization @relation(fields: [organization_id], references: [id])
+
+//     @@index([organization_id, document_type, document_id])
+//     @@index([organization_id, document_type])
+//     @@map("documents")
+// }
+
+// enum OutboxStatus {
+//     PENDING
+//     PROCESSING
+//     PROCESSED
+//     FAILED
+// }
+
+// enum OutboxEventType {
+//     INVOICE_CREATED
+//     DISPATCH_ORDER_EMITTED
+// }
+
+// enum AggregateType {
+//     FACTURA
+//     DISPATCH_ORDER
+// }
+
+// model OutboxEvent {
+//     id              Int             @id @default(autoincrement())
+//     organization_id String
+//     event_type      OutboxEventType
+//     aggregate_type  AggregateType
+//     aggregate_id    Int
+//     payload         Json?
+//     status          OutboxStatus    @default(PENDING)
+//     attempts        Int             @default(0)
+//     max_attempts    Int             @default(3)
+//     last_error      String?         @db.Text
+//     process_after   DateTime        @default(now())
+//     created_at      DateTime        @default(now())
+//     processed_at    DateTime?
+
+//     s3_uploaded   Boolean @default(false)
+//     email_sent    Boolean @default(false)
+//     email_skipped Boolean @default(false)
+//     email_results Json?
+
+//     organization Organization @relation(fields: [organization_id], references: [id])
+
+//     @@index([status, process_after])
+//     @@index([organization_id, event_type])
+//     @@map("outbox_events")
+// }
+
+// // Dispatch Order Documents
+// // model DispatchOrderDocument {
+// //   DODId               Int      @id @default(autoincrement())
+// //   DODOrganizationId   String
+// //   DODDispatchOrderGId Int
+// //   DODFileName         String // Original filename
+// //   DODFileKey          String // S3 key
+// //   DODFileSize         Int // Size in bytes
+// //   DODMimeType         String // image/png, image/jpeg, application/pdf
+// //   DODUploadedAt       DateTime @default(now())
+// //   DODUploadedBy       String   @db.VarChar(50) // Usuario que subió
+
+// //   // Relations
+// //   organization   Organization   @relation(fields: [DODOrganizationId], references: [id])
+// //   dispatchOrderG DispatchOrderG @relation(fields: [DODDispatchOrderGId], references: [DOGId])
+
+// //   @@index([DODOrganizationId, DODDispatchOrderGId])
+// //   @@map("dispatch_order_documents")
+// // }
+
+// // 25. FACTURAG - Facturas General
+// model DispatchOrderG {
+//     id                Int    @id @default(autoincrement())
+//     organization_id   String
+//     purchase_order_id Int?
+//     seller_id         Int
+//     customer_id       Int
+//     city_id           Int
+
+//     number         Int
+//     org_sequence   Int
+//     purchase_order String?
+
+//     type              Int     @db.SmallInt
+//     zone              Int     @db.SmallInt
+//     total_net_value   Decimal @db.Decimal(9, 2)
+//     total_gross_value Decimal @db.Decimal(9, 2)
+//     total_discount    Decimal @db.Decimal(9, 2)
+//     total_tax         Decimal @db.Decimal(9, 2)
+
+//     state      EstadoDispatchOrder @default(DRAFT)
+//     approved   String              @db.VarChar(5)
+//     dispatched String              @db.VarChar(5)
+
+//     created_date   DateTime
+//     emission_date  DateTime?
+//     dispatch_date  DateTime?
+//     invoicing_date DateTime?
+
+//     phone_1          String
+//     phone_2          String?
+//     email_1          String
+//     email_2          String?
+//     delivery_address String  @db.VarChar(50)
+
+//     condition_1 String? @db.VarChar(40)
+//     condition_2 String? @db.VarChar(40)
+//     condition_3 String? @db.VarChar(40)
+
+//     created_or_modified DateTime @default(now())
+//     user                String   @db.VarChar(50)
+
+//     organization Organization @relation(fields: [organization_id], references: [id])
+//     customer     Cltemae      @relation(fields: [customer_id], references: [id])
+//     seller       Vendedor     @relation(fields: [seller_id], references: [id])
+//     city         Ciudad       @relation(fields: [city_id], references: [id])
+
+//     dispatch_order_us DispatchOrderU[]
+//     facturag          Facturag?
+
+//     @@unique([organization_id, org_sequence])
+//     @@unique([organization_id, number])
+//     @@index([state])
+//     @@index([organization_id, state])
+//     @@map("dispatch_order_g")
+// }
+
+// model DispatchOrderU {
+//     id                  Int        @id @default(autoincrement())
+//     organization_id     String
+//     dispatch_order_g_id Int
+//     inv_caruni_id       Int
+//     movement_type_id    Int
+//     exit_mode           ModoSalida @default(AUTOMATICO)
+
+//     number          Int
+//     quantity        Decimal @db.Decimal(9, 2)
+//     discount        Decimal @db.Decimal(9, 2)
+//     net_value       Decimal @db.Decimal(9, 2)
+//     gross_value     Decimal @db.Decimal(9, 2)
+//     unit_value      Decimal @db.Decimal(9, 2)
+//     detail          String
+//     has_tax         Boolean @default(false)
+//     reserved        Boolean @default(false)
+//     average_cost    Decimal @db.Decimal(9, 2)
+//     lot_number      Int
+//     document_number String  @db.VarChar(50)
+
+//     created_or_modified DateTime @default(now())
+//     user                String   @db.VarChar(50)
+
+//     organization           Organization           @relation(fields: [organization_id], references: [id])
+//     dispatch_order_g       DispatchOrderG         @relation(fields: [dispatch_order_g_id], references: [id])
+//     inv_caruni             Invcaruni              @relation(fields: [inv_caruni_id], references: [id])
+//     movement_type          Tmovkar                @relation(fields: [movement_type_id], references: [id])
+//     inventory_reservations InventoryReservation[]
+
+//     @@map("dispatch_order_u")
+// }
+
+// // ============================================
+// // MÓDULO: RESERVAS DE INVENTARIO
+// // ============================================
+
+// model ReservationConfig {
+//     id                   Int     @id @default(autoincrement())
+//     organization_id      String
+//     expiration_days      Int     @default(3)
+//     notify_before        Int     @default(1)
+//     auto_release_expired Boolean @default(true)
+
+//     created_or_modified DateTime @default(now())
+//     user                String   @db.VarChar(50)
+
+//     organization Organization @relation(fields: [organization_id], references: [id])
+
+//     @@unique([organization_id])
+//     @@map("reservation_config")
+// }
+
+// model InventoryReservation {
+//     id                  Int           @id @default(autoincrement())
+//     organization_id     String
+//     dispatch_order_u_id Int
+//     inv_caruni_id       Int
+//     kardex_lote_id      Int
+//     quantity_reserved   Int
+//     reservation_date    DateTime      @db.Date
+//     expiration_date     DateTime      @db.Date
+//     release_date        DateTime?     @db.Date
+//     state               EstadoReserva @default(ACTIVE)
+//     reason              String?       @db.VarChar(100)
+//     org_sequence        Int
+
+//     created_or_modified DateTime @default(now())
+//     user                String   @db.VarChar(50)
+
+//     organization     Organization   @relation(fields: [organization_id], references: [id])
+//     dispatch_order_u DispatchOrderU @relation(fields: [dispatch_order_u_id], references: [id])
+//     inv_caruni       Invcaruni      @relation(fields: [inv_caruni_id], references: [id])
+//     kardex_lote      KardexLote     @relation(fields: [kardex_lote_id], references: [id])
+
+//     @@unique([organization_id, org_sequence])
+//     @@index([state, expiration_date])
+//     @@index([organization_id, inv_caruni_id, state])
+//     @@index([kardex_lote_id, state])
+//     @@map("inventory_reservations")
+// }
+
+// // ============================================
+// // MÓDULO: FACTURAS (Invoicing)
+// // ============================================
+
+// // Estados de la Factura
+// enum EstadoFactura {
+//     ACTIVE // Activa
+//     PAID // Pagada
+//     OVERDUE // Vencida
+//     ANULATED // Anulada
+// }
+
+// // Enum for payment type
+// enum TipoPago {
+//     CONTADO // Cash payment (simple)
+//     CANJE // Exchange/trade-in (simple)
+//     CREDITO // Credit payment (simple)
+//     WALLET // Digital wallet payment (detailed)
+//     CREDIT_CARD // Credit card payment (detailed)
+//     TRANSFER // Bank transfer payment (detailed)
+//     CHECK // Check payment (detailed)
+// }
+
+// model Facturag {
+//     id                  Int    @id @default(autoincrement())
+//     organization_id     String
+//     purchase_order_id   Int?
+//     dispatch_order_g_id Int?   @unique
+//     seller_id           Int
+//     customer_id         Int
+//     city_id             Int
+
+//     number         Int
+//     org_sequence   Int
+//     purchase_order String?
+
+//     payment_type      TipoPago
+//     total_net_value   Decimal  @db.Decimal(9, 2)
+//     total_gross_value Decimal  @db.Decimal(9, 2)
+//     total_discount    Decimal  @db.Decimal(9, 2)
+//     total_tax         Decimal  @db.Decimal(9, 2)
+//     balance           Decimal  @db.Decimal(9, 2)
+
+//     state           EstadoFactura @default(ACTIVE)
+//     balance_invoice Boolean       @default(false)
+
+//     created_date DateTime
+//     due_date     DateTime
+//     payment_date DateTime?
+
+//     phone_1          String
+//     phone_2          String?
+//     email_1          String
+//     email_2          String?
+//     delivery_address String  @db.VarChar(50)
+
+//     condition_1 String? @db.VarChar(40)
+//     condition_2 String? @db.VarChar(40)
+//     condition_3 String? @db.VarChar(40)
+
+//     created_or_modified DateTime @default(now())
+//     user                String   @db.VarChar(50)
+
+//     organization     Organization    @relation(fields: [organization_id], references: [id])
+//     dispatch_order_g DispatchOrderG? @relation(fields: [dispatch_order_g_id], references: [id])
+//     customer         Cltemae         @relation(fields: [customer_id], references: [id])
+//     seller           Vendedor        @relation(fields: [seller_id], references: [id])
+//     city             Ciudad          @relation(fields: [city_id], references: [id])
+
+//     facturau Facturau[]
+//     mov_cxc  MovCXC[]
+
+//     @@unique([organization_id, org_sequence])
+//     @@unique([organization_id, number, balance_invoice])
+//     @@index([payment_type])
+//     @@index([state])
+//     @@index([organization_id, state])
+//     @@map("facturag")
+// }
+
+// model MovCXC {
+//     id               Int    @id @default(autoincrement())
+//     organization_id  String
+//     invoice_id       Int
+//     movement_type_id Int
+
+//     number          Int
+//     document_number String
+//     description     String
+//     value           Decimal  @db.Decimal(9, 2)
+//     payment_type    TipoPago
+//     date            DateTime
+//     sequence        Int
+
+//     created_or_modified DateTime @default(now())
+//     user                String   @db.VarChar(50)
+
+//     organization         Organization @relation(fields: [organization_id], references: [id])
+//     facturag             Facturag     @relation(fields: [invoice_id], references: [id])
+//     movement_type        Tmovkar      @relation(fields: [movement_type_id], references: [id])
+//     factura_return_items Facturau[]
+
+//     wallet_payment      WalletPayment?
+//     credit_card_payment CreditCardPayment?
+//     transfer_payment    TransferPayment?
+//     check_payment       CheckPayment?
+
+//     @@unique([organization_id, invoice_id, sequence])
+//     @@map("mov_cxc")
+// }
+
+// // ============================================
+// // MÓDULO: BANKS
+// // ============================================
+
+// model Bank {
+//     id              Int    @id @default(autoincrement())
+//     organization_id String
+//     name            String
+//     org_sequence    Int
+
+//     created_or_modified DateTime @default(now())
+//     user                String   @db.VarChar(50)
+
+//     organization         Organization        @relation(fields: [organization_id], references: [id])
+//     wallet_payments      WalletPayment[]
+//     credit_card_payments CreditCardPayment[]
+//     transfer_payments    TransferPayment[]
+//     check_payments       CheckPayment[]
+
+//     @@unique([organization_id, name])
+//     @@unique([organization_id, org_sequence])
+//     @@map("banks")
+// }
+
+// // ============================================
+// // MÓDULO: PAYMENT DETAILS
+// // ============================================
+
+// model WalletPayment {
+//     id              Int    @id @default(autoincrement())
+//     mov_cxc_id      Int    @unique
+//     organization_id String
+//     bank_id         Int
+//     wallet_name     String @db.VarChar(100)
+//     phone_or_key    String @db.VarChar(50)
+
+//     created_or_modified DateTime @default(now())
+//     user                String   @db.VarChar(50)
+
+//     mov_cxc      MovCXC       @relation(fields: [mov_cxc_id], references: [id], onDelete: Cascade)
+//     organization Organization @relation(fields: [organization_id], references: [id])
+//     bank         Bank         @relation(fields: [bank_id], references: [id])
+
+//     @@map("wallet_payments")
+// }
+
+// model CreditCardPayment {
+//     id               Int    @id @default(autoincrement())
+//     mov_cxc_id       Int    @unique
+//     organization_id  String
+//     bank_id          Int
+//     brand            String @db.VarChar(50)
+//     last_four_digits String @db.VarChar(4)
+
+//     created_or_modified DateTime @default(now())
+//     user                String   @db.VarChar(50)
+
+//     mov_cxc      MovCXC       @relation(fields: [mov_cxc_id], references: [id], onDelete: Cascade)
+//     organization Organization @relation(fields: [organization_id], references: [id])
+//     bank         Bank         @relation(fields: [bank_id], references: [id])
+
+//     @@map("credit_card_payments")
+// }
+
+// model TransferPayment {
+//     id              Int    @id @default(autoincrement())
+//     mov_cxc_id      Int    @unique
+//     organization_id String
+//     bank_id         Int
+//     account_type    String @db.VarChar(50)
+//     account_number  String @db.VarChar(50)
+
+//     created_or_modified DateTime @default(now())
+//     user                String   @db.VarChar(50)
+
+//     mov_cxc      MovCXC       @relation(fields: [mov_cxc_id], references: [id], onDelete: Cascade)
+//     organization Organization @relation(fields: [organization_id], references: [id])
+//     bank         Bank         @relation(fields: [bank_id], references: [id])
+
+//     @@map("transfer_payments")
+// }
+
+// model CheckPayment {
+//     id              Int      @id @default(autoincrement())
+//     mov_cxc_id      Int      @unique
+//     organization_id String
+//     bank_id         Int
+//     check_number    String   @db.VarChar(50)
+//     check_date      DateTime
+
+//     created_or_modified DateTime @default(now())
+//     user                String   @db.VarChar(50)
+
+//     mov_cxc      MovCXC       @relation(fields: [mov_cxc_id], references: [id], onDelete: Cascade)
+//     organization Organization @relation(fields: [organization_id], references: [id])
+//     bank         Bank         @relation(fields: [bank_id], references: [id])
+
+//     @@map("check_payments")
+// }
+
+// model Facturau {
+//     id              Int    @id @default(autoincrement())
+//     organization_id String
+//     invoice_id      Int
+//     inv_caruni_id   Int
+
+//     number              Int
+//     quantity            Decimal @db.Decimal(9, 2)
+//     discount            Decimal @db.Decimal(9, 2)
+//     net_value           Decimal @db.Decimal(9, 2)
+//     gross_value         Decimal @db.Decimal(9, 2)
+//     unit_value          Decimal @db.Decimal(9, 2)
+//     detail              String
+//     has_tax             Boolean @default(false)
+//     lot_number          Int
+//     lot_document_number String  @db.VarChar(50)
+//     mov_cxc_id          Int?
+//     average_cost        Decimal @db.Decimal(9, 2)
+
+//     created_or_modified DateTime @default(now())
+//     user                String   @db.VarChar(50)
+
+//     organization   Organization @relation(fields: [organization_id], references: [id])
+//     facturag       Facturag     @relation(fields: [invoice_id], references: [id])
+//     inv_caruni     Invcaruni    @relation(fields: [inv_caruni_id], references: [id])
+//     mov_cxc_return MovCXC?      @relation(fields: [mov_cxc_id], references: [id])
+
+//     @@map("facturau")
+// }
+
+// model Rclteg {
+//     id              Int    @id @default(autoincrement())
+//     organization_id String
+//     customer_id     Int
+//     seller_id       Int?
+
+//     number             Decimal  @db.Decimal(6, 0)
+//     customer_tax_id    BigInt
+//     payment_type       Int      @db.SmallInt
+//     buyer              String   @db.VarChar(30)
+//     customer_id_number Decimal  @db.Decimal(10, 3)
+//     address            String   @db.VarChar(30)
+//     type               Int      @db.SmallInt
+//     zone               Int      @db.SmallInt
+//     approved           String   @db.VarChar(5)
+//     dispatched         String   @db.VarChar(5)
+//     phone_1            Decimal  @db.Decimal(7, 3)
+//     phone_2            Decimal  @db.Decimal(7, 3)
+//     city_name          String   @db.VarChar(12)
+//     order_ref          Decimal  @db.Decimal(6, 3)
+//     purchase_order     Decimal  @db.Decimal(6, 3)
+//     delivery_date      DateTime @db.Date
+//     due_date           DateTime @db.Date
+//     condition_1        String   @db.VarChar(40)
+//     condition_2        String   @db.VarChar(40)
+//     condition_3        String   @db.VarChar(40)
+//     org_sequence       Int
+
+//     created_or_modified DateTime @default(now())
+//     user                String   @db.VarChar(50)
+
+//     organization Organization @relation(fields: [organization_id], references: [id])
+//     customer     Cltemae?     @relation(fields: [customer_id], references: [id])
+//     seller       Vendedor?    @relation(fields: [seller_id], references: [id])
+
+//     rclteu Rclteu[]
+
+//     @@unique([organization_id, org_sequence])
+//     @@index([customer_tax_id])
+//     @@index([payment_type])
+//     @@index([delivery_date])
+//     @@map("rclteg")
+// }
+
+// model Rclteu {
+//     id              Int    @id @default(autoincrement())
+//     organization_id String
+//     remision_id     Int
+
+//     remision_number Decimal @db.Decimal(6, 0)
+//     sequence        Int     @db.SmallInt
+//     group           Int     @db.SmallInt
+//     code            Int
+//     quantity        Decimal @db.Decimal(8, 3)
+//     unit_value      Decimal @db.Decimal(8, 3)
+
+//     created_or_modified DateTime @default(now())
+//     user                String   @db.VarChar(50)
+
+//     organization Organization @relation(fields: [organization_id], references: [id])
+//     rclteg       Rclteg       @relation(fields: [remision_id], references: [id])
+
+//     @@unique([remision_number, sequence])
+//     @@index([group, code, remision_number])
+//     @@map("rclteu")
+// }
+
+// // 31. MOVKAR1 - Movimientos de Kardex (archivo adicional con misma estructura)
+// // model MovimientoKardex1 {
+// //   secuencial      Int      @id @default(autoincrement())
+// //   grupo           Int      @db.SmallInt
+// //   codigo          Int
+// //   fecha           DateTime @db.Date
+// //   tipoIO          Int      @db.SmallInt
+// //   clase           Int      @db.SmallInt
+// //   nroDocumento    Int
+// //   centro          Int      @db.SmallInt
+// //   cuentas         Decimal  @db.Decimal(10, 3)
+// //   codigoProveedor BigInt
+// //   pedido          Int
+// //   cantidad        Decimal  @db.Decimal(9, 3)
+// //   costoPrecio     Decimal  @db.Decimal(11, 3)
+// //   costoPromedio   Decimal  @db.Decimal(14, 3)
+// //   descuento       Decimal  @db.Decimal(5, 3)
+// //   impoVenta       Decimal  @db.Decimal(5, 3)
+// //   almacenRecibe   String   @db.VarChar(3)
+// //   factura         Int
+// //   concepto        Int      @db.SmallInt
+
+// //   @@index([grupo, codigo, fecha, tipoIO])
+// //   @@index([tipoIO, clase, nroDocumento])
+// //   @@index([centro, cuentas, tipoIO, clase, nroDocumento])
+// //   @@index([codigoProveedor, tipoIO, clase, nroDocumento])
+// //   @@map("movimientos_kardex_1")
+// // }
+
+// // DASHBOARD MODELS
+
+// // Accounts Receivable Model - Based on Excel structure
+// model AccountsReceivable {
+//     id                             Int      @id @default(autoincrement())
+//     date                           DateTime @db.Date
+//     customer                       String   @db.VarChar(50)
+//     country                        String   @db.VarChar(50)
+//     seller                         String   @db.VarChar(50)
+//     upcoming_amount_receivable_usd Decimal? @db.Decimal(12, 2)
+//     due_date                       DateTime @db.Date
+//     method_of_payment              String   @db.VarChar(10)
+//     upcoming_due_days              Int?
+//     days_expired_1_a_30            Decimal? @db.Decimal(12, 2)
+//     days_expired_31_a_60           Decimal? @db.Decimal(12, 2)
+//     days_expired_61_a_90           Decimal? @db.Decimal(12, 2)
+//     days_expired_mas_de_90         Decimal? @db.Decimal(12, 2)
+
+//     created_at DateTime @default(now())
+//     updated_at DateTime @updatedAt
+
+//     @@map("accounts_receivable")
+// }
+
+// model DSO {
+//     id                  Int      @id @default(autoincrement())
+//     period_date         DateTime @db.Date
+//     accounts_receivable Decimal  @db.Decimal(12, 2)
+//     credit_sales        Decimal  @db.Decimal(12, 2)
+//     period              Int
+//     dso                 Decimal  @db.Decimal(8, 2)
+
+//     created_at DateTime @default(now())
+//     updated_at DateTime @updatedAt
+
+//     @@map("dso")
+// }
+
+// // InventoryFis Models - Based on Excel structure
+
+// model InventoryFisCaruni {
+//     id           Int     @id @default(autoincrement())
+//     group        Int
+//     code         Int
+//     description  String  @db.VarChar(50)
+//     unit         String  @db.VarChar(20)
+//     public_price Decimal @db.Decimal(8, 2)
+//     margin       Decimal @db.Decimal(4, 2)
+//     discount_cap Decimal @db.Decimal(4, 2)
+
+//     created_at DateTime @default(now())
+//     updated_at DateTime @updatedAt
+
+//     @@map("inventory_fis_caruni")
+// }
+
+// model InventoryFisKardex {
+//     id                     Int     @id @default(autoincrement())
+//     group                  Int
+//     code                   Int
+//     description            String  @db.VarChar(50)
+//     initial_physical_stock Decimal @db.Decimal(9, 2)
+//     entries                Decimal @db.Decimal(9, 2)
+//     entries_value          Decimal @db.Decimal(12, 2)
+//     exits                  Decimal @db.Decimal(9, 2)
+//     exits_value            Decimal @db.Decimal(12, 2)
+//     ending_physical_stock  Decimal @db.Decimal(9, 2)
+//     last_cost              Decimal @db.Decimal(8, 2)
+
+//     created_at DateTime @default(now())
+//     updated_at DateTime @updatedAt
+
+//     @@map("inventory_fis_kardex")
+// }
+
+// model InventoryFisKardexLote {
+//     id                     Int     @id @default(autoincrement())
+//     group                  Int
+//     code                   Int
+//     description            String  @db.VarChar(50)
+//     country_of_origin_id   Int
+//     country_of_origin_name String  @db.VarChar(30)
+//     lot_number             Int
+//     initial_physical_stock Decimal @db.Decimal(9, 2)
+//     entries                Decimal @db.Decimal(9, 2)
+//     entries_value          Decimal @db.Decimal(12, 2)
+//     exits                  Decimal @db.Decimal(9, 2)
+//     exits_value            Decimal @db.Decimal(12, 2)
+//     ending_physical_stock  Decimal @db.Decimal(9, 2)
+//     last_cost              Decimal @db.Decimal(8, 2)
+
+//     created_at DateTime @default(now())
+//     updated_at DateTime @updatedAt
+
+//     @@map("inventory_fis_kardex_lote")
+// }
+
+// model InventoryFisMovkar {
+//     id                     Int      @id @default(autoincrement())
+//     sequence               Int
+//     group                  Int
+//     code                   Int
+//     description            String   @db.VarChar(50)
+//     date                   DateTime @db.Date
+//     order_invoice          Int
+//     movement_type          Int
+//     class                  Int
+//     movement_description   String   @db.VarChar(30)
+//     document_number        Int
+//     country_of_origin_id   Int
+//     country_of_origin_name String   @db.VarChar(30)
+//     supplier_customer_id   Int
+//     supplier_customer_name String   @db.VarChar(50)
+//     quantity               Decimal  @db.Decimal(9, 2)
+//     cost                   Decimal  @db.Decimal(8, 2)
+//     price                  Decimal  @db.Decimal(8, 2)
+
+//     created_at DateTime @default(now())
+//     updated_at DateTime @updatedAt
+
+//     @@map("inventory_fis_movkar")
+// }
+
+// model InventoryRotacion {
+//     id                Int      @id @default(autoincrement())
+//     purchase_date     DateTime @db.Date
+//     product           String   @db.VarChar(50)
+//     country_of_origin String   @db.VarChar(30)
+//     initial_stock     Decimal  @db.Decimal(9, 2)
+//     ending_stock      Decimal  @db.Decimal(9, 2)
+//     days_of_period    Int
+//     monthly_cost      Decimal  @db.Decimal(12, 2)
+//     average_inventory Decimal  @db.Decimal(9, 2)
+//     rotation          Decimal  @db.Decimal(8, 2)
+//     year              Int
+//     month             Int
+//     year_month        String   @db.VarChar(10)
+
+//     created_at DateTime @default(now())
+//     updated_at DateTime @updatedAt
+
+//     @@map("inventory_rotacion")
+// }
+
+// // Liquidaciones Models - Based on Excel structure
+
+// model LiquidacionesEncabezado {
+//     id         Int      @id @default(autoincrement())
+//     lot_number String   @db.VarChar(20)
+//     date       DateTime @db.Date
+//     stock      Decimal  @db.Decimal(9, 2)
+//     supplier   String   @db.VarChar(50)
+//     origin     String   @db.VarChar(30)
+
+//     created_at DateTime @default(now())
+//     updated_at DateTime @updatedAt
+
+//     @@map("liquidaciones_encabezado")
+// }
+
+// model LiquidacionesGastos {
+//     id                   Int     @id @default(autoincrement())
+//     lot_number           String  @db.VarChar(20)
+//     expense_transaction  String  @db.VarChar(30)
+//     expense_concept_code Int
+//     expense_description  String  @db.VarChar(50)
+//     expense_doc_number   Int
+//     expense_amount       Decimal @db.Decimal(12, 2)
+
+//     created_at DateTime @default(now())
+//     updated_at DateTime @updatedAt
+
+//     @@map("liquidaciones_gastos")
+// }
+
+// model LiquidacionesCostos {
+//     id                Int     @id @default(autoincrement())
+//     lot_number        String  @db.VarChar(20)
+//     cost_transaction  String  @db.VarChar(30)
+//     cost_concept_code Int
+//     cost_description  String  @db.VarChar(50)
+//     cost_doc_number   Int
+//     cost_amount       Decimal @db.Decimal(12, 2)
+
+//     created_at DateTime @default(now())
+//     updated_at DateTime @updatedAt
+
+//     @@map("liquidaciones_costos")
+// }
+
+// model LiquidacionesVentas {
+//     id                 Int     @id @default(autoincrement())
+//     lot_number         String  @db.VarChar(20)
+//     sales_transaction  String  @db.VarChar(30)
+//     sales_concept_code Int
+//     sales_description  String  @db.VarChar(50)
+//     sales_doc_number   Int
+//     sales_amount       Decimal @db.Decimal(12, 2)
+
+//     created_at DateTime @default(now())
+//     updated_at DateTime @updatedAt
+
+//     @@map("liquidaciones_ventas")
+// }
+
+// model LiquidacionesResumen {
+//     id                   Int     @id @default(autoincrement())
+//     lot_number           String  @db.VarChar(20)
+//     total_expenses       Decimal @db.Decimal(12, 2)
+//     total_costs          Decimal @db.Decimal(12, 2)
+//     total_expenses_costs Decimal @db.Decimal(12, 2)
+//     total_sales          Decimal @db.Decimal(12, 2)
+//     total_return         Decimal @db.Decimal(12, 2)
+//     total_return_pct     Decimal @db.Decimal(8, 4)
+
+//     created_at DateTime @default(now())
+//     updated_at DateTime @updatedAt
+
+//     @@map("liquidaciones_resumen")
+// }
+
+// model SalesAc {
+//     id              Int      @id @default(autoincrement())
+//     date            DateTime @db.Date
+//     customer        String   @db.VarChar(50)
+//     invoice_number  Int
+//     product         String   @db.VarChar(100)
+//     region          String   @db.VarChar(30)
+//     seller          String   @db.VarChar(30)
+//     units_sold      Int
+//     unit_price_usd  Decimal  @db.Decimal(10, 2)
+//     total_sales_usd Decimal  @db.Decimal(12, 2)
+//     year            Int
+//     month           Int
+//     year_month      String   @db.VarChar(10)
+
+//     created_at DateTime @default(now())
+//     updated_at DateTime @updatedAt
+
+//     @@map("sales_ac")
+// }

@@ -1,12 +1,6 @@
-generator client {
-  provider   = "prisma-client"
-  output     = "../src/generated/prisma"
-  engineType = "client"
-}
-
-datasource db {
-  provider = "postgresql"
-}
+// ===============================================
+// AUTH & TENANT (Organization, Members, Invitations)
+// ===============================================
 
 model User {
   id            String       @id
@@ -23,6 +17,7 @@ model User {
 
   @@unique([email])
   @@map("user")
+  @@schema("auth")
 }
 
 model Session {
@@ -40,6 +35,7 @@ model Session {
   @@unique([token])
   @@index([userId])
   @@map("session")
+  @@schema("auth")
 }
 
 model Account {
@@ -60,6 +56,7 @@ model Account {
 
   @@index([userId])
   @@map("account")
+  @@schema("auth")
 }
 
 model Verification {
@@ -72,6 +69,7 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+  @@schema("auth")
 }
 
 model Organization {
@@ -84,8 +82,57 @@ model Organization {
   members     Member[]
   invitations Invitation[]
 
+  // Business relations (models defined in business.prisma)
+  invcaruni       Invcaruni[]
+  invgrupos       Invgrupos[]
+  kardex          Kardex[]
+  mproved         Mproved[]
+  cltemae         Cltemae[]
+  pclteg          Pclteg[]
+  facturag        Facturag[]
+  karrev          Karrev[]
+  tmovkar         Tmovkar[]
+  acumuladoPais   AcumuladoPais[]
+  acumuladoEstado AcumuladoEstado[]
+  acumuladoCiudad AcumuladoCiudad[]
+  vendedor        Vendedor[]
+
+  estado                Estado[]
+  ciudad                Ciudad[]
+  pais                  Pais[]
+  unidadMedida          UnidadMedida[]
+  rotado                Rotado[]
+  mprovedAcum           MprovedAcum[]
+  proved                Proved[]
+  paprovee              Paprovee[]
+  pclteu                Pclteu[]
+  kardexFacturacion     KardexFacturacion[]
+  facturau              Facturau[]
+  rclteg                Rclteg[]
+  rclteu                Rclteu[]
+  organizationCiudad    OrganizationCiudad[]
+  almacen               Almacen[]
+  pdsucu                Pdsucu[]
+  claseAlmacen          ClaseAlmacen[]
+  Movkar                Movkar[]
+  KardexLote            KardexLote[]
+  KardexDet             KardexDet[]
+  dispatchOrderGs       DispatchOrderG[]
+  dispatchOrderUs       DispatchOrderU[]
+  documents             Document[]
+  inventoryReservations InventoryReservation[]
+  reservationConfig     ReservationConfig?
+  movCXC                MovCXC[]
+  outboxEvents          OutboxEvent[]
+  walletPayments        WalletPayment[]
+  creditCardPayments    CreditCardPayment[]
+  transferPayments      TransferPayment[]
+  checkPayments         CheckPayment[]
+  banks                 Bank[]
+
   @@unique([slug])
   @@map("organization")
+  @@schema("auth")
 }
 
 model Member {
@@ -100,6 +147,7 @@ model Member {
   @@index([organizationId])
   @@index([userId])
   @@map("member")
+  @@schema("auth")
 }
 
 model Invitation {
@@ -117,4 +165,5 @@ model Invitation {
   @@index([organizationId])
   @@index([email])
   @@map("invitation")
+  @@schema("auth")
 }

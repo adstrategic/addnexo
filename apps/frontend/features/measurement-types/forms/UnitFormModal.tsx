@@ -9,9 +9,9 @@ import {
 } from "@/components/ui/dialog";
 import { UnitForm } from "./UnitForm";
 import type { UnitResponse, CreateUnitDto } from "../schemas/units.schema";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { ErrorBoundary } from "@/components/error-boundary";
-import LoadingComponent from "@/components/loading-component";
+import { LoadingComponent } from "@/components/loading-component";
+import { cn } from "@/lib/utils";
 
 interface UnitFormModalProps {
   isOpen: boolean;
@@ -23,6 +23,19 @@ interface UnitFormModalProps {
   isLoading?: boolean;
   isLoadingUnit?: boolean;
   unitError?: Error | null;
+}
+
+const dialogContentClassName = cn(
+  "flex max-h-[90vh] w-[calc(100%-2rem)] flex-col gap-0 overflow-hidden p-0",
+  "sm:max-w-lg",
+);
+
+function UnitFormModalBody({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 py-4">
+      {children}
+    </div>
+  );
 }
 
 export function UnitFormModal({
@@ -41,15 +54,23 @@ export function UnitFormModal({
   if (unitError && mode === "edit") {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-md p-0">
-          <DialogHeader className="px-6 py-4 border-b">
+        <DialogContent
+          onInteractOutside={(e) => e.preventDefault()}
+          className={dialogContentClassName}
+        >
+          <DialogHeader className="shrink-0 border-b px-6 py-4">
             <DialogTitle>{modalTitle}</DialogTitle>
           </DialogHeader>
-          <ErrorBoundary
-            error={unitError}
-            entityName="Unit"
-            url={{ path: "/measurement-types", displayText: "Back to Units" }}
-          />
+          <UnitFormModalBody>
+            <ErrorBoundary
+              error={unitError}
+              entityName="Unit"
+              url={{
+                path: "/measurement-types",
+                displayText: "Back to Measurement Units",
+              }}
+            />
+          </UnitFormModalBody>
         </DialogContent>
       </Dialog>
     );
@@ -58,15 +79,16 @@ export function UnitFormModal({
   if (isLoadingUnit && mode === "edit") {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-md p-0">
-          <DialogHeader className="px-6 py-4 border-b">
+        <DialogContent
+          onInteractOutside={(e) => e.preventDefault()}
+          className={dialogContentClassName}
+        >
+          <DialogHeader className="shrink-0 border-b px-6 py-4">
             <DialogTitle>{modalTitle}</DialogTitle>
           </DialogHeader>
-          <ScrollArea className="max-h-[calc(90vh-80px)]">
-            <div className="px-6 py-4">
-              <LoadingComponent variant="form" rows={4} />
-            </div>
-          </ScrollArea>
+          <UnitFormModalBody>
+            <LoadingComponent variant="form" rows={4} />
+          </UnitFormModalBody>
         </DialogContent>
       </Dialog>
     );
@@ -74,22 +96,24 @@ export function UnitFormModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md p-0">
-        <DialogHeader className="px-6 py-4 border-b">
+      <DialogContent
+        onInteractOutside={(e) => e.preventDefault()}
+        className={dialogContentClassName}
+      >
+        <DialogHeader className="shrink-0 border-b px-6 py-4">
           <DialogTitle>{modalTitle}</DialogTitle>
         </DialogHeader>
-        <ScrollArea className="max-h-[calc(90vh-80px)]">
-          <div className="px-6 py-4">
-            <UnitForm
-              form={form}
-              mode={mode}
-              initialData={initialData}
-              onSubmit={onSubmit}
-              onCancel={onClose}
-              isLoading={isLoading}
-            />
-          </div>
-        </ScrollArea>
+
+        <UnitFormModalBody>
+          <UnitForm
+            form={form}
+            mode={mode}
+            initialData={initialData}
+            onSubmit={onSubmit}
+            onCancel={onClose}
+            isLoading={isLoading}
+          />
+        </UnitFormModalBody>
       </DialogContent>
     </Dialog>
   );

@@ -9,9 +9,12 @@ interface UnitActionsProps {
 
 export function UnitActions({ onOpenCreateModal }: UnitActionsProps) {
   return (
-    <Button onClick={onOpenCreateModal}>
-      <Plus className="mr-2 h-4 w-4" />
-      New Unit
+    <Button
+      onClick={onOpenCreateModal}
+      className="w-full cursor-pointer sm:w-auto"
+    >
+      <Plus className="mr-2 size-4" aria-hidden />
+      <span className="sm:inline">New Unit</span>
     </Button>
   );
 }

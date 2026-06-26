@@ -1,19 +1,26 @@
 "use client";
 
+import { Suspense } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import {
+  ArrowLeft,
+  BarChart3,
+  FileText,
+  Package,
+  Plus,
+  Ruler,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useUnitBySequence } from "../hooks/useUnits";
 import { useUnitManager } from "../hooks/useUnitFormManager";
 import { useUnitDelete } from "../hooks/useUnitDelete";
-import {
-  EntityDetails,
-  EntitySection,
-  EntityAction,
-} from "@/components/shared/EntityDetails";
-import { Ruler, FileText, Package, BarChart3, Plus } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { UnitFormModal } from "../forms/UnitFormModal";
 import { EntityDeleteModal } from "@/components/shared/EntityDeleteModal";
 import { UnitProductsList } from "./UnitProductsList";
-import { Suspense } from "react";
+import { ErrorBoundary } from "@/components/error-boundary";
+import { UnitDetailsView } from "./UnitDetailsView";
 
 interface UnitDetailsProps {
   unitSequence: number;
@@ -32,94 +39,123 @@ export function UnitDetails({ unitSequence }: UnitDetailsProps) {
     onAfterDelete: () => router.push("/measurement-types"),
   });
 
-  const handleViewProducts = () => {
-    document.getElementById("unit-products")?.scrollIntoView({
-      behavior: "smooth",
-    });
+  const handleEdit = () => {
+    if (unit) {
+      unitManager.openEdit(unit.UMOrgSecuencia);
+    }
   };
 
-  const handleViewStatistics = () => {
-    // TODO: Implement navigation to unit usage statistics
+  const handleDelete = () => {
+    if (unit) {
+      unitDelete.openDeleteModal(unit);
+    }
   };
 
-  const handleViewReports = () => {
-    // TODO: Implement navigation to unit reports
-  };
+  if (error) {
+    return (
+      <div className="p-4 md:p-8">
+        <ErrorBoundary error={error} entityName="Measurement Unit" />
+      </div>
+    );
+  }
 
-  const handleAddProduct = () => {
-    window.open("/products", "_blank");
-  };
+  if (!isLoading && !unit) {
+    return (
+      <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 p-4 text-center md:p-8">
+        <Ruler className="size-12 text-muted-foreground" aria-hidden />
+        <div className="space-y-1">
+          <h2 className="text-lg font-semibold">Unit not found</h2>
+          <p className="text-sm text-muted-foreground">
+            The unit you are looking for does not exist or has been deleted.
+          </p>
+        </div>
+        <Button asChild variant="outline" className="cursor-pointer">
+          <Link href="/measurement-types">
+            <ArrowLeft className="mr-2 size-4" aria-hidden />
+            Back to measurement units
+          </Link>
+        </Button>
+      </div>
+    );
+  }
 
-  const sections: EntitySection[] = unit
+  const sections = unit
     ? [
         {
           title: "General Information",
-          icon: <Ruler className="h-5 w-5" />,
+          icon: <Ruler className="size-4" aria-hidden />,
           fields: [
             {
-              label: "Name",
-              value: unit.UMNombre,
-              icon: <Ruler className="h-4 w-4 text-muted-foreground" />,
+              label: "Code",
+              value: <Badge variant="secondary">{unit.UMNombre}</Badge>,
+              icon: <Ruler className="size-4" aria-hidden />,
             },
             {
               label: "Description",
               value: unit.UMDescripcion,
-              icon: <FileText className="h-4 w-4 text-muted-foreground" />,
+              icon: <FileText className="size-4" aria-hidden />,
             },
           ],
         },
       ]
     : [];
 
-  const quickActions: EntityAction[] = [
+  const quickActions = [
     {
       label: "View Products",
-      icon: <Package className="h-6 w-6" />,
-      onClick: handleViewProducts,
+      icon: <Package className="size-5" aria-hidden />,
+      onClick: () => {
+        document.getElementById("unit-products")?.scrollIntoView({
+          behavior: "smooth",
+        });
+      },
     },
     {
       label: "Add Product",
-      icon: <Plus className="h-6 w-6" />,
-      onClick: handleAddProduct,
+      icon: <Plus className="size-5" aria-hidden />,
+      onClick: () => window.open("/products", "_blank"),
     },
     {
       label: "View Statistics",
-      icon: <BarChart3 className="h-6 w-6" />,
-      onClick: handleViewStatistics,
+      icon: <BarChart3 className="size-5" aria-hidden />,
+      onClick: () => {
+        // TODO: Navigate to unit usage statistics
+      },
     },
     {
       label: "View Reports",
-      icon: <FileText className="h-6 w-6" />,
-      onClick: handleViewReports,
+      icon: <FileText className="size-5" aria-hidden />,
+      onClick: () => {
+        // TODO: Navigate to unit reports
+      },
     },
   ];
 
   return (
     <>
-      <EntityDetails
+      <UnitDetailsView
         title={unit?.UMDescripcion ?? ""}
-        subtitle={unit ? `Unit: ${unit.UMNombre}` : ""}
+        subtitle={unit ? `Code: ${unit.UMNombre}` : undefined}
         sections={sections}
         isLoading={isLoading}
-        error={error}
-        onEdit={() => unit && unitManager.openEdit(unit.UMOrgSecuencia)}
-        onDelete={() => unit && unitDelete.openDeleteModal(unit)}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
         quickActions={quickActions}
-        notFoundMessage="The unit you are looking for does not exist or has been deleted."
-        notFoundIcon={<Ruler className="h-12 w-12 text-muted-foreground" />}
-      />
-
-      {unit && (
-        <div id="unit-products" className="mt-6 px-4 mb-10">
-          <Suspense
-            fallback={
-              <div className="p-4 text-muted-foreground">Loading products…</div>
-            }
-          >
-            <UnitProductsList unitId={unit.UMId} unitName={unit.UMNombre} />
-          </Suspense>
-        </div>
-      )}
+      >
+        {unit ? (
+          <div id="unit-products" className="mt-2">
+            <Suspense
+              fallback={
+                <div className="p-4 text-muted-foreground">
+                  Loading products…
+                </div>
+              }
+            >
+              <UnitProductsList unitId={unit.UMId} unitName={unit.UMNombre} />
+            </Suspense>
+          </div>
+        ) : null}
+      </UnitDetailsView>
 
       <UnitFormModal
         isOpen={unitManager.isOpen}

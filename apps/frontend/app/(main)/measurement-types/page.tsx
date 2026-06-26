@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense } from "react";
-import { UnitsContent } from "@/features/measurement-types";
+import { MeasurementUnitsContent } from "@/features/measurement-types";
 import LoadingComponent from "@/components/loading-component";
 import { hasClientPermissions } from "@/lib/permissions";
 import { redirect } from "next/navigation";
@@ -26,7 +26,7 @@ export default function MeasurementTypesPage() {
         </div>
       }
     >
-      <UnitsContent />
+      <MeasurementUnitsContent />
     </Suspense>
   );
 }

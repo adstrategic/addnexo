@@ -1,9 +1,5 @@
 /**
- * Unidades (Groups) Feature Module
- * Central export point for all groups-related functionality.
- *
- * Usage:
- *   import { useGroups, GroupForm, type GroupResponse } from '@/features/groups'
+ * Inventory Groups Feature Module
  */
 
 export {
@@ -31,16 +27,17 @@ export {
 export { useGroupActions } from "./hooks/useGroupActions";
 export { useGroupManager } from "./hooks/useGroupFormManager";
 export { useGroupDelete } from "./hooks/useGroupDelete";
+export { useGroupListParams } from "./hooks/useGroupListParams";
 
 export { groupsService } from "./service/groups.service";
 
-export { GroupFilters } from "./components/GroupFilters";
 export { GroupActions } from "./components/GroupActions";
-export { GroupsTable } from "./components/GroupsTable";
+export { InventoryGroupTable } from "./components/InventoryGroupTable";
 export { GroupDetails } from "./components/GroupDetails";
+export { InventoryGroupsContent } from "./components/InventoryGroupsContent";
+export { GroupListToolbar } from "./components/GroupListToolbar";
+export { GroupPageHeader } from "./components/layout/GroupPageHeader";
 export { GroupProductsList } from "./components/GroupProductsList";
 
 export { GroupForm } from "./forms/GroupForm";
 export { GroupFormModal } from "./forms/GroupFormModal";
-
-export { default as GroupsContent } from "./components/GroupsContent";

@@ -1,12 +1,12 @@
 "use client";
 
 import { Suspense } from "react";
-import { GroupsContent } from "@/features/inventory-groups";
+import { InventoryGroupsContent } from "@/features/inventory-groups";
 import LoadingComponent from "@/components/loading-component";
 import { hasClientPermissions } from "@/lib/permissions";
 import { redirect } from "next/navigation";
 
-export default function MeasurementTypesPage() {
+export default function InventoryGroupsPage() {
   const hasPermission = hasClientPermissions("admin", "organization", [
     "read",
     "create",
@@ -26,7 +26,7 @@ export default function MeasurementTypesPage() {
         </div>
       }
     >
-      <GroupsContent />
+      <InventoryGroupsContent />
     </Suspense>
   );
 }

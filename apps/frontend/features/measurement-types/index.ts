@@ -1,9 +1,5 @@
 /**
- * Unidades (Units) Feature Module
- * Central export point for all units-related functionality.
- *
- * Usage:
- *   import { useUnits, UnitForm, type UnitResponse } from '@/features/unidades'
+ * Measurement Units Feature Module
  */
 
 export {
@@ -31,16 +27,17 @@ export {
 export { useUnitActions } from "./hooks/useUnitActions";
 export { useUnitManager } from "./hooks/useUnitFormManager";
 export { useUnitDelete } from "./hooks/useUnitDelete";
+export { useUnitListParams } from "./hooks/useUnitListParams";
 
 export { unitsService } from "./service/units.service";
 
-export { UnitFilters } from "./components/UnitFilters";
 export { UnitActions } from "./components/UnitActions";
 export { UnitTable } from "./components/UnitTable";
 export { UnitDetails } from "./components/UnitDetails";
+export { MeasurementUnitsContent } from "./components/MeasurementUnitsContent";
+export { UnitListToolbar } from "./components/UnitListToolbar";
+export { UnitPageHeader } from "./components/layout/UnitPageHeader";
 export { UnitProductsList } from "./components/UnitProductsList";
 
 export { UnitForm } from "./forms/UnitForm";
 export { UnitFormModal } from "./forms/UnitFormModal";
-
-export { default as UnitsContent } from "./components/UnitsContent";

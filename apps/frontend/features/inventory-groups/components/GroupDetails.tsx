@@ -1,19 +1,26 @@
 "use client";
 
+import { Suspense } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import {
+  ArrowLeft,
+  BarChart3,
+  FileText,
+  Layers,
+  Package,
+  Plus,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useGroupBySequence } from "../hooks/useGroups";
 import { useGroupManager } from "../hooks/useGroupFormManager";
 import { useGroupDelete } from "../hooks/useGroupDelete";
-import {
-  EntityDetails,
-  EntitySection,
-  EntityAction,
-} from "@/components/shared/EntityDetails";
-import { Ruler, FileText, Package, BarChart3, Plus } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { GroupFormModal } from "../forms/GroupFormModal";
 import { EntityDeleteModal } from "@/components/shared/EntityDeleteModal";
 import { GroupProductsList } from "./GroupProductsList";
-import { Suspense } from "react";
+import { ErrorBoundary } from "@/components/error-boundary";
+import { GroupDetailsView } from "./GroupDetailsView";
 
 interface GroupDetailsProps {
   groupSequence: number;
@@ -29,100 +36,129 @@ export function GroupDetails({ groupSequence }: GroupDetailsProps) {
 
   const groupManager = useGroupManager();
   const groupDelete = useGroupDelete({
-    onAfterDelete: () => router.push("/measurement-types"),
+    onAfterDelete: () => router.push("/inventory-groups"),
   });
 
-  const handleViewProducts = () => {
-    document.getElementById("group-products")?.scrollIntoView({
-      behavior: "smooth",
-    });
+  const handleEdit = () => {
+    if (group) {
+      groupManager.openEdit(group.GOrgSecuencia);
+    }
   };
 
-  const handleViewStatistics = () => {
-    // TODO: Implement navigation to group usage statistics
+  const handleDelete = () => {
+    if (group) {
+      groupDelete.openDeleteModal(group);
+    }
   };
 
-  const handleViewReports = () => {
-    // TODO: Implement navigation to group reports
-  };
+  if (error) {
+    return (
+      <div className="p-4 md:p-8">
+        <ErrorBoundary error={error} entityName="Inventory Group" />
+      </div>
+    );
+  }
 
-  const handleAddProduct = () => {
-    window.open("/products", "_blank");
-  };
+  if (!isLoading && !group) {
+    return (
+      <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 p-4 text-center md:p-8">
+        <Layers className="size-12 text-muted-foreground" aria-hidden />
+        <div className="space-y-1">
+          <h2 className="text-lg font-semibold">Group not found</h2>
+          <p className="text-sm text-muted-foreground">
+            The group you are looking for does not exist or has been deleted.
+          </p>
+        </div>
+        <Button asChild variant="outline" className="cursor-pointer">
+          <Link href="/inventory-groups">
+            <ArrowLeft className="mr-2 size-4" aria-hidden />
+            Back to inventory groups
+          </Link>
+        </Button>
+      </div>
+    );
+  }
 
-  const sections: EntitySection[] = group
+  const sections = group
     ? [
         {
           title: "General Information",
-          icon: <Ruler className="h-5 w-5" />,
+          icon: <Layers className="size-4" aria-hidden />,
           fields: [
             {
-              label: "Name",
-              value: group.GDescripcion,
-              icon: <Ruler className="h-4 w-4 text-muted-foreground" />,
+              label: "Group Number",
+              value: <Badge variant="secondary">#{group.GNro}</Badge>,
+              icon: <Layers className="size-4" aria-hidden />,
             },
             {
               label: "Description",
               value: group.GDescripcion,
-              icon: <FileText className="h-4 w-4 text-muted-foreground" />,
+              icon: <FileText className="size-4" aria-hidden />,
             },
           ],
         },
       ]
     : [];
 
-  const quickActions: EntityAction[] = [
+  const quickActions = [
     {
       label: "View Products",
-      icon: <Package className="h-6 w-6" />,
-      onClick: handleViewProducts,
+      icon: <Package className="size-5" aria-hidden />,
+      onClick: () => {
+        document.getElementById("group-products")?.scrollIntoView({
+          behavior: "smooth",
+        });
+      },
     },
     {
       label: "Add Product",
-      icon: <Plus className="h-6 w-6" />,
-      onClick: handleAddProduct,
+      icon: <Plus className="size-5" aria-hidden />,
+      onClick: () => window.open("/products", "_blank"),
     },
     {
       label: "View Statistics",
-      icon: <BarChart3 className="h-6 w-6" />,
-      onClick: handleViewStatistics,
+      icon: <BarChart3 className="size-5" aria-hidden />,
+      onClick: () => {
+        // TODO: Navigate to group usage statistics
+      },
     },
     {
       label: "View Reports",
-      icon: <FileText className="h-6 w-6" />,
-      onClick: handleViewReports,
+      icon: <FileText className="size-5" aria-hidden />,
+      onClick: () => {
+        // TODO: Navigate to group reports
+      },
     },
   ];
 
   return (
     <>
-      <EntityDetails
+      <GroupDetailsView
         title={group?.GDescripcion ?? ""}
-        subtitle={group ? `Group: ${group.GDescripcion}` : ""}
+        subtitle={group ? `Group #${group.GNro}` : undefined}
         sections={sections}
         isLoading={isLoading}
-        error={error}
-        onEdit={() => group && groupManager.openEdit(group.GOrgSecuencia)}
-        onDelete={() => group && groupDelete.openDeleteModal(group)}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
         quickActions={quickActions}
-        notFoundMessage="The group you are looking for does not exist or has been deleted."
-        notFoundIcon={<Ruler className="h-12 w-12 text-muted-foreground" />}
-      />
-
-      {group && (
-        <div id="group-products" className="mt-6 px-4 mb-10">
-          <Suspense
-            fallback={
-              <div className="p-4 text-muted-foreground">Loading products…</div>
-            }
-          >
-            <GroupProductsList
-              groupId={group.GId}
-              groupName={group.GDescripcion}
-            />
-          </Suspense>
-        </div>
-      )}
+      >
+        {group ? (
+          <div id="group-products" className="mt-2">
+            <Suspense
+              fallback={
+                <div className="p-4 text-muted-foreground">
+                  Loading products…
+                </div>
+              }
+            >
+              <GroupProductsList
+                groupId={group.GId}
+                groupName={group.GDescripcion}
+              />
+            </Suspense>
+          </div>
+        ) : null}
+      </GroupDetailsView>
 
       <GroupFormModal
         isOpen={groupManager.isOpen}

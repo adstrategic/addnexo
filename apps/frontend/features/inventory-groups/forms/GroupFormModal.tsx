@@ -9,9 +9,9 @@ import {
 } from "@/components/ui/dialog";
 import { GroupForm } from "./GroupForm";
 import type { GroupResponse, CreateGroupDto } from "../schemas/groups.schema";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { ErrorBoundary } from "@/components/error-boundary";
-import LoadingComponent from "@/components/loading-component";
+import { LoadingComponent } from "@/components/loading-component";
+import { cn } from "@/lib/utils";
 
 interface GroupFormModalProps {
   isOpen: boolean;
@@ -23,6 +23,19 @@ interface GroupFormModalProps {
   isLoading?: boolean;
   isLoadingGroup?: boolean;
   groupError?: Error | null;
+}
+
+const dialogContentClassName = cn(
+  "flex max-h-[90vh] w-[calc(100%-2rem)] flex-col gap-0 overflow-hidden p-0",
+  "sm:max-w-lg",
+);
+
+function GroupFormModalBody({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 py-4">
+      {children}
+    </div>
+  );
 }
 
 export function GroupFormModal({
@@ -41,15 +54,23 @@ export function GroupFormModal({
   if (groupError && mode === "edit") {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-md p-0">
-          <DialogHeader className="px-6 py-4 border-b">
+        <DialogContent
+          onInteractOutside={(e) => e.preventDefault()}
+          className={dialogContentClassName}
+        >
+          <DialogHeader className="shrink-0 border-b px-6 py-4">
             <DialogTitle>{modalTitle}</DialogTitle>
           </DialogHeader>
-          <ErrorBoundary
-            error={groupError}
-            entityName="Group"
-            url={{ path: "/groups", displayText: "Back to Groups" }}
-          />
+          <GroupFormModalBody>
+            <ErrorBoundary
+              error={groupError}
+              entityName="Group"
+              url={{
+                path: "/inventory-groups",
+                displayText: "Back to Inventory Groups",
+              }}
+            />
+          </GroupFormModalBody>
         </DialogContent>
       </Dialog>
     );
@@ -58,15 +79,16 @@ export function GroupFormModal({
   if (isLoadingGroup && mode === "edit") {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-md p-0">
-          <DialogHeader className="px-6 py-4 border-b">
+        <DialogContent
+          onInteractOutside={(e) => e.preventDefault()}
+          className={dialogContentClassName}
+        >
+          <DialogHeader className="shrink-0 border-b px-6 py-4">
             <DialogTitle>{modalTitle}</DialogTitle>
           </DialogHeader>
-          <ScrollArea className="max-h-[calc(90vh-80px)]">
-            <div className="px-6 py-4">
-              <LoadingComponent variant="form" rows={4} />
-            </div>
-          </ScrollArea>
+          <GroupFormModalBody>
+            <LoadingComponent variant="form" rows={4} />
+          </GroupFormModalBody>
         </DialogContent>
       </Dialog>
     );
@@ -74,22 +96,24 @@ export function GroupFormModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md p-0">
-        <DialogHeader className="px-6 py-4 border-b">
+      <DialogContent
+        onInteractOutside={(e) => e.preventDefault()}
+        className={dialogContentClassName}
+      >
+        <DialogHeader className="shrink-0 border-b px-6 py-4">
           <DialogTitle>{modalTitle}</DialogTitle>
         </DialogHeader>
-        <ScrollArea className="max-h-[calc(90vh-80px)]">
-          <div className="px-6 py-4">
-            <GroupForm
-              form={form}
-              mode={mode}
-              initialData={initialData}
-              onSubmit={onSubmit}
-              onCancel={onClose}
-              isLoading={isLoading}
-            />
-          </div>
-        </ScrollArea>
+
+        <GroupFormModalBody>
+          <GroupForm
+            form={form}
+            mode={mode}
+            initialData={initialData}
+            onSubmit={onSubmit}
+            onCancel={onClose}
+            isLoading={isLoading}
+          />
+        </GroupFormModalBody>
       </DialogContent>
     </Dialog>
   );

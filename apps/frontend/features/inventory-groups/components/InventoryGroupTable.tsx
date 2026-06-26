@@ -18,20 +18,21 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
 import { getPageNumbers, cn } from "@/lib/utils";
-import type { UnitResponse } from "../schemas/units.schema";
-import { unitListPadding } from "./layout/unit-list-layout";
-import { UnitEmptyState } from "./UnitEmptyState";
-import { UnitMobileCard } from "./UnitMobileCard";
-import { UnitRowActions } from "./UnitRowActions";
-import { UnitTableSkeleton } from "./UnitTableSkeleton";
+import type { GroupResponse } from "../schemas/groups.schema";
+import { groupListPadding } from "./layout/group-list-layout";
+import { GroupEmptyState } from "./GroupEmptyState";
+import { GroupMobileCard } from "./GroupMobileCard";
+import { GroupRowActions } from "./GroupRowActions";
+import { GroupTableSkeleton } from "./GroupTableSkeleton";
 
-interface UnitTableProps {
-  units: UnitResponse[];
+interface InventoryGroupTableProps {
+  groups: GroupResponse[];
   isLoading: boolean;
   isFetching?: boolean;
   onEdit: (sequence: number) => void;
-  onDelete: (unit: UnitResponse) => void;
+  onDelete: (group: GroupResponse) => void;
   currentPage: number;
   totalPages: number;
   totalItems: number;
@@ -41,13 +42,13 @@ interface UnitTableProps {
   onCreate?: () => void;
 }
 
-function UnitPagination({
+function GroupPagination({
   currentPage,
   totalPages,
   totalItems,
   onPageChange,
 }: Pick<
-  UnitTableProps,
+  InventoryGroupTableProps,
   "currentPage" | "totalPages" | "totalItems" | "onPageChange"
 >) {
   if (totalItems === 0) return null;
@@ -56,12 +57,12 @@ function UnitPagination({
     <div
       className={cn(
         "flex flex-col-reverse items-center justify-between gap-4 border-t border-border py-4 sm:flex-row",
-        unitListPadding.x,
+        groupListPadding.x,
       )}
     >
       <p className="text-sm text-muted-foreground">
         Page {currentPage} of {totalPages} · {totalItems}{" "}
-        {totalItems === 1 ? "unit" : "units"}
+        {totalItems === 1 ? "group" : "groups"}
       </p>
 
       <Pagination className="mx-0 w-auto justify-end">
@@ -109,8 +110,8 @@ function UnitPagination({
   );
 }
 
-export function UnitTable({
-  units,
+export function InventoryGroupTable({
+  groups,
   isLoading,
   isFetching = false,
   onEdit,
@@ -122,14 +123,14 @@ export function UnitTable({
   hasActiveFilters,
   onClearFilters,
   onCreate,
-}: UnitTableProps) {
+}: InventoryGroupTableProps) {
   if (isLoading) {
-    return <UnitTableSkeleton />;
+    return <GroupTableSkeleton />;
   }
 
-  if (units.length === 0) {
+  if (groups.length === 0) {
     return (
-      <UnitEmptyState
+      <GroupEmptyState
         hasFilters={hasActiveFilters}
         onClearFilters={onClearFilters}
         onCreate={onCreate}
@@ -141,49 +142,51 @@ export function UnitTable({
     <div
       className={cn("relative", isFetching && "opacity-70 transition-opacity")}
     >
-      <div className={cn("space-y-3 py-4 md:hidden", unitListPadding.x)}>
-        {units.map((unit) => (
-          <UnitMobileCard
-            key={unit.UMId}
-            unit={unit}
+      <div className={cn("space-y-3 py-4 md:hidden", groupListPadding.x)}>
+        {groups.map((group) => (
+          <GroupMobileCard
+            key={group.GId}
+            group={group}
             onEdit={onEdit}
             onDelete={onDelete}
           />
         ))}
       </div>
 
-      <div className={cn("hidden md:block", unitListPadding.x)}>
+      <div className={cn("hidden md:block", groupListPadding.x)}>
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="pl-0">Code</TableHead>
-                <TableHead>Description</TableHead>
+                <TableHead className="pl-0">Group</TableHead>
+                <TableHead>Number</TableHead>
                 <TableHead className="w-[72px] pr-0">
                   <span className="sr-only">Actions</span>
                 </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {units.map((unit) => (
+              {groups.map((group) => (
                 <TableRow
-                  key={unit.UMId}
+                  key={group.GId}
                   className="transition-colors hover:bg-muted/40"
                 >
                   <TableCell className="pl-0">
                     <Link
-                      href={`/measurement-types/${unit.UMOrgSecuencia}`}
+                      href={`/inventory-groups/${group.GOrgSecuencia}`}
                       className="font-medium text-foreground transition-colors hover:text-primary"
                     >
-                      {unit.UMNombre}
+                      {group.GDescripcion}
                     </Link>
                   </TableCell>
-                  <TableCell>{unit.UMDescripcion}</TableCell>
+                  <TableCell>
+                    <Badge variant="secondary">#{group.GNro}</Badge>
+                  </TableCell>
                   <TableCell className="pr-0">
-                    <UnitRowActions
-                      sequence={unit.UMOrgSecuencia}
-                      unit={unit}
-                      unitName={unit.UMNombre}
+                    <GroupRowActions
+                      sequence={group.GOrgSecuencia}
+                      group={group}
+                      groupName={group.GDescripcion}
                       onEdit={onEdit}
                       onDelete={onDelete}
                     />
@@ -195,7 +198,7 @@ export function UnitTable({
         </div>
       </div>
 
-      <UnitPagination
+      <GroupPagination
         currentPage={currentPage}
         totalPages={totalPages}
         totalItems={totalItems}

@@ -3,7 +3,7 @@ export { BalanceInvoicesContent } from "./components/BalanceInvoicesContent";
 export { BalanceInvoicesTable } from "./components/BalanceInvoicesTable";
 export { BalanceInvoicesDetails } from "./components/BalanceInvoicesDetails";
 export { BalanceInvoicesActions } from "./components/BalanceInvoicesActions";
-export { BalanceInvoicesFilter } from "./components/BalanceInvoicesFilter";
+export { BalanceInvoiceListToolbar } from "./components/BalanceInvoiceListToolbar";
 
 // Forms
 export { BalanceInvoicesForm } from "./forms/BalanceInvoicesForm";
@@ -24,6 +24,7 @@ export {
 
 export { useBalanceInvoiceActions } from "./hooks/useBalanceInvoicesActions";
 export { useBalanceInvoiceDelete } from "./hooks/useBalanceInvoiceDelete";
+export { useBalanceInvoiceListParams } from "./hooks/useBalanceInvoiceListParams";
 export { useSaldosClienteAutofill } from "./hooks/useBalanceInvoicesAutofill";
 
 // Service

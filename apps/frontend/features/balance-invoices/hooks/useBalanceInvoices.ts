@@ -38,6 +38,8 @@ export function useBalanceInvoices(params?: {
     queryKey: balanceInvoiceKeys.list(queryParams),
     queryFn: () => facturaApi.obtenerFacturas(queryParams),
     enabled,
+    staleTime: 30 * 1000,
+    placeholderData: (previousData) => previousData,
   });
 }
 

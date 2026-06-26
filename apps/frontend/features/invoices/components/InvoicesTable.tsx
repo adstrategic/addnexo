@@ -8,39 +8,30 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import Link from "next/link";
-import {
-  Eye,
-  MoreHorizontal,
-  RotateCcw,
-  DollarSign,
-  FileText,
-  Download,
-  ChevronUp,
-  ChevronDown,
-} from "lucide-react";
-import invoiceApi from "../services/invoices.api";
-import { TablePagination } from "@/components/shared/TablePagination";
-import {
-  EstadoInvoice,
-  ServerInvoice,
-} from "../schemas/invoices-response.schema";
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { useMemo, useState } from "react";
+import invoiceApi from "../services/invoices.api";
 import {
   cn,
   formatearFecha,
   formatearMoneda,
   getDaysFromDueDate,
+  getPageNumbers,
 } from "@/lib/utils";
+import {
+  EstadoInvoice,
+  type ServerInvoice,
+} from "../schemas/invoices-response.schema";
 import {
   usePaymentManager,
   useDebitNoteManager,
@@ -51,18 +42,26 @@ import {
   CreditNoteFormModal,
   CreditNoteWithReturnDialog,
 } from "../mov-cxc";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { InvoiceEmptyState } from "./InvoiceEmptyState";
+import { InvoiceDueIndicator } from "./InvoiceDueIndicator";
+import { InvoiceLoadTypeBadge } from "./InvoiceLoadTypeBadge";
+import { InvoiceMobileCard } from "./InvoiceMobileCard";
+import { InvoiceRowActions } from "./InvoiceRowActions";
+import { InvoiceStatusBadge } from "./InvoiceStatusBadge";
+import { InvoiceTableSkeleton } from "./InvoiceTableSkeleton";
+import { invoiceListPadding } from "./layout/invoice-list-layout";
 
-interface DispatchOrdersTableProps {
+interface InvoicesTableProps {
   invoices: ServerInvoice[];
   isLoading: boolean;
-  onDelete?: (invoice: { sequence: number; number: number }) => void;
-  /** TODO(test): remove — dev-only invoice PDF download per row */
+  isFetching?: boolean;
   showTestInvoicePdfDownload?: boolean;
   currentPage: number;
   totalPages: number;
   totalItems: number;
   onPageChange: (page: number) => void;
+  hasActiveFilters: boolean;
+  onClearFilters: () => void;
 }
 
 type SortKey =
@@ -132,21 +131,91 @@ function sortInvoices(
   });
 }
 
-export const InvoicesTable = ({
+function InvoicePagination({
+  currentPage,
+  totalPages,
+  totalItems,
+  onPageChange,
+}: Pick<
+  InvoicesTableProps,
+  "currentPage" | "totalPages" | "totalItems" | "onPageChange"
+>) {
+  if (totalItems === 0) return null;
+
+  return (
+    <div
+      className={cn(
+        "flex flex-col-reverse items-center justify-between gap-4 border-t border-border py-4 sm:flex-row",
+        invoiceListPadding.x,
+      )}
+    >
+      <p className="text-sm text-muted-foreground">
+        Page {currentPage} of {totalPages} · {totalItems}{" "}
+        {totalItems === 1 ? "invoice" : "invoices"}
+      </p>
+
+      <Pagination className="mx-0 w-auto justify-end">
+        <PaginationContent>
+          <PaginationItem>
+            <PaginationPrevious
+              onClick={() => onPageChange(currentPage - 1)}
+              className={cn(
+                "cursor-pointer",
+                (currentPage <= 1 || totalPages <= 1) &&
+                  "pointer-events-none opacity-50",
+              )}
+            />
+          </PaginationItem>
+
+          {getPageNumbers(totalPages, currentPage).map((page, index) => (
+            <PaginationItem key={index} className="hidden sm:list-item">
+              {page === "ellipsis" ? (
+                <PaginationEllipsis />
+              ) : (
+                <PaginationLink
+                  onClick={() => onPageChange(page as number)}
+                  isActive={currentPage === page}
+                  className="cursor-pointer"
+                >
+                  {page}
+                </PaginationLink>
+              )}
+            </PaginationItem>
+          ))}
+
+          <PaginationItem>
+            <PaginationNext
+              onClick={() => onPageChange(currentPage + 1)}
+              className={cn(
+                "cursor-pointer",
+                (currentPage >= totalPages || totalPages <= 1) &&
+                  "pointer-events-none opacity-50",
+              )}
+            />
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
+    </div>
+  );
+}
+
+export function InvoicesTable({
   invoices,
   isLoading,
+  isFetching = false,
   showTestInvoicePdfDownload = false,
   currentPage,
   totalPages,
   totalItems,
   onPageChange,
-}: DispatchOrdersTableProps) => {
+  hasActiveFilters,
+  onClearFilters,
+}: InvoicesTableProps) {
   const [invoicePdfDownloadingSecuencia, setInvoicePdfDownloadingSecuencia] =
     useState<number | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>("issuedDate");
   const [sortAsc, setSortAsc] = useState(false);
 
-  // Payment and Debit Note managers
   const paymentManager = usePaymentManager();
   const debitNoteManager = useDebitNoteManager();
   const creditNoteManager = useCreditNoteManager();
@@ -166,15 +235,49 @@ export const InvoicesTable = ({
     [invoices, sortKey, sortAsc],
   );
 
+  const handleAddPayment = (invoice: ServerInvoice) => {
+    paymentManager.open(
+      invoice.FGId,
+      new Date(invoice.FGFechaCreado),
+      invoice.FGPago,
+    );
+  };
+
+  const handleDebitNote = (invoice: ServerInvoice) => {
+    debitNoteManager.open(invoice.FGId, new Date(invoice.FGFechaCreado));
+  };
+
+  const handleCreditNote = (invoice: ServerInvoice) => {
+    creditNoteManager.open(invoice.FGId, new Date(invoice.FGFechaCreado));
+  };
+
+  const handleReturnInventory = (invoice: ServerInvoice) => {
+    creditNoteWithReturnManager.open(
+      invoice.FGId,
+      new Date(invoice.FGFechaCreado),
+    );
+  };
+
+  const handleDownloadPdf = async (sequence: number) => {
+    try {
+      setInvoicePdfDownloadingSecuencia(sequence);
+      await invoiceApi.downloadInvoicePDF(sequence);
+    } catch (err) {
+      console.error("Test invoice PDF download failed:", err);
+    } finally {
+      setInvoicePdfDownloadingSecuencia(null);
+    }
+  };
+
   const SortIcon = ({ columnKey }: { columnKey: SortKey }) => (
-    <div className="flex flex-col ml-1">
+    <div className="ml-1 flex flex-col">
       <ChevronUp
         size={10}
         className={cn(
           "-mb-1 cursor-pointer",
           sortKey === columnKey && sortAsc
-            ? "text-[#1B5E3C]"
-            : "text-gray-400 hover:text-gray-600",
+            ? "text-primary"
+            : "text-muted-foreground/50 hover:text-muted-foreground",
         )}
         onClick={(e) => {
           e.stopPropagation();
@@ -187,8 +290,8 @@ export const InvoicesTable = ({
         className={cn(
           "cursor-pointer",
           sortKey === columnKey && !sortAsc
-            ? "text-[#1B5E3C]"
-            : "text-gray-400 hover:text-gray-600",
+            ? "text-primary"
+            : "text-muted-foreground/50 hover:text-muted-foreground",
         )}
         onClick={(e) => {
           e.stopPropagation();
@@ -199,373 +302,244 @@ export const InvoicesTable = ({
     </div>
   );
 
+  const sortableHeadClass =
+    "cursor-pointer transition-colors hover:bg-muted/50";
+
   if (isLoading) {
-    return (
-      <div className="space-y-4">
-        {[...Array(5)].map((_, i) => (
-          <div key={i} className="flex items-center space-x-4 p-4">
-            <Skeleton className="h-12 w-12 rounded-full" />
-            <div className="flex items-center space-x-4">
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-[250px]" />
-                <Skeleton className="h-4 w-[200px]" />
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
+    return <InvoiceTableSkeleton />;
   }
 
   if (invoices.length === 0) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
-        No invoices found
-      </div>
+      <InvoiceEmptyState
+        hasFilters={hasActiveFilters}
+        onClearFilters={onClearFilters}
+      />
     );
   }
 
   return (
-    <div className="py-4">
-      <ScrollArea>
-        <Table className="w-max">
-          <TableHeader>
-            <TableRow>
-              <TableHead
-                className="cursor-pointer hover:bg-muted/50"
-                onClick={() => handleSort("invoiceNumber")}
-              >
-                <div className="flex items-center">
-                  Invoice Number <SortIcon columnKey="invoiceNumber" />
-                </div>
-              </TableHead>
-              <TableHead
-                className="cursor-pointer hover:bg-muted/50"
-                onClick={() => handleSort("originalLoad")}
-              >
-                <div className="flex items-center">
-                  Original Load <SortIcon columnKey="originalLoad" />
-                </div>
-              </TableHead>
-              <TableHead
-                className="cursor-pointer hover:bg-muted/50"
-                onClick={() => handleSort("purchaseOrder")}
-              >
-                <div className="flex items-center">
-                  Purchase Order <SortIcon columnKey="purchaseOrder" />
-                </div>
-              </TableHead>
-              <TableHead
-                className="cursor-pointer hover:bg-muted/50"
-                onClick={() => handleSort("client")}
-              >
-                <div className="flex items-center">
-                  Client <SortIcon columnKey="client" />
-                </div>
-              </TableHead>
-              <TableHead
-                className="cursor-pointer hover:bg-muted/50"
-                onClick={() => handleSort("vendor")}
-              >
-                <div className="flex items-center">
-                  Vendor <SortIcon columnKey="vendor" />
-                </div>
-              </TableHead>
-              <TableHead
-                className="cursor-pointer hover:bg-muted/50"
-                onClick={() => handleSort("issuedDate")}
-              >
-                <div className="flex items-center">
-                  Issued Date <SortIcon columnKey="issuedDate" />
-                </div>
-              </TableHead>
-              <TableHead
-                className="cursor-pointer hover:bg-muted/50"
-                onClick={() => handleSort("dueDate")}
-              >
-                <div className="flex items-center">
-                  Due Date <SortIcon columnKey="dueDate" />
-                </div>
-              </TableHead>
-              <TableHead
-                className="cursor-pointer hover:bg-muted/50"
-                onClick={() => handleSort("due")}
-              >
-                <div className="flex items-center">
-                  Due <SortIcon columnKey="due" />
-                </div>
-              </TableHead>
-              <TableHead
-                className="cursor-pointer hover:bg-muted/50"
-                onClick={() => handleSort("totalAmount")}
-              >
-                <div className="flex items-center">
-                  Total Amount <SortIcon columnKey="totalAmount" />
-                </div>
-              </TableHead>
-              <TableHead
-                className="cursor-pointer hover:bg-muted/50"
-                onClick={() => handleSort("balance")}
-              >
-                <div className="flex items-center">
-                  Balance <SortIcon columnKey="balance" />
-                </div>
-              </TableHead>
-              <TableHead
-                className="cursor-pointer hover:bg-muted/50"
-                onClick={() => handleSort("status")}
-              >
-                <div className="flex items-center">
-                  Status <SortIcon columnKey="status" />
-                </div>
-              </TableHead>
-              <TableHead className="w-[80px]"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {displayData.map((invoice) => {
-              const isActive = invoice.FGEstado === EstadoInvoice.ACTIVE;
-              const isPaid = invoice.FGEstado === EstadoInvoice.PAID;
-              const isOverdue = invoice.FGEstado === EstadoInvoice.OVERDUE;
-              const isAnulated = invoice.FGEstado === EstadoInvoice.ANULATED;
-              const { days: daysFromDue, isOverdue30 } = getDaysFromDueDate(
-                invoice.FGFechaVencimiento,
-              );
-              const showRedAmounts = (isActive || isOverdue) && isOverdue30;
+    <div
+      className={cn("relative", isFetching && "opacity-70 transition-opacity")}
+    >
+      <div className={cn("space-y-3 py-4 md:hidden", invoiceListPadding.x)}>
+        {displayData.map((invoice) => (
+          <InvoiceMobileCard
+            key={invoice.FGId}
+            invoice={invoice}
+            showTestInvoicePdfDownload={showTestInvoicePdfDownload}
+            isDownloadingPdf={
+              invoicePdfDownloadingSecuencia === invoice.FGOrgSecuencia
+            }
+            onDownloadPdf={handleDownloadPdf}
+            onAddPayment={handleAddPayment}
+            onDebitNote={handleDebitNote}
+            onCreditNote={handleCreditNote}
+            onReturnInventory={handleReturnInventory}
+          />
+        ))}
+      </div>
 
-              const getStatusBadgeVariant = () => {
-                if (isActive) return "outline";
-                if (isPaid) return "default";
-                if (isOverdue) return "default";
-                if (isAnulated) return "destructive";
-                return "default";
-              };
+      <div className={cn("hidden py-4 md:block", invoiceListPadding.x)}>
+        <ScrollArea>
+          <Table className="w-max min-w-full">
+            <TableHeader>
+              <TableRow>
+                <TableHead
+                  className={cn("pl-0", sortableHeadClass)}
+                  onClick={() => handleSort("invoiceNumber")}
+                >
+                  <div className="flex items-center">
+                    Invoice <SortIcon columnKey="invoiceNumber" />
+                  </div>
+                </TableHead>
+                <TableHead
+                  className={sortableHeadClass}
+                  onClick={() => handleSort("originalLoad")}
+                >
+                  <div className="flex items-center">
+                    Type <SortIcon columnKey="originalLoad" />
+                  </div>
+                </TableHead>
+                <TableHead
+                  className={sortableHeadClass}
+                  onClick={() => handleSort("purchaseOrder")}
+                >
+                  <div className="flex items-center">
+                    PO <SortIcon columnKey="purchaseOrder" />
+                  </div>
+                </TableHead>
+                <TableHead
+                  className={sortableHeadClass}
+                  onClick={() => handleSort("client")}
+                >
+                  <div className="flex items-center">
+                    Client <SortIcon columnKey="client" />
+                  </div>
+                </TableHead>
+                <TableHead
+                  className={sortableHeadClass}
+                  onClick={() => handleSort("vendor")}
+                >
+                  <div className="flex items-center">
+                    Vendor <SortIcon columnKey="vendor" />
+                  </div>
+                </TableHead>
+                <TableHead
+                  className={sortableHeadClass}
+                  onClick={() => handleSort("issuedDate")}
+                >
+                  <div className="flex items-center">
+                    Issued <SortIcon columnKey="issuedDate" />
+                  </div>
+                </TableHead>
+                <TableHead
+                  className={sortableHeadClass}
+                  onClick={() => handleSort("dueDate")}
+                >
+                  <div className="flex items-center">
+                    Due date <SortIcon columnKey="dueDate" />
+                  </div>
+                </TableHead>
+                <TableHead
+                  className={sortableHeadClass}
+                  onClick={() => handleSort("due")}
+                >
+                  <div className="flex items-center">
+                    Due <SortIcon columnKey="due" />
+                  </div>
+                </TableHead>
+                <TableHead
+                  className={sortableHeadClass}
+                  onClick={() => handleSort("totalAmount")}
+                >
+                  <div className="flex items-center">
+                    Total <SortIcon columnKey="totalAmount" />
+                  </div>
+                </TableHead>
+                <TableHead
+                  className={sortableHeadClass}
+                  onClick={() => handleSort("balance")}
+                >
+                  <div className="flex items-center">
+                    Balance <SortIcon columnKey="balance" />
+                  </div>
+                </TableHead>
+                <TableHead
+                  className={sortableHeadClass}
+                  onClick={() => handleSort("status")}
+                >
+                  <div className="flex items-center">
+                    Status <SortIcon columnKey="status" />
+                  </div>
+                </TableHead>
+                <TableHead className="w-[72px] pr-0">
+                  <span className="sr-only">Actions</span>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {displayData.map((invoice) => {
+                const isActive = invoice.FGEstado === EstadoInvoice.ACTIVE;
+                const isOverdue = invoice.FGEstado === EstadoInvoice.OVERDUE;
+                const { isOverdue30 } = getDaysFromDueDate(
+                  invoice.FGFechaVencimiento,
+                );
+                const showRedAmounts = (isActive || isOverdue) && isOverdue30;
 
-              const getStatusBadgeClassName = () => {
-                if (isActive) return "border-yellow-500 text-yellow-700";
-                if (isPaid) return "bg-blue-600 text-white";
-                if (isOverdue) return "bg-red-600 text-white";
-                if (isAnulated) return "bg-gray-600 text-white";
-              };
-
-              return (
-                <TableRow key={invoice.FGId}>
-                  <TableCell className="font-medium">
-                    #{invoice.FGNro}
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      className={
-                        invoice.FGFacturaDeSaldo
-                          ? "bg-blue-700 text-white"
-                          : "bg-green-700 text-white"
-                      }
-                    >
-                      {invoice.FGFacturaDeSaldo
-                        ? "Balance invoice"
-                        : "Dispatch order"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{invoice.FGPurchaseOrder || "N/A"}</TableCell>
-                  <TableCell>
-                    {invoice.cltemae.CRazonSocial
-                      ? `${invoice.cltemae.CRazonSocial}`
-                      : "N/A"}
-                  </TableCell>
-                  <TableCell>{invoice.vendedor?.VNombre || "N/A"}</TableCell>
-                  <TableCell>
-                    {formatearFecha(invoice.FGFechaCreado, { conTiempo: true })}
-                  </TableCell>
-                  <TableCell>
-                    {formatearFecha(invoice.FGFechaVencimiento, {
-                      conTiempo: true,
-                    })}
-                  </TableCell>
-                  <TableCell>
-                    {isPaid ? (
-                      "Paid"
-                    ) : daysFromDue === null ? (
-                      "—"
-                    ) : daysFromDue < 0 ? (
-                      <span className="text-blue-600">
-                        (-{Math.abs(daysFromDue)})
+                return (
+                  <TableRow
+                    key={invoice.FGId}
+                    className="transition-colors hover:bg-muted/40"
+                  >
+                    <TableCell className="pl-0">
+                      <span className="font-medium">#{invoice.FGNro}</span>
+                    </TableCell>
+                    <TableCell>
+                      <InvoiceLoadTypeBadge
+                        isBalanceInvoice={Boolean(invoice.FGFacturaDeSaldo)}
+                      />
+                    </TableCell>
+                    <TableCell>{invoice.FGPurchaseOrder || "—"}</TableCell>
+                    <TableCell>
+                      <span className="line-clamp-2">
+                        {invoice.cltemae?.CRazonSocial || "—"}
                       </span>
-                    ) : (
-                      <span className="text-red-600">({daysFromDue})</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <span
-                      className={
-                        showRedAmounts
-                          ? "text-red-600 font-medium"
-                          : "text-muted-foreground"
-                      }
-                    >
-                      {formatearMoneda(invoice.FGValorTotalNeto)}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <span
-                      className={
-                        showRedAmounts
-                          ? "text-red-600 font-medium"
-                          : "text-muted-foreground"
-                      }
-                    >
-                      {formatearMoneda(invoice.FGSaldo)}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={getStatusBadgeVariant()}
-                      className={getStatusBadgeClassName()}
-                    >
-                      {invoice.FGEstado}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Open Menu</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem asChild>
-                          <Link
-                            className="text-green-800"
-                            href={`/invoices/${invoice.FGOrgSecuencia}`}
-                          >
-                            <Eye className="h-4 w-4 mr-2" />
-                            View details
-                          </Link>
-                        </DropdownMenuItem>
-                        {showTestInvoicePdfDownload && (
-                          <DropdownMenuItem
-                            className="text-muted-foreground"
-                            disabled={invoicePdfDownloadingSecuencia !== null}
-                            onClick={async () => {
-                              try {
-                                setInvoicePdfDownloadingSecuencia(
-                                  invoice.FGOrgSecuencia,
-                                );
-                                await invoiceApi.downloadInvoicePDF(
-                                  invoice.FGOrgSecuencia,
-                                );
-                              } catch (err) {
-                                console.error(
-                                  "Test invoice PDF download failed:",
-                                  err,
-                                );
-                              } finally {
-                                setInvoicePdfDownloadingSecuencia(null);
-                              }
-                            }}
-                          >
-                            <Download className="h-4 w-4 mr-2" />
-                            Download invoice PDF (test)
-                          </DropdownMenuItem>
+                    </TableCell>
+                    <TableCell>{invoice.vendedor?.VNombre || "—"}</TableCell>
+                    <TableCell>
+                      {formatearFecha(invoice.FGFechaCreado, {
+                        conTiempo: true,
+                      })}
+                    </TableCell>
+                    <TableCell>
+                      {formatearFecha(invoice.FGFechaVencimiento, {
+                        conTiempo: true,
+                      })}
+                    </TableCell>
+                    <TableCell>
+                      <InvoiceDueIndicator
+                        dueDate={invoice.FGFechaVencimiento}
+                        status={invoice.FGEstado}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <span
+                        className={cn(
+                          showRedAmounts
+                            ? "font-medium text-red-600 dark:text-red-400"
+                            : "text-muted-foreground",
                         )}
-                        {/* Only show transaction menu items if invoice is not PAID */}
-                        {!isPaid && (
-                          <>
-                            <DropdownMenuItem
-                              className="text-green-600"
-                              onClick={() =>
-                                paymentManager.open(
-                                  invoice.FGId,
-                                  new Date(invoice.FGFechaCreado),
-                                  invoice.FGPago,
-                                )
-                              }
-                            >
-                              <DollarSign className="h-4 w-4 mr-2" />
-                              Add payment
-                            </DropdownMenuItem>
-
-                            <DropdownMenuItem
-                              className="text-orange-600"
-                              onClick={() =>
-                                debitNoteManager.open(
-                                  invoice.FGId,
-                                  new Date(invoice.FGFechaCreado),
-                                )
-                              }
-                            >
-                              <FileText className="h-4 w-4 mr-2" />
-                              Debit Note
-                            </DropdownMenuItem>
-
-                            <DropdownMenuItem
-                              className="text-blue-600"
-                              onClick={() =>
-                                creditNoteManager.open(
-                                  invoice.FGId,
-                                  new Date(invoice.FGFechaCreado),
-                                )
-                              }
-                            >
-                              <FileText className="h-4 w-4 mr-2" />
-                              Credit Note
-                            </DropdownMenuItem>
-
-                            {!invoice.FGFacturaDeSaldo && (
-                              <DropdownMenuItem
-                                className="text-purple-600"
-                                onClick={() =>
-                                  creditNoteWithReturnManager.open(
-                                    invoice.FGId,
-                                    new Date(invoice.FGFechaCreado),
-                                  )
-                                }
-                              >
-                                <RotateCcw className="h-4 w-4 mr-2" />
-                                Return inventory
-                              </DropdownMenuItem>
-                            )}
-                          </>
+                      >
+                        {formatearMoneda(invoice.FGValorTotalNeto)}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <span
+                        className={cn(
+                          "font-medium",
+                          showRedAmounts
+                            ? "text-red-600 dark:text-red-400"
+                            : "text-foreground",
                         )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-        <ScrollBar orientation="horizontal" />
-      </ScrollArea>
+                      >
+                        {formatearMoneda(invoice.FGSaldo)}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <InvoiceStatusBadge status={invoice.FGEstado} />
+                    </TableCell>
+                    <TableCell className="pr-0">
+                      <InvoiceRowActions
+                        invoice={invoice}
+                        showTestInvoicePdfDownload={showTestInvoicePdfDownload}
+                        isDownloadingPdf={
+                          invoicePdfDownloadingSecuencia ===
+                          invoice.FGOrgSecuencia
+                        }
+                        onDownloadPdf={handleDownloadPdf}
+                        onAddPayment={handleAddPayment}
+                        onDebitNote={handleDebitNote}
+                        onCreditNote={handleCreditNote}
+                        onReturnInventory={handleReturnInventory}
+                      />
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+          <ScrollBar orientation="horizontal" />
+        </ScrollArea>
+      </div>
 
-      {/* Pagination Controls */}
-      <TablePagination
+      <InvoicePagination
         currentPage={currentPage}
         totalPages={totalPages}
         totalItems={totalItems}
         onPageChange={onPageChange}
-        emptyMessage="No invoices found"
-        itemLabel="invoices"
       />
 
-      {/* Dispatch Dialog */}
-      {/* {selectedDispatchOrderSequence !== null && (
-        <InvoiceDialog
-          open={dispatchDialogOpen}
-          onOpenChange={(open) => {
-            setDispatchDialogOpen(open);
-            if (!open) {
-              setSelectedDispatchOrderSequence(null);
-            }
-          }}
-          dispatchOrderSequence={selectedDispatchOrderSequence}
-          onSuccess={() => {
-            onDispatch?.();
-          }}
-        />
-      )} */}
-
-      {/* Payment Modal */}
       <PaymentFormModal
         isOpen={paymentManager.isOpen}
         onClose={paymentManager.close}
@@ -575,7 +549,6 @@ export const InvoicesTable = ({
         invoiceCreatedAt={paymentManager.invoiceCreatedAt}
       />
 
-      {/* Debit Note Modal */}
       <DebitNoteFormModal
         isOpen={debitNoteManager.isOpen}
         onClose={debitNoteManager.close}
@@ -585,7 +558,6 @@ export const InvoicesTable = ({
         invoiceCreatedAt={debitNoteManager.invoiceCreatedAt}
       />
 
-      {/* Credit Note Modal */}
       <CreditNoteFormModal
         isOpen={creditNoteManager.isOpen}
         onClose={creditNoteManager.close}
@@ -595,8 +567,7 @@ export const InvoicesTable = ({
         invoiceCreatedAt={creditNoteManager.invoiceCreatedAt}
       />
 
-      {/* Credit Note with Return Dialog */}
-      {invoices.length > 0 && (
+      {invoices.length > 0 ? (
         <CreditNoteWithReturnDialog
           open={creditNoteWithReturnManager.isOpen}
           onOpenChange={creditNoteWithReturnManager.close}
@@ -606,7 +577,7 @@ export const InvoicesTable = ({
           isLoading={creditNoteWithReturnManager.isMutating}
           invoiceCreatedAt={creditNoteWithReturnManager.invoiceCreatedAt}
         />
-      )}
+      ) : null}
     </div>
   );
-};
+}

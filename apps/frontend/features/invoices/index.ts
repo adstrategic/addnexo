@@ -36,6 +36,7 @@ export type {
 
 // Hooks
 export { useInvoices, useInvoice } from "./hooks/useInvoices";
+export { useInvoiceListParams } from "./hooks/useInvoiceListParams";
 
 // Services
 export { invoiceApi, invoiceKeys, invoiceUtils } from "./services/invoices.api";
@@ -45,7 +46,7 @@ export { InvoicesContent } from "./components/InvoicesContent";
 export { InvoicesTable } from "./components/InvoicesTable";
 export { InvoicesDetails } from "./components/InvoicesDetails";
 export { InvoicesActions } from "./components/InvoicesActions";
-export { InvoicesFilter } from "./components/InvoicesFilter";
+export { InvoiceListToolbar } from "./components/InvoiceListToolbar";
 
 // MovCXC - Payments and Debit/Credit Notes
 export * from "./mov-cxc";

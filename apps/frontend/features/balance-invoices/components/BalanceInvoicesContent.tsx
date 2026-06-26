@@ -1,208 +1,181 @@
 "use client";
 
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BalanceInvoicesTable } from "./BalanceInvoicesTable";
-import { BalanceInvoicesFilter } from "./BalanceInvoicesFilter";
-import { BalanceInvoicesActions } from "./BalanceInvoicesActions";
-import { ErrorBoundary } from "@/components/error-boundary";
-import { EntityDeleteModal } from "@/components/shared/EntityDeleteModal";
-import { useTabState } from "@/hooks/useTabState";
-import { useDebouncedTableParams } from "@/hooks/useDebouncedTableParams";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { useBalanceInvoices } from "../hooks/useBalanceInvoices";
 import { useBalanceInvoiceDelete } from "../hooks/useBalanceInvoiceDelete";
+import { useBalanceInvoiceListParams } from "../hooks/useBalanceInvoiceListParams";
+import { BalanceInvoicesTable } from "./BalanceInvoicesTable";
+import { BalanceInvoiceListToolbar } from "./BalanceInvoiceListToolbar";
+import { BalanceInvoiceStatusTabs } from "./BalanceInvoiceStatusTabs";
+import { BalanceInvoicesActions } from "./BalanceInvoicesActions";
+import { BalanceInvoicePageHeader } from "./layout/BalanceInvoicePageHeader";
+import { balanceInvoiceListPadding } from "./layout/balance-invoice-list-layout";
+import { ErrorBoundary } from "@/components/error-boundary";
+import { EntityDeleteModal } from "@/components/shared/EntityDeleteModal";
 import { EstadoFactura } from "../schemas/BalanceInvoicesResponseSchema";
 
 export function BalanceInvoicesContent() {
-  // URL parameter management hooks
-  const { currentPage, setPage, debouncedSearch, searchTerm, setSearch } =
-    useDebouncedTableParams();
-
-  const { selectedTab, setTab } = useTabState({
-    defaultValue: "active",
-    resetPaginationOnChange: true,
-  });
+  const {
+    currentPage,
+    setPage,
+    debouncedSearch,
+    searchTerm,
+    setSearch,
+    selectedTab,
+    setTab,
+    clearFilters,
+    hasActiveFilters,
+  } = useBalanceInvoiceListParams();
 
   const deleteModal = useBalanceInvoiceDelete();
 
-  // Lazy loading: Only execute query for the active tab
-  // When switching tabs, the new query runs and previous data stays in cache
   const isActiveTab = selectedTab === "active";
   const isPaidTab = selectedTab === "paid";
   const isOverdueTab = selectedTab === "overdue";
+  const isAnulatedTab = selectedTab === "anulated";
+
+  const listParams = {
+    page: currentPage,
+    search: debouncedSearch,
+  };
 
   const {
-    data: unissuedData,
-    error: unissuedError,
-    isFetching: isFetchingUnissued,
+    data: activeData,
+    error: activeTabError,
+    isLoading: isLoadingActive,
+    isFetching: isFetchingActive,
   } = useBalanceInvoices({
-    page: currentPage,
-    // estado: EstadoFactura.ACTIVE,
-    search: debouncedSearch || undefined,
-    enabled: isActiveTab, // Only fetch when this tab is active
+    ...listParams,
+    estado: EstadoFactura.ACTIVE,
+    enabled: isActiveTab,
   });
 
   const {
-    data: issuedData,
-    error: issuedError,
-    isFetching: isFetchingIssued,
+    data: paidData,
+    error: paidError,
+    isLoading: isLoadingPaid,
+    isFetching: isFetchingPaid,
   } = useBalanceInvoices({
-    page: currentPage,
+    ...listParams,
     estado: EstadoFactura.PAID,
-    search: debouncedSearch || undefined,
-    enabled: isPaidTab, // Only fetch when this tab is active
+    enabled: isPaidTab,
   });
 
   const {
-    data: dispatchedData,
-    error: dispatchedError,
-    isFetching: isFetchingDispatched,
+    data: overdueData,
+    error: overdueError,
+    isLoading: isLoadingOverdue,
+    isFetching: isFetchingOverdue,
   } = useBalanceInvoices({
-    page: currentPage,
+    ...listParams,
     estado: EstadoFactura.OVERDUE,
-    search: debouncedSearch || undefined,
-    enabled: isOverdueTab, // Only fetch when this tab is active
+    enabled: isOverdueTab,
   });
 
-  // Select active tab data
-  const activeData = isActiveTab
-    ? unissuedData
-    : isPaidTab
-      ? issuedData
-      : dispatchedData;
-  const activeIsFetching = isActiveTab
-    ? isFetchingUnissued
-    : isPaidTab
-      ? isFetchingIssued
-      : isFetchingDispatched;
-  const activeError = isActiveTab
-    ? unissuedError
-    : isPaidTab
-      ? issuedError
-      : dispatchedError;
+  const {
+    data: anulatedData,
+    error: anulatedError,
+    isLoading: isLoadingAnulated,
+    isFetching: isFetchingAnulated,
+  } = useBalanceInvoices({
+    ...listParams,
+    estado: EstadoFactura.ANULATED,
+    enabled: isAnulatedTab,
+  });
 
-  // Error handling
+  const activeListData = isActiveTab
+    ? activeData
+    : isPaidTab
+      ? paidData
+      : isOverdueTab
+        ? overdueData
+        : anulatedData;
+
+  const activeIsLoading = isActiveTab
+    ? isLoadingActive
+    : isPaidTab
+      ? isLoadingPaid
+      : isOverdueTab
+        ? isLoadingOverdue
+        : isLoadingAnulated;
+
+  const activeIsFetching = isActiveTab
+    ? isFetchingActive
+    : isPaidTab
+      ? isFetchingPaid
+      : isOverdueTab
+        ? isFetchingOverdue
+        : isFetchingAnulated;
+
+  const activeError = isActiveTab
+    ? activeTabError
+    : isPaidTab
+      ? paidError
+      : isOverdueTab
+        ? overdueError
+        : anulatedError;
+
   if (activeError) {
     return <ErrorBoundary error={activeError} entityName="Balance Invoices" />;
   }
 
   return (
-    <div className="flex flex-col gap-4 p-4 md:p-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Balance Invoices</h1>
-          <p className="text-sm text-muted-foreground">
-            Manage balance invoices
-          </p>
-        </div>
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 p-4 md:p-8">
+      <BalanceInvoicePageHeader
+        title="Balance Invoices"
+        description="Manage outstanding balance billing for clients"
+        actions={<BalanceInvoicesActions />}
+      />
 
-        <BalanceInvoicesActions />
-      </div>
+      <Card className="overflow-hidden border-border shadow-sm">
+        <CardContent className="space-y-0 p-0">
+          <div
+            className={`border-b border-border ${balanceInvoiceListPadding.toolbar}`}
+          >
+            <BalanceInvoiceListToolbar
+              searchTerm={searchTerm}
+              onSearchChange={setSearch}
+              onClearFilters={clearFilters}
+              hasActiveFilters={hasActiveFilters}
+            />
+          </div>
 
-      {/* Main Content */}
-      <Card>
-        <CardHeader className="p-4">
-          <BalanceInvoicesFilter
-            searchTerm={searchTerm}
-            onSearchChange={setSearch}
-          />
-        </CardHeader>
-
-        <CardContent className="p-0">
           <Tabs className="w-full" value={selectedTab} onValueChange={setTab}>
-            <div className="border-b px-4">
-              <TabsList className="bg-transparent">
-                <TabsTrigger
-                  value="active"
-                  className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-yellow-500 data-[state=active]:shadow-none rounded-none"
-                >
-                  Active
-                </TabsTrigger>
-                <TabsTrigger
-                  value="paid"
-                  className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:shadow-none rounded-none"
-                >
-                  Paid
-                </TabsTrigger>
-                <TabsTrigger
-                  value="overdue"
-                  className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:shadow-none rounded-none"
-                >
-                  Overdue
-                </TabsTrigger>
-                <TabsTrigger
-                  value="anulated"
-                  className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:shadow-none rounded-none"
-                >
-                  Anulated
-                </TabsTrigger>
-              </TabsList>
+            <div
+              className={`overflow-x-auto border-b border-border ${balanceInvoiceListPadding.toolbar}`}
+            >
+              <BalanceInvoiceStatusTabs />
             </div>
 
-            {["active", "paid", "overdue", "anulated"].map((status) => (
-              <TabsContent value={status} className="p-0" key={status}>
-                <BalanceInvoicesTable
-                  facturas={activeData?.data || []}
-                  isLoading={activeIsFetching}
-                  onDelete={({ sequence, number }) =>
-                    deleteModal.openDeleteModal(sequence, number)
-                  }
-                  currentPage={currentPage}
-                  totalPages={activeData?.pagination.totalPages || 1}
-                  totalItems={activeData?.pagination.totalItems || 0}
-                  onPageChange={setPage}
-                />
-              </TabsContent>
-            ))}
-
-            {/* <TabsContent value="issued" className="p-0">
-              <DispatchOrdersTable
-                dispatchOrders={activeData?.data || []}
-                isLoading={activeIsFetching}
-                onDispatch={() => {
-                  // Refetch issued and dispatched tabs
-                  window.location.reload();
-                }}
+            <TabsContent value={selectedTab} className="mt-0 p-0">
+              <BalanceInvoicesTable
+                facturas={activeListData?.data ?? []}
+                isLoading={activeIsLoading}
+                isFetching={activeIsFetching && !activeIsLoading}
+                onDelete={({ sequence, number }) =>
+                  deleteModal.openDeleteModal(sequence, number)
+                }
                 currentPage={currentPage}
-                totalPages={activeData?.pagination.totalPages || 1}
-                totalItems={activeData?.pagination.totalItems || 0}
+                totalPages={activeListData?.pagination.totalPages ?? 1}
+                totalItems={activeListData?.pagination.totalItems ?? 0}
                 onPageChange={setPage}
+                hasActiveFilters={hasActiveFilters}
+                onClearFilters={clearFilters}
               />
             </TabsContent>
-
-            <TabsContent value="dispatched" className="p-0">
-              <DispatchOrdersTable
-                dispatchOrders={activeData?.data || []}
-                isLoading={activeIsFetching}
-                currentPage={currentPage}
-                totalPages={activeData?.pagination.totalPages || 1}
-                totalItems={activeData?.pagination.totalItems || 0}
-                onPageChange={setPage}
-              />
-            </TabsContent> */}
           </Tabs>
         </CardContent>
       </Card>
 
-      {/* Delete Confirmation Modal */}
       <EntityDeleteModal
         isOpen={deleteModal.isDeleteModalOpen}
         onClose={deleteModal.closeDeleteModal}
         onConfirm={deleteModal.handleDeleteConfirm}
-        entity="factura"
-        entityName={`Factura #${deleteModal.facturaAEliminar?.number}`}
+        entity="balance invoice"
+        entityName={`Balance Invoice #${deleteModal.facturaAEliminar?.number ?? ""}`}
         isDeleting={deleteModal.isDeleting}
       />
-
-      {/* Emit Confirmation Modal */}
-      {/* <FacturasEmitModal
-        isOpen={facturaModal.isEmitModalOpen}
-        onClose={facturaModal.closeEmitModal}
-        onConfirm={facturaModal.handleEmitWithConfirmation}
-        dispatchOrder={facturaModal.dispatchOrderAEmitir}
-        isEmitting={facturaModal.isEmitting}
-      /> */}
     </div>
   );
 }

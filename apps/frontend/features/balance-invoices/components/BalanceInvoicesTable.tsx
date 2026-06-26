@@ -8,229 +8,219 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import Link from "next/link";
-import {
-  Eye,
-  MoreHorizontal,
-  Edit,
-  Trash2,
-  Send,
-  Truck,
-  RotateCcw,
-} from "lucide-react";
-import { facturaUtils } from "../service/BalanceInvoicesService";
-import { TablePagination } from "@/components/shared/TablePagination";
-import {
-  EstadoFactura,
-  type Factura,
-} from "../schemas/BalanceInvoicesResponseSchema";
-// import { FacturaDialog } from "./FacturaDialog";
-import { useState } from "react";
-import { formatearFecha, formatearMoneda } from "@/lib/utils";
-import LoadingComponent from "@/components/loading-component";
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import { formatearFecha, formatearMoneda, getPageNumbers } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import type { Factura } from "../schemas/BalanceInvoicesResponseSchema";
+import { BalanceInvoiceEmptyState } from "./BalanceInvoiceEmptyState";
+import { BalanceInvoiceMobileCard } from "./BalanceInvoiceMobileCard";
+import { BalanceInvoiceRowActions } from "./BalanceInvoiceRowActions";
+import { BalanceInvoiceStatusBadge } from "./BalanceInvoiceStatusBadge";
+import { BalanceInvoiceTableSkeleton } from "./BalanceInvoiceTableSkeleton";
+import { balanceInvoiceListPadding } from "./layout/balance-invoice-list-layout";
 
 interface BalanceInvoicesTableProps {
   facturas: Factura[];
   isLoading: boolean;
-  onDelete?: (factura: { sequence: number; number: number }) => void;
+  isFetching?: boolean;
+  onDelete?: (payload: { sequence: number; number: number }) => void;
   currentPage: number;
   totalPages: number;
   totalItems: number;
   onPageChange: (page: number) => void;
+  hasActiveFilters: boolean;
+  onClearFilters: () => void;
 }
 
-export const BalanceInvoicesTable = ({
+function BalanceInvoicePagination({
+  currentPage,
+  totalPages,
+  totalItems,
+  onPageChange,
+}: Pick<
+  BalanceInvoicesTableProps,
+  "currentPage" | "totalPages" | "totalItems" | "onPageChange"
+>) {
+  if (totalItems === 0) return null;
+
+  return (
+    <div
+      className={cn(
+        "flex flex-col-reverse items-center justify-between gap-4 border-t border-border py-4 sm:flex-row",
+        balanceInvoiceListPadding.x,
+      )}
+    >
+      <p className="text-sm text-muted-foreground">
+        Page {currentPage} of {totalPages} · {totalItems}{" "}
+        {totalItems === 1 ? "balance invoice" : "balance invoices"}
+      </p>
+
+      <Pagination className="mx-0 w-auto justify-end">
+        <PaginationContent>
+          <PaginationItem>
+            <PaginationPrevious
+              onClick={() => onPageChange(currentPage - 1)}
+              className={cn(
+                "cursor-pointer",
+                (currentPage <= 1 || totalPages <= 1) &&
+                  "pointer-events-none opacity-50",
+              )}
+            />
+          </PaginationItem>
+
+          {getPageNumbers(totalPages, currentPage).map((page, index) => (
+            <PaginationItem key={index} className="hidden sm:list-item">
+              {page === "ellipsis" ? (
+                <PaginationEllipsis />
+              ) : (
+                <PaginationLink
+                  onClick={() => onPageChange(page as number)}
+                  isActive={currentPage === page}
+                  className="cursor-pointer"
+                >
+                  {page}
+                </PaginationLink>
+              )}
+            </PaginationItem>
+          ))}
+
+          <PaginationItem>
+            <PaginationNext
+              onClick={() => onPageChange(currentPage + 1)}
+              className={cn(
+                "cursor-pointer",
+                (currentPage >= totalPages || totalPages <= 1) &&
+                  "pointer-events-none opacity-50",
+              )}
+            />
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
+    </div>
+  );
+}
+
+export function BalanceInvoicesTable({
   facturas,
   isLoading,
+  isFetching = false,
   onDelete,
   currentPage,
   totalPages,
   totalItems,
   onPageChange,
-}: BalanceInvoicesTableProps) => {
+  hasActiveFilters,
+  onClearFilters,
+}: BalanceInvoicesTableProps) {
   if (isLoading) {
-    return (
-      <div className="space-y-4">
-        {[...Array(5)].map((_, i) => (
-          <div key={i} className="flex items-center space-x-4 p-4">
-            <Skeleton className="h-12 w-12 rounded-full" />
-            <div className="flex items-center space-x-4">
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-[250px]" />
-                <Skeleton className="h-4 w-[200px]" />
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
+    return <BalanceInvoiceTableSkeleton />;
   }
 
   if (facturas.length === 0) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
-        No invoices found
-      </div>
+      <BalanceInvoiceEmptyState
+        hasFilters={hasActiveFilters}
+        onClearFilters={onClearFilters}
+      />
     );
   }
 
   return (
-    <div className="py-4">
-      <div className="overflow-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Invoice Number</TableHead>
-              <TableHead>Purchase Order</TableHead>
-              <TableHead>Client</TableHead>
-              <TableHead>Issued Date</TableHead>
-              <TableHead>Vendor</TableHead>
-              <TableHead>Total Amount</TableHead>
-              <TableHead>Balance</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="w-[80px]"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {facturas.map((factura) => {
-              const isActive = factura.FGEstado === EstadoFactura.ACTIVE;
-              const isPaid = factura.FGEstado === EstadoFactura.PAID;
-              const isOverdue = factura.FGEstado === EstadoFactura.OVERDUE;
-              const isAnulated = factura.FGEstado === EstadoFactura.ANULATED;
-
-              const isEditable = factura.movCXC?.length === 0;
-
-              const getStatusBadgeVariant = () => {
-                if (isActive) return "outline";
-                if (isPaid) return "default";
-                if (isOverdue) return "default";
-                if (isAnulated) return "destructive";
-                return "default";
-              };
-
-              const getStatusBadgeClassName = () => {
-                if (isActive) return "border-yellow-500 text-yellow-700";
-                if (isPaid) return "bg-blue-600 text-white";
-                if (isOverdue) return "bg-red-600 text-white";
-                if (isAnulated) return "bg-gray-600 text-white";
-              };
-
-              return (
-                <TableRow key={factura.FGId}>
-                  <TableCell className="font-medium">
-                    #{factura.FGNro}
-                  </TableCell>
-                  <TableCell>{factura.FGPurchaseOrder || "N/A"}</TableCell>
-                  <TableCell>{factura.cltemae.CRazonSocial || "N/A"}</TableCell>
-                  <TableCell>
-                    {formatearFecha(factura.FGFechaCreado, { conTiempo: true })}
-                  </TableCell>
-                  <TableCell>{factura.vendedor?.VNombre || "N/A"}</TableCell>
-                  <TableCell>
-                    <span className="text-muted-foreground">
-                      {formatearMoneda(factura.FGValorTotalBruto || 0)}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <span className="text-muted-foreground">
-                      {formatearMoneda(factura.FGSaldo || 0)}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={getStatusBadgeVariant()}
-                      className={getStatusBadgeClassName()}
-                    >
-                      {factura.FGEstado}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Open Menu</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem asChild>
-                          <Link
-                            className="text-green-800"
-                            href={`/balance-invoices/${factura.FGOrgSecuencia}`}
-                          >
-                            <Eye className="h-4 w-4 mr-2" />
-                            View details
-                          </Link>
-                        </DropdownMenuItem>
-                        {isEditable && (
-                          <DropdownMenuItem asChild>
-                            <Link
-                              href={`/balance-invoices/${factura.FGOrgSecuencia}/edit`}
-                            >
-                              <Edit className="h-4 w-4 mr-2" />
-                              Edit
-                            </Link>
-                          </DropdownMenuItem>
-                        )}
-                        {isEditable && onDelete && (
-                          <DropdownMenuItem
-                            className="text-red-600"
-                            onClick={() =>
-                              onDelete({
-                                sequence: factura.FGOrgSecuencia,
-                                number: factura.FGNro,
-                              })
-                            }
-                          >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Delete
-                          </DropdownMenuItem>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
+    <div
+      className={cn("relative", isFetching && "opacity-70 transition-opacity")}
+    >
+      <div
+        className={cn("space-y-3 py-4 md:hidden", balanceInvoiceListPadding.x)}
+      >
+        {facturas.map((factura) => (
+          <BalanceInvoiceMobileCard
+            key={factura.FGId}
+            factura={factura}
+            onDelete={onDelete}
+          />
+        ))}
       </div>
 
-      {/* Pagination Controls */}
-      <TablePagination
+      <div className={cn("hidden md:block", balanceInvoiceListPadding.x)}>
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="pl-0">Invoice</TableHead>
+                <TableHead>PO</TableHead>
+                <TableHead>Client</TableHead>
+                <TableHead>Issued</TableHead>
+                <TableHead>Vendor</TableHead>
+                <TableHead>Total</TableHead>
+                <TableHead>Balance</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="w-[72px] pr-0">
+                  <span className="sr-only">Actions</span>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {facturas.map((factura) => {
+                const isEditable = factura.movCXC?.length === 0;
+
+                return (
+                  <TableRow
+                    key={factura.FGId}
+                    className="transition-colors hover:bg-muted/40"
+                  >
+                    <TableCell className="pl-0 font-medium">
+                      #{factura.FGNro}
+                    </TableCell>
+                    <TableCell>{factura.FGPurchaseOrder || "—"}</TableCell>
+                    <TableCell>
+                      <span className="line-clamp-2">
+                        {factura.cltemae?.CRazonSocial || "—"}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      {formatearFecha(factura.FGFechaCreado, {
+                        conTiempo: true,
+                      })}
+                    </TableCell>
+                    <TableCell>{factura.vendedor?.VNombre || "—"}</TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {formatearMoneda(Number(factura.FGValorTotalBruto ?? 0))}
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      {formatearMoneda(Number(factura.FGSaldo ?? 0))}
+                    </TableCell>
+                    <TableCell>
+                      <BalanceInvoiceStatusBadge status={factura.FGEstado} />
+                    </TableCell>
+                    <TableCell className="pr-0">
+                      <BalanceInvoiceRowActions
+                        factura={factura}
+                        isEditable={isEditable}
+                        onDelete={onDelete}
+                      />
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
+
+      <BalanceInvoicePagination
         currentPage={currentPage}
         totalPages={totalPages}
         totalItems={totalItems}
         onPageChange={onPageChange}
-        emptyMessage="No dispatch orders found"
-        itemLabel="dispatch orders"
       />
-
-      {/* Dispatch Dialog */}
-      {/* {selectedDispatchOrderSequence !== null && (
-        <FacturaDialog
-          open={dispatchDialogOpen}
-          onOpenChange={(open) => {
-            setDispatchDialogOpen(open);
-            if (!open) {
-              setSelectedDispatchOrderSequence(null);
-            }
-          }}
-          dispatchOrderSequence={selectedDispatchOrderSequence}
-          onSuccess={() => {
-            onDispatch?.();
-          }}
-        />
-      )} */}
     </div>
   );
-};
+}

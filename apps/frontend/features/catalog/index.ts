@@ -4,8 +4,9 @@
 export { ProductAction } from "./components/CatalogAction";
 export { ProductTable } from "./components/CatalogTable";
 export { ProductDetail } from "./components/CatalogDetail";
-export { ProductFilter } from "./components/CatalogFilter";
 export { ProductContent } from "./components/CatalogContent";
+export { CatalogListToolbar } from "./components/CatalogListToolbar";
+export { CatalogDetailsView } from "./components/CatalogDetailsView";
 
 // Forms
 export { ProductForm } from "./forms/CatalogForm";
@@ -29,6 +30,7 @@ export {
 export { useProductActions } from "./hooks/useCatalogActions";
 export { useProductManager } from "./hooks/useCatalogManager";
 export { useProductDelete } from "./hooks/useCatalogDelete";
+export { useCatalogListParams } from "./hooks/useCatalogListParams";
 
 // Service
 export { productsService, productsUtils } from "./service/CatalogService";
@@ -56,3 +58,5 @@ export {
 // Selectors
 export { GroupSelector } from "./selectors/GroupSelector";
 export { UnitSelector } from "./selectors/UnitSelector";
+export { GroupFilterSelector } from "./selectors/GroupFilterSelector";
+export { UnitFilterSelector } from "./selectors/UnitFilterSelector";

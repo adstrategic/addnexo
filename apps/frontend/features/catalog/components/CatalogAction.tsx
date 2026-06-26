@@ -5,20 +5,14 @@ interface ProductActionProps {
   onOpenCreateModal: () => void;
 }
 
-export const ProductAction = ({ onOpenCreateModal }: ProductActionProps) => {
+export function ProductAction({ onOpenCreateModal }: ProductActionProps) {
   return (
-    <Button className="" onClick={onOpenCreateModal}>
-      <Plus className="mr-2 h-4 w-4" />
-      New Product
+    <Button
+      onClick={onOpenCreateModal}
+      className="w-full cursor-pointer sm:w-auto"
+    >
+      <Plus className="mr-2 size-4" aria-hidden />
+      <span className="sm:inline">New Product</span>
     </Button>
   );
-};
-
-
-
-
-
-
-
-
-
+}

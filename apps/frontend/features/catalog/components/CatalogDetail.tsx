@@ -1,24 +1,30 @@
 "use client";
 
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import {
+  BarChart3,
+  DollarSign,
+  FileText,
+  Globe,
+  Package,
+  Ruler,
+  Tag,
+  TrendingUp,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 import { useProduct } from "../hooks/useCatalog";
 import { useProductManager } from "../hooks/useCatalogManager";
 import { useProductDelete } from "../hooks/useCatalogDelete";
 import { ProductFormModal } from "../forms/CatalogFormModal";
-import {
-  EntityDetails,
-  EntitySection,
-} from "@/components/shared/EntityDetails";
-import {
-  Package,
-  DollarSign,
-  Tag,
-  BarChart3,
-  FileText,
-  Ruler,
-  TrendingUp,
-} from "lucide-react";
-import { useRouter } from "next/navigation";
 import { EntityDeleteModal } from "@/components/shared/EntityDeleteModal";
+import { ErrorBoundary } from "@/components/error-boundary";
+import {
+  CatalogDetailsView,
+  formatCurrency,
+  renderExemptBadge,
+} from "./CatalogDetailsView";
 
 interface ProductDetailProps {
   productSecuencia: number;
@@ -26,142 +32,183 @@ interface ProductDetailProps {
 
 export function ProductDetail({ productSecuencia }: ProductDetailProps) {
   const { data: product, isLoading, error } = useProduct(productSecuencia);
-
   const router = useRouter();
 
-  // Hook para Formulario
   const productManager = useProductManager();
-
-  // Hook para Eliminación con redirección
   const productDelete = useProductDelete({
     onAfterDelete: () => router.push("/catalog"),
     redirectOnDelete: true,
   });
 
-  const handleViewInventory = () => {
-    // TODO: Implement navigation to product inventory
-    console.log("View product inventory:", product?.CKId);
+  const handleEdit = () => {
+    if (product) {
+      productManager.openEdit(product.CKOrgSecuencia);
+    }
   };
 
-  const handleViewSales = () => {
-    // TODO: Implement navigation to product sales
-    console.log("View product sales:", product?.CKId);
+  const handleDelete = () => {
+    if (product) {
+      productDelete.openDeleteModal(product.CKId, product.CKDescripcion);
+    }
   };
 
-  const handleViewKardex = () => {
-    // TODO: Implement navigation to product kardex
-    console.log("View product kardex:", product?.CKId);
-  };
+  if (error) {
+    return (
+      <div className="p-4 md:p-8">
+        <ErrorBoundary error={error} entityName="Product" />
+      </div>
+    );
+  }
 
-  const handleViewReports = () => {
-    // TODO: Implement navigation to product reports
-    console.log("View product reports:", product?.CKId);
-  };
+  if (!isLoading && !product) {
+    return (
+      <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 p-4 text-center md:p-8">
+        <Package className="size-12 text-muted-foreground" aria-hidden />
+        <div className="space-y-1">
+          <h2 className="text-lg font-semibold">Product not found</h2>
+          <p className="text-sm text-muted-foreground">
+            The product you are looking for does not exist or has been deleted.
+          </p>
+        </div>
+        <Button asChild variant="outline" className="cursor-pointer">
+          <Link href="/catalog">
+            <ArrowLeft className="mr-2 size-4" aria-hidden />
+            Back to products
+          </Link>
+        </Button>
+      </div>
+    );
+  }
 
-  // Prepare information sections
-  const sections: EntitySection[] = product
+  const sections = product
     ? [
         {
           title: "General Information",
-          icon: <Package className="h-5 w-5" />,
+          icon: <Package className="size-5" aria-hidden />,
           fields: [
             {
               label: "Description",
               value: product.CKDescripcion,
-              icon: <Package className="h-4 w-4 text-muted-foreground" />,
+              icon: <Package className="size-4" aria-hidden />,
+            },
+            {
+              label: "Group",
+              value: `${product.grupo.GNro} - ${product.grupo.GDescripcion}`,
+              icon: <Tag className="size-4" aria-hidden />,
+            },
+            {
+              label: "Code",
+              value: String(product.CKCodigo),
+              icon: <Tag className="size-4" aria-hidden />,
             },
             {
               label: "Origin country",
               value:
                 product.origenPais?.nombre ?? `#${String(product.CKOrigenId)}`,
-              icon: <Tag className="h-4 w-4 text-muted-foreground" />,
+              icon: <Globe className="size-4" aria-hidden />,
             },
             {
               label: "Average weight (kg)",
               value: String(product.CKPesoPromedioKg),
-              icon: <Ruler className="h-4 w-4 text-muted-foreground" />,
+              icon: <Ruler className="size-4" aria-hidden />,
             },
             {
-              label: "Unit of Measure",
-              value: product.unidadDeMedida.UMNombre,
-              icon: <Ruler className="h-4 w-4 text-muted-foreground" />,
+              label: "Unit of measure",
+              value: `${product.unidadDeMedida.UMNombre} - ${product.unidadDeMedida.UMDescripcion}`,
+              icon: <Ruler className="size-4" aria-hidden />,
             },
           ],
         },
         {
           title: "Pricing Information",
-          icon: <DollarSign className="h-5 w-5" />,
+          icon: <DollarSign className="size-5" aria-hidden />,
           fields: [
             {
-              label: "Public Price",
-              value: `$${product.CKPrecioPublico}`,
-              icon: <DollarSign className="h-4 w-4 text-muted-foreground" />,
+              label: "Public price",
+              value: formatCurrency(product.CKPrecioPublico),
+              icon: <DollarSign className="size-4" aria-hidden />,
             },
             {
-              label: "Sale Price 1",
-              value: `$${product.CKPrecioVenta1}`,
-              icon: <DollarSign className="h-4 w-4 text-muted-foreground" />,
+              label: "Sale price 1",
+              value: formatCurrency(product.CKPrecioVenta1),
+              icon: <DollarSign className="size-4" aria-hidden />,
             },
             {
-              label: "Sale Price 2",
-              value: `$${product.CKPrecioVenta2}`,
-              icon: <DollarSign className="h-4 w-4 text-muted-foreground" />,
+              label: "Sale price 2",
+              value: formatCurrency(product.CKPrecioVenta2),
+              icon: <DollarSign className="size-4" aria-hidden />,
             },
             {
-              label: "Margin Percentage",
+              label: "Margin percentage",
               value: `${product.CKPorcenMargen}%`,
-              icon: <TrendingUp className="h-4 w-4 text-muted-foreground" />,
+              icon: <TrendingUp className="size-4" aria-hidden />,
             },
             {
-              label: "Discount Limit",
+              label: "Discount limit",
               value: `${product.CKTopeDescuento}%`,
-              icon: <BarChart3 className="h-4 w-4 text-muted-foreground" />,
+              icon: <BarChart3 className="size-4" aria-hidden />,
             },
           ],
         },
         {
           title: "Tax Information",
-          icon: <FileText className="h-5 w-5" />,
+          icon: <FileText className="size-5" aria-hidden />,
           fields: [
             {
-              label: "VAT Rate",
+              label: "VAT rate",
               value: `${product.CKIva}%`,
-              icon: <FileText className="h-4 w-4 text-muted-foreground" />,
+              icon: <FileText className="size-4" aria-hidden />,
             },
             {
-              label: "Tax Exempt",
-              value: product.CKExento ? "Yes" : "No",
-              icon: <FileText className="h-4 w-4 text-muted-foreground" />,
+              label: "Tax exempt",
+              value: renderExemptBadge(product.CKExento),
+              icon: <FileText className="size-4" aria-hidden />,
             },
           ],
         },
       ]
     : [];
 
+  const quickActions = [
+    {
+      label: "View inventory",
+      icon: <Package className="size-5" aria-hidden />,
+      onClick: () => {
+        // TODO: Navigate to product inventory
+      },
+    },
+    {
+      label: "View sales",
+      icon: <BarChart3 className="size-5" aria-hidden />,
+      onClick: () => {
+        // TODO: Navigate to product sales
+      },
+    },
+    {
+      label: "View kardex",
+      icon: <FileText className="size-5" aria-hidden />,
+      onClick: () => {
+        // TODO: Navigate to product kardex
+      },
+    },
+  ];
+
   return (
     <>
-      <EntityDetails
-        title={product?.CKDescripcion || ""}
+      <CatalogDetailsView
+        title={product?.CKDescripcion ?? ""}
         subtitle={
           product
-            ? `Group: ${product.grupo.GNro} - ${product.grupo.GDescripcion} | Code: ${product.CKCodigo}`
-            : ""
+            ? `Group ${product.grupo.GNro} · Code ${product.CKCodigo}`
+            : undefined
         }
         sections={sections}
         isLoading={isLoading}
-        error={error}
-        onEdit={() =>
-          product && productManager.openEdit(product.CKOrgSecuencia)
-        }
-        onDelete={() =>
-          product &&
-          productDelete.openDeleteModal(product.CKId, product.CKDescripcion)
-        }
-        notFoundMessage="The product you are looking for does not exist or has been deleted."
-        notFoundIcon={<Package className="h-12 w-12 text-muted-foreground" />}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        quickActions={quickActions}
       />
 
-      {/* Product Form Modal */}
       <ProductFormModal
         isOpen={productManager.isOpen}
         onClose={productManager.close}
@@ -174,7 +221,6 @@ export function ProductDetail({ productSecuencia }: ProductDetailProps) {
         productError={productManager.productError}
       />
 
-      {/* Delete Confirmation Modal */}
       <EntityDeleteModal
         isOpen={productDelete.isDeleteModalOpen}
         onClose={productDelete.closeDeleteModal}

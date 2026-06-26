@@ -6,152 +6,242 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-
-import { Edit, Eye, MoreHorizontal, Trash2 } from "lucide-react";
-import { Producto } from "../types/server-types";
-import { Skeleton } from "@/components/ui/skeleton";
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import Link from "next/link";
-import { TablePagination } from "@/components/shared/TablePagination";
+import { cn, getPageNumbers } from "@/lib/utils";
+import type { Producto } from "../types/server-types";
+import { catalogListPadding } from "./layout/catalog-list-layout";
+import { CatalogEmptyState } from "./CatalogEmptyState";
+import { CatalogMobileCard } from "./CatalogMobileCard";
+import { CatalogRowActions } from "./CatalogRowActions";
+import { CatalogTableSkeleton } from "./CatalogTableSkeleton";
 
 interface ProductTableProps {
   productos: Producto[];
   isLoading: boolean;
-  onEdit: (producto: Producto) => void;
-  onDelete: (id: number, descripcion: string) => void;
+  isFetching?: boolean;
+  onEdit: (sequence: number) => void;
+  onDelete: (id: number, description: string) => void;
   currentPage: number;
   totalPages: number;
   totalItems: number;
   onPageChange: (page: number) => void;
+  hasActiveFilters: boolean;
+  onClearFilters: () => void;
+  onCreate?: () => void;
+}
+
+function formatPrice(value: number) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+  }).format(value);
+}
+
+function CatalogPagination({
+  currentPage,
+  totalPages,
+  totalItems,
+  onPageChange,
+}: Pick<
+  ProductTableProps,
+  "currentPage" | "totalPages" | "totalItems" | "onPageChange"
+>) {
+  if (totalItems === 0) return null;
+
+  return (
+    <div
+      className={cn(
+        "flex flex-col-reverse items-center justify-between gap-4 border-t border-border py-4 sm:flex-row",
+        catalogListPadding.x,
+      )}
+    >
+      <p className="text-sm text-muted-foreground">
+        Page {currentPage} of {totalPages} · {totalItems}{" "}
+        {totalItems === 1 ? "product" : "products"}
+      </p>
+
+      <Pagination className="mx-0 w-auto justify-end">
+        <PaginationContent>
+          <PaginationItem>
+            <PaginationPrevious
+              onClick={() => onPageChange(currentPage - 1)}
+              className={cn(
+                "cursor-pointer",
+                (currentPage <= 1 || totalPages <= 1) &&
+                  "pointer-events-none opacity-50",
+              )}
+            />
+          </PaginationItem>
+
+          {getPageNumbers(totalPages, currentPage).map((page, index) => (
+            <PaginationItem key={index} className="hidden sm:list-item">
+              {page === "ellipsis" ? (
+                <PaginationEllipsis />
+              ) : (
+                <PaginationLink
+                  onClick={() => onPageChange(page as number)}
+                  isActive={currentPage === page}
+                  className="cursor-pointer"
+                >
+                  {page}
+                </PaginationLink>
+              )}
+            </PaginationItem>
+          ))}
+
+          <PaginationItem>
+            <PaginationNext
+              onClick={() => onPageChange(currentPage + 1)}
+              className={cn(
+                "cursor-pointer",
+                (currentPage >= totalPages || totalPages <= 1) &&
+                  "pointer-events-none opacity-50",
+              )}
+            />
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
+    </div>
+  );
 }
 
 export const ProductTable = ({
   productos,
   isLoading,
+  isFetching = false,
   onEdit,
   onDelete,
   currentPage,
   totalPages,
   totalItems,
   onPageChange,
+  hasActiveFilters,
+  onClearFilters,
+  onCreate,
 }: ProductTableProps) => {
   if (isLoading) {
-    return (
-      <div className="space-y-4">
-        {[...Array(5)].map((_, i) => (
-          <div key={i} className="flex items-center space-x-4 p-4">
-            <Skeleton className="h-12 w-12 rounded-full" />
-            <div className="flex items-center space-x-4">
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-[250px]" />
-                <Skeleton className="h-4 w-[200px]" />
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
+    return <CatalogTableSkeleton />;
   }
 
   if (productos.length === 0) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
-        No products found
-      </div>
+      <CatalogEmptyState
+        hasFilters={hasActiveFilters}
+        onClearFilters={onClearFilters}
+        onCreate={onCreate}
+      />
     );
   }
 
   return (
-    <div className="py-4">
-      <div className="overflow-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Group</TableHead>
-              <TableHead>Code</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead>Origin</TableHead>
-              <TableHead>Unit</TableHead>
-              <TableHead>Public Price</TableHead>
-              <TableHead>Sale Price 1</TableHead>
-              <TableHead>VAT</TableHead>
-              <TableHead className="w-[80px]"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {productos.map((producto) => (
-              <TableRow key={producto.CKId}>
-                <TableCell>
-                  {producto.grupo.GNro} - {producto.grupo.GDescripcion}
-                </TableCell>
-                <TableCell className="font-medium">
-                  {producto.CKCodigo}
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <span>{producto.CKDescripcion}</span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  {producto.origenPais?.nombre ?? `#${producto.CKOrigenId}`}
-                </TableCell>
-                <TableCell>{producto.unidadDeMedida.UMNombre}</TableCell>
-                <TableCell>${producto.CKPrecioPublico}</TableCell>
-                <TableCell>${producto.CKPrecioVenta1}</TableCell>
-                <TableCell>{producto.CKIva}%</TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <MoreHorizontal className="h-4 w-4" />
-                        <span className="sr-only">Open Menu</span>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem asChild>
-                        <Link
-                          className="text-green-800"
-                          href={`/catalog/${producto.CKOrgSecuencia}`}
-                        >
-                          <Eye className="h-4 w-4 mr-2" />
-                          View details
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onEdit(producto)}>
-                        <Edit className="h-4 w-4 mr-2" />
-                        Edit
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="text-red-600"
-                        onClick={() =>
-                          onDelete(producto.CKId, producto.CKDescripcion)
-                        }
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+    <div className={cn("relative", isFetching && "opacity-70 transition-opacity")}>
+      <div className={cn("space-y-3 py-4 md:hidden", catalogListPadding.x)}>
+        {productos.map((producto) => (
+          <CatalogMobileCard
+            key={producto.CKId}
+            product={producto}
+            onEdit={onEdit}
+            onDelete={onDelete}
+          />
+        ))}
       </div>
 
-      <TablePagination
+      <div className={cn("hidden md:block", catalogListPadding.x)}>
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="pl-0">Product</TableHead>
+                <TableHead>Group</TableHead>
+                <TableHead>Origin</TableHead>
+                <TableHead>Unit</TableHead>
+                <TableHead>Pricing</TableHead>
+                <TableHead>VAT</TableHead>
+                <TableHead className="w-[72px] pr-0">
+                  <span className="sr-only">Actions</span>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {productos.map((producto) => (
+                <TableRow
+                  key={producto.CKId}
+                  className="transition-colors hover:bg-muted/40"
+                >
+                  <TableCell className="pl-0">
+                    <div className="space-y-1">
+                      <Link
+                        href={`/catalog/${producto.CKOrgSecuencia}`}
+                        className="font-medium text-foreground transition-colors hover:text-primary"
+                      >
+                        {producto.CKDescripcion}
+                      </Link>
+                      <p className="text-xs text-muted-foreground">
+                        Code {producto.CKCodigo}
+                      </p>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="space-y-0.5 text-sm">
+                      <p>{producto.grupo.GDescripcion}</p>
+                      <p className="text-muted-foreground">
+                        Group {producto.grupo.GNro}
+                      </p>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    {producto.origenPais?.nombre ?? `#${producto.CKOrigenId}`}
+                  </TableCell>
+                  <TableCell>{producto.unidadDeMedida.UMNombre}</TableCell>
+                  <TableCell>
+                    <div className="space-y-1">
+                      <p className="text-sm">
+                        {formatPrice(producto.CKPrecioPublico)}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Sale {formatPrice(producto.CKPrecioVenta1)}
+                      </p>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    {producto.CKExento ? (
+                      <Badge variant="secondary">Exempt</Badge>
+                    ) : (
+                      <span>{producto.CKIva}%</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="pr-0">
+                    <CatalogRowActions
+                      sequence={producto.CKOrgSecuencia}
+                      product={producto}
+                      productName={producto.CKDescripcion}
+                      onEdit={onEdit}
+                      onDelete={onDelete}
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
+
+      <CatalogPagination
         currentPage={currentPage}
         totalPages={totalPages}
         totalItems={totalItems}
         onPageChange={onPageChange}
-        emptyMessage="No products found"
-        itemLabel="products"
       />
     </div>
   );

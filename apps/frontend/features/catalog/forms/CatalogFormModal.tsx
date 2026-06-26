@@ -6,13 +6,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { ProductForm } from "./CatalogForm";
 import { LoadingComponent } from "@/components/loading-component";
 import type { Producto } from "../types/server-types";
 import type { UseFormReturn } from "react-hook-form";
 import type { ProductFormData } from "../schemas/CatalogSchema";
 import { ErrorBoundary } from "@/components/error-boundary";
+import { cn } from "@/lib/utils";
 
 interface ProductFormModalProps {
   isOpen: boolean;
@@ -24,6 +24,19 @@ interface ProductFormModalProps {
   isLoading?: boolean;
   isLoadingProduct?: boolean;
   productError?: Error | null;
+}
+
+const dialogContentClassName = cn(
+  "flex max-h-[90vh] w-[calc(100%-2rem)] flex-col gap-0 overflow-hidden p-0",
+  "sm:max-w-4xl",
+);
+
+function ProductFormModalBody({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 py-4">
+      {children}
+    </div>
+  );
 }
 
 export function ProductFormModal({
@@ -39,38 +52,35 @@ export function ProductFormModal({
 }: ProductFormModalProps) {
   const modalTitle = mode === "create" ? "Create New Product" : "Edit Product";
 
-  // Handle error state - if product was not found, show error and close modal
   if (productError && mode === "edit") {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-4xl max-h-[90vh] p-0">
-          <DialogHeader className="px-6 py-4 border-b">
+        <DialogContent className={dialogContentClassName}>
+          <DialogHeader className="shrink-0 border-b px-6 py-4">
             <DialogTitle>{modalTitle}</DialogTitle>
           </DialogHeader>
-          <ErrorBoundary
-            error={productError}
-            entityName="Product"
-            url={{ path: "/catalog", displayText: "Back to Products" }}
-          />
+          <ProductFormModalBody>
+            <ErrorBoundary
+              error={productError}
+              entityName="Product"
+              url={{ path: "/catalog", displayText: "Back to Products" }}
+            />
+          </ProductFormModalBody>
         </DialogContent>
       </Dialog>
     );
   }
 
-  // Handle loading state
   if (isLoadingProduct && mode === "edit") {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-4xl max-h-[90vh] p-0">
-          <DialogHeader className="px-6 py-4 border-b">
+        <DialogContent className={dialogContentClassName}>
+          <DialogHeader className="shrink-0 border-b px-6 py-4">
             <DialogTitle>{modalTitle}</DialogTitle>
           </DialogHeader>
-
-          <ScrollArea className="max-h-[calc(90vh-80px)]">
-            <div className="px-6 py-4">
-              <LoadingComponent variant="form" rows={8} />
-            </div>
-          </ScrollArea>
+          <ProductFormModalBody>
+            <LoadingComponent variant="form" rows={8} />
+          </ProductFormModalBody>
         </DialogContent>
       </Dialog>
     );
@@ -80,24 +90,22 @@ export function ProductFormModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
         onInteractOutside={(e) => e.preventDefault()}
-        className="max-w-4xl max-h-[90vh] p-0"
+        className={dialogContentClassName}
       >
-        <DialogHeader className="px-6 py-4 border-b">
+        <DialogHeader className="shrink-0 border-b px-6 py-4">
           <DialogTitle>{modalTitle}</DialogTitle>
         </DialogHeader>
 
-        <ScrollArea className="max-h-[calc(90vh-80px)]">
-          <div className="px-6 py-4">
-            <ProductForm
-              form={form}
-              mode={mode}
-              initialData={initialData}
-              onSubmit={onSubmit}
-              onCancel={onClose}
-              isLoading={isLoading}
-            />
-          </div>
-        </ScrollArea>
+        <ProductFormModalBody>
+          <ProductForm
+            form={form}
+            mode={mode}
+            initialData={initialData}
+            onSubmit={onSubmit}
+            onCancel={onClose}
+            isLoading={isLoading}
+          />
+        </ProductFormModalBody>
       </DialogContent>
     </Dialog>
   );

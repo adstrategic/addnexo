@@ -1,103 +1,104 @@
 "use client";
 
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent } from "@/components/ui/card";
 import { useProducts } from "../hooks/useCatalog";
 import { useProductManager } from "../hooks/useCatalogManager";
 import { useProductDelete } from "../hooks/useCatalogDelete";
-import { ProductFormModal } from "../forms/CatalogFormModal";
+import { useCatalogListParams } from "../hooks/useCatalogListParams";
 import { ProductTable } from "./CatalogTable";
-import { ProductFilter } from "./CatalogFilter";
+import { CatalogListToolbar } from "./CatalogListToolbar";
 import { ProductAction } from "./CatalogAction";
+import { CatalogPageHeader } from "./layout/CatalogPageHeader";
+import { catalogListPadding } from "./layout/catalog-list-layout";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { EntityDeleteModal } from "@/components/shared/EntityDeleteModal";
-import { useDebouncedTableParams } from "@/hooks/useDebouncedTableParams";
-import { useTabState } from "@/hooks/useTabState";
+import { ProductFormModal } from "../forms/CatalogFormModal";
 
 export function ProductContent() {
-  const { currentPage, setPage, debouncedSearch, searchTerm, setSearch } =
-    useDebouncedTableParams();
+  const {
+    currentPage,
+    setPage,
+    debouncedSearch,
+    searchTerm,
+    setSearch,
+    originId,
+    setOriginId,
+    unitId,
+    setUnitId,
+    grupoId,
+    setGrupoId,
+    clearFilters,
+    hasActiveFilters,
+  } = useCatalogListParams();
 
-  const { selectedTab, setTab } = useTabState({
-    defaultValue: "todos",
-    resetPaginationOnChange: true,
-  });
-  // Hook para manejo del Formulario (Create/Edit)
   const productManager = useProductManager();
-
-  // Hook para manejo de Eliminación
   const productDelete = useProductDelete();
 
-  // Query para obtener productos
-  const { data, isLoading, error } = useProducts({
-    search: debouncedSearch || undefined,
+  const {
+    data,
+    isLoading,
+    isFetching,
+    error,
+  } = useProducts({
     page: currentPage,
+    search: debouncedSearch,
+    paisId: originId,
+    unidadId: unitId,
+    grupoId,
   });
 
-  // Manejo de errores
   if (error) {
     return <ErrorBoundary error={error} entityName="Products" />;
   }
 
   return (
-    <div className="flex flex-col gap-4 p-4 md:p-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Products</h1>
-          <p className="text-sm text-muted-foreground">
-            Manage your product catalog and inventory
-          </p>
-        </div>
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 p-4 md:p-8">
+      <CatalogPageHeader
+        title="Products"
+        description="Manage your product catalog and inventory"
+        actions={
+          <ProductAction onOpenCreateModal={productManager.openCreate} />
+        }
+      />
 
-        <ProductAction onOpenCreateModal={productManager.openCreate} />
-      </div>
+      <Card className="overflow-hidden border-border shadow-sm">
+        <CardContent className="space-y-0 p-0">
+          <div
+            className={`border-b border-border ${catalogListPadding.toolbar}`}
+          >
+            <CatalogListToolbar
+              searchTerm={searchTerm}
+              onSearchChange={setSearch}
+              originId={originId}
+              onOriginChange={setOriginId}
+              unitId={unitId}
+              onUnitChange={setUnitId}
+              grupoId={grupoId}
+              onGrupoChange={setGrupoId}
+              onClearFilters={clearFilters}
+              hasActiveFilters={hasActiveFilters}
+            />
+          </div>
 
-      {/* Main Content */}
-      <Card>
-        <CardHeader className="p-4">
-          <ProductFilter
-            searchTerm={searchTerm}
-            onSearchChange={setSearch}
-            onFilterChange={(filter) => console.log("Filter:", filter)}
+          <ProductTable
+            productos={data?.data ?? []}
+            isLoading={isLoading}
+            isFetching={isFetching && !isLoading}
+            onEdit={(sequence) => productManager.openEdit(sequence)}
+            onDelete={(id, descripcion) =>
+              productDelete.openDeleteModal(id, descripcion)
+            }
+            currentPage={currentPage}
+            totalPages={data?.pagination.totalPages ?? 1}
+            totalItems={data?.pagination.totalItems ?? 0}
+            onPageChange={setPage}
+            hasActiveFilters={hasActiveFilters}
+            onClearFilters={clearFilters}
+            onCreate={productManager.openCreate}
           />
-        </CardHeader>
-
-        <CardContent className="p-0">
-          <Tabs defaultValue="todos" className="w-full" onValueChange={setTab}>
-            <div className="border-b px-4">
-              <TabsList className="bg-transparent">
-                <TabsTrigger
-                  value="todos"
-                  className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-green-600 data-[state=active]:shadow-none rounded-none"
-                >
-                  All
-                </TabsTrigger>
-                {/* Futuras pestañas para filtros por estado */}
-              </TabsList>
-            </div>
-
-            <TabsContent value="todos" className="p-0">
-              <ProductTable
-                productos={data?.data ?? []}
-                isLoading={isLoading}
-                onEdit={(producto) =>
-                  productManager.openEdit(producto.CKOrgSecuencia)
-                }
-                onDelete={(id, descripcion) =>
-                  productDelete.openDeleteModal(id, descripcion)
-                }
-                currentPage={currentPage}
-                totalPages={data?.pagination.totalPages || 1}
-                totalItems={data?.pagination.totalItems || 0}
-                onPageChange={setPage}
-              />
-            </TabsContent>
-          </Tabs>
         </CardContent>
       </Card>
 
-      {/* Product Form Modal - handles both create and edit */}
       <ProductFormModal
         isOpen={productManager.isOpen}
         onClose={productManager.close}
@@ -110,7 +111,6 @@ export function ProductContent() {
         productError={productManager.productError}
       />
 
-      {/* Delete Confirmation Modal - Separate logic */}
       <EntityDeleteModal
         isOpen={productDelete.isDeleteModalOpen}
         onClose={productDelete.closeDeleteModal}

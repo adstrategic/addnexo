@@ -21,6 +21,14 @@ export const listAlmacenes = async (options: ListAlmacenesOptions) => {
   if (search) {
     where.OR = [
       { ALNombre: { contains: search, mode: "insensitive" as const } },
+      { ALResponsable: { contains: search, mode: "insensitive" as const } },
+      { ALDireccion: { contains: search, mode: "insensitive" as const } },
+      { ALTelefono: { contains: search, mode: "insensitive" as const } },
+      {
+        ciudad: {
+          nombre: { contains: search, mode: "insensitive" as const },
+        },
+      },
     ];
   }
 

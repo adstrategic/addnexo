@@ -6,13 +6,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { AlmacenForm } from "./AlmacenForm";
-import LoadingComponent from "@/components/loading-component";
-import type { AlmacenResponse } from "../schemas/almacenes.schema";
-import type { UseFormReturn } from "react-hook-form";
-import type { CreateAlmacenDto } from "../schemas/almacenes.schema";
+import { LoadingComponent } from "@/components/loading-component";
+import type { AlmacenResponse, CreateAlmacenDto } from "../schemas/almacenes.schema";
 import { ErrorBoundary } from "@/components/error-boundary";
+import type { UseFormReturn } from "react-hook-form";
+import { cn } from "@/lib/utils";
 
 interface AlmacenFormModalProps {
   isOpen: boolean;
@@ -24,6 +23,19 @@ interface AlmacenFormModalProps {
   isLoading?: boolean;
   isLoadingAlmacen?: boolean;
   almacenError?: Error | null;
+}
+
+const dialogContentClassName = cn(
+  "flex max-h-[90vh] w-[calc(100%-2rem)] flex-col gap-0 overflow-hidden p-0",
+  "sm:max-w-4xl",
+);
+
+function AlmacenFormModalBody({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 py-4">
+      {children}
+    </div>
+  );
 }
 
 export function AlmacenFormModal({
@@ -40,41 +52,41 @@ export function AlmacenFormModal({
   const modalTitle =
     mode === "create" ? "Create New Warehouse" : "Edit Warehouse";
 
-  // Handle error state - if almacen was not found, show error and close modal
   if (almacenError && mode === "edit") {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent
           onInteractOutside={(e) => e.preventDefault()}
-          className="max-w-4xl max-h-[90vh] p-0"
+          className={dialogContentClassName}
         >
-          <DialogHeader className="px-6 py-4 border-b">
+          <DialogHeader className="shrink-0 border-b px-6 py-4">
             <DialogTitle>{modalTitle}</DialogTitle>
           </DialogHeader>
-          <ErrorBoundary
-            error={almacenError}
-            entityName="Warehouse"
-            url={{ path: "/warehouses", displayText: "Back to Warehouses" }}
-          />
+          <AlmacenFormModalBody>
+            <ErrorBoundary
+              error={almacenError}
+              entityName="Warehouse"
+              url={{ path: "/warehouses", displayText: "Back to Warehouses" }}
+            />
+          </AlmacenFormModalBody>
         </DialogContent>
       </Dialog>
     );
   }
 
-  // Handle loading state
   if (isLoadingAlmacen && mode === "edit") {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-4xl max-h-[90vh] p-0">
-          <DialogHeader className="px-6 py-4 border-b">
+        <DialogContent
+          onInteractOutside={(e) => e.preventDefault()}
+          className={dialogContentClassName}
+        >
+          <DialogHeader className="shrink-0 border-b px-6 py-4">
             <DialogTitle>{modalTitle}</DialogTitle>
           </DialogHeader>
-
-          <ScrollArea className="max-h-[calc(90vh-80px)]">
-            <div className="px-6 py-4">
-              <LoadingComponent variant="form" rows={8} />
-            </div>
-          </ScrollArea>
+          <AlmacenFormModalBody>
+            <LoadingComponent variant="form" rows={8} />
+          </AlmacenFormModalBody>
         </DialogContent>
       </Dialog>
     );
@@ -84,24 +96,22 @@ export function AlmacenFormModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
         onInteractOutside={(e) => e.preventDefault()}
-        className="max-w-4xl max-h-[90vh] p-0"
+        className={dialogContentClassName}
       >
-        <DialogHeader className="px-6 py-4 border-b">
+        <DialogHeader className="shrink-0 border-b px-6 py-4">
           <DialogTitle>{modalTitle}</DialogTitle>
         </DialogHeader>
 
-        <ScrollArea className="max-h-[calc(90vh-80px)]">
-          <div className="px-6 py-4">
-            <AlmacenForm
-              form={form}
-              mode={mode}
-              initialData={initialData}
-              onSubmit={onSubmit}
-              onCancel={onClose}
-              isLoading={isLoading}
-            />
-          </div>
-        </ScrollArea>
+        <AlmacenFormModalBody>
+          <AlmacenForm
+            form={form}
+            mode={mode}
+            initialData={initialData}
+            onSubmit={onSubmit}
+            onCancel={onClose}
+            isLoading={isLoading}
+          />
+        </AlmacenFormModalBody>
       </DialogContent>
     </Dialog>
   );

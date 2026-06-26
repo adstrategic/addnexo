@@ -19,10 +19,11 @@ export {
 
 // Components
 export { AlmacenActions } from "./components/AlmacenAction";
-export { AlmacenTable } from "./components/AlmacenTable";
+export { WarehouseTable } from "./components/WarehouseTable";
 export { AlmacenDetail } from "./components/AlmacenDetail";
-export { AlmacenFilters } from "./components/AlmacenFilter";
-export { default as AlmacenContent } from "./components/AlmacenContent";
+export { WarehousesContent } from "./components/WarehousesContent";
+export { WarehouseListToolbar } from "./components/WarehouseListToolbar";
+export { WarehousePageHeader } from "./components/layout/WarehousePageHeader";
 
 // Forms
 export { AlmacenForm } from "./forms/AlmacenForm";
@@ -40,6 +41,7 @@ export {
 export { useAlmacenActions } from "./hooks/useAlmacenActions";
 export { useAlmacenManager } from "./hooks/useAlmacenManager";
 export { useAlmacenDelete } from "./hooks/useAlmacenDelete";
+export { useWarehouseListParams } from "./hooks/useWarehouseListParams";
 
 // Service
 export { almacenesService } from "./services/almacenes.services";

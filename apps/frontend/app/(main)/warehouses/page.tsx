@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense } from "react";
-import { AlmacenContent } from "@/features/warehouses";
+import { WarehousesContent } from "@/features/warehouses";
 import LoadingComponent from "@/components/loading-component";
 import { hasClientPermissions } from "@/lib/permissions";
 import { redirect } from "next/navigation";
@@ -26,7 +26,7 @@ export default function WarehousesPage() {
         </div>
       }
     >
-      <AlmacenContent />
+      <WarehousesContent />
     </Suspense>
   );
 }

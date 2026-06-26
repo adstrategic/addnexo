@@ -1,17 +1,20 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { ArrowLeft, FileText, MapPin, Phone, Plus, User, Warehouse } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useAlmacenBySequence } from "../hooks/useAlmacenes";
 import { useAlmacenManager } from "../hooks/useAlmacenManager";
 import { useAlmacenDelete } from "../hooks/useAlmacenDelete";
 import { AlmacenFormModal } from "../forms/AlmacenFormModal";
 import { EntityDeleteModal } from "@/components/shared/EntityDeleteModal";
+import { ErrorBoundary } from "@/components/error-boundary";
 import {
-  EntityDetails,
-  EntitySection,
-  EntityAction,
-} from "@/components/shared/EntityDetails";
-import { Warehouse, FileText, MapPin, Phone, User, Plus } from "lucide-react";
-import { useRouter } from "next/navigation";
+  WarehouseDetailsView,
+  renderContactValue,
+  warehouseDetailIcons,
+} from "./WarehouseDetailsView";
 
 interface AlmacenDetailProps {
   almacenSequence: number;
@@ -30,91 +33,134 @@ export function AlmacenDetail({ almacenSequence }: AlmacenDetailProps) {
     onAfterDelete: () => router.push("/warehouses"),
   });
 
-  const handleViewInventory = () => {
-    // TODO: Implement navigation to warehouse inventory
+  const handleEdit = () => {
+    if (almacen) {
+      almacenManager.openEdit(almacen.ALOrgSecuencia);
+    }
   };
 
-  const handleViewMovements = () => {
-    // TODO: Implement navigation to warehouse movements
+  const handleDelete = () => {
+    if (almacen) {
+      almacenDelete.openDeleteModal(almacen);
+    }
   };
 
-  const handleViewReports = () => {
-    // TODO: Implement navigation to warehouse reports
-  };
+  if (error) {
+    return (
+      <div className="p-4 md:p-8">
+        <ErrorBoundary error={error} entityName="Warehouse" />
+      </div>
+    );
+  }
 
-  const handleAddInventory = () => {
-    // TODO: Navigate to inventory page with warehouse pre-selected
-  };
+  if (!isLoading && !almacen) {
+    return (
+      <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 p-4 text-center md:p-8">
+        <Warehouse className="size-12 text-muted-foreground" aria-hidden />
+        <div className="space-y-1">
+          <h2 className="text-lg font-semibold">Warehouse not found</h2>
+          <p className="text-sm text-muted-foreground">
+            The warehouse you are looking for does not exist or has been deleted.
+          </p>
+        </div>
+        <Button asChild variant="outline" className="cursor-pointer">
+          <Link href="/warehouses">
+            <ArrowLeft className="mr-2 size-4" aria-hidden />
+            Back to warehouses
+          </Link>
+        </Button>
+      </div>
+    );
+  }
 
-  const sections: EntitySection[] = almacen
+  const sections = almacen
     ? [
         {
           title: "General Information",
-          icon: <Warehouse className="h-5 w-5" />,
+          icon: warehouseDetailIcons.warehouse,
           fields: [
-            {
-              label: "Name",
-              value: almacen.ALNombre,
-              icon: <FileText className="h-4 w-4 text-muted-foreground" />,
-            },
             {
               label: "Responsible",
               value: almacen.ALResponsable,
-              icon: <User className="h-4 w-4 text-muted-foreground" />,
+              icon: <User className="size-4" aria-hidden />,
             },
             {
               label: "Address",
               value: almacen.ALDireccion,
-              icon: <MapPin className="h-4 w-4 text-muted-foreground" />,
+              icon: <MapPin className="size-4" aria-hidden />,
             },
             {
               label: "Phone",
-              value: almacen.ALTelefono || "Not specified",
-              icon: <Phone className="h-4 w-4 text-muted-foreground" />,
+              value: renderContactValue(almacen.ALTelefono, "phone"),
+              icon: <Phone className="size-4" aria-hidden />,
+            },
+          ],
+        },
+        {
+          title: "Location",
+          icon: <MapPin className="size-4" aria-hidden />,
+          fields: [
+            {
+              label: "City",
+              value: almacen.ciudad?.nombre,
+              icon: <MapPin className="size-4" aria-hidden />,
+            },
+            {
+              label: "State/Province",
+              value: almacen.ciudad?.estado?.nombre,
+              icon: <MapPin className="size-4" aria-hidden />,
+            },
+            {
+              label: "Country",
+              value: almacen.ciudad?.estado?.pais?.nombre,
+              icon: <MapPin className="size-4" aria-hidden />,
             },
           ],
         },
       ]
     : [];
 
-  const quickActions: EntityAction[] = [
+  const quickActions = [
     {
       label: "View Inventory",
-      icon: <Warehouse className="h-6 w-6" />,
-      onClick: handleViewInventory,
+      icon: <Warehouse className="size-5" aria-hidden />,
+      onClick: () => {
+        // TODO: Navigate to warehouse inventory
+      },
     },
     {
       label: "Add Inventory",
-      icon: <Plus className="h-6 w-6" />,
-      onClick: handleAddInventory,
+      icon: <Plus className="size-5" aria-hidden />,
+      onClick: () => {
+        // TODO: Navigate to inventory page with warehouse pre-selected
+      },
     },
     {
       label: "View Movements",
-      icon: <FileText className="h-6 w-6" />,
-      onClick: handleViewMovements,
+      icon: <FileText className="size-5" aria-hidden />,
+      onClick: () => {
+        // TODO: Navigate to warehouse movements
+      },
     },
     {
       label: "View Reports",
-      icon: <FileText className="h-6 w-6" />,
-      onClick: handleViewReports,
+      icon: <FileText className="size-5" aria-hidden />,
+      onClick: () => {
+        // TODO: Navigate to warehouse reports
+      },
     },
   ];
 
   return (
     <>
-      <EntityDetails
+      <WarehouseDetailsView
         title={almacen?.ALNombre ?? ""}
-        subtitle={almacen ? `Warehouse #${almacen.ALOrgSecuencia}` : ""}
+        subtitle={almacen ? `Warehouse #${almacen.ALOrgSecuencia}` : undefined}
         sections={sections}
         isLoading={isLoading}
-        error={error}
-        onEdit={() =>
-          almacen && almacenManager.openEdit(almacen.ALOrgSecuencia)
-        }
-        onDelete={() => almacen && almacenDelete.openDeleteModal(almacen)}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
         quickActions={quickActions}
-        notFoundMessage="The warehouse you are looking for does not exist or has been deleted."
-        notFoundIcon={<Warehouse className="h-12 w-12 text-muted-foreground" />}
       />
 
       <AlmacenFormModal

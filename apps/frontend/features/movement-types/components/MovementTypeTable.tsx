@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Table,
   TableBody,
@@ -6,13 +8,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Pagination,
   PaginationContent,
@@ -22,214 +17,235 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { MoreHorizontal } from "lucide-react";
-import { TipoMovimiento } from "../types/server-types";
-import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { getPageNumbers } from "@/lib/utils";
+import { getPageNumbers, cn } from "@/lib/utils";
+import type { TipoMovimiento } from "../types/server-types";
+import { movementTypeListPadding } from "./layout/movement-type-list-layout";
+import { MovementTypeEmptyState } from "./MovementTypeEmptyState";
+import { MovementTypeMobileCard } from "./MovementTypeMobileCard";
+import { MovementTypeRowActions } from "./MovementTypeRowActions";
+import { MovementTypeTableSkeleton } from "./MovementTypeTableSkeleton";
 import {
-  getMovementTypeDescription,
   getBooleanBadgeVariant,
   getBooleanDisplayText,
+  getMovementTypeDescription,
 } from "../lib/utils";
 
 interface MovementTypeTableProps {
   tiposMovimiento: TipoMovimiento[];
   isLoading: boolean;
-  onEdit: (tipoMovimiento: TipoMovimiento) => void;
+  isFetching?: boolean;
+  onEdit: (movementType: TipoMovimiento) => void;
   onDelete: (id: number, descripcion: string, sequence: number) => void;
   currentPage: number;
   totalPages: number;
   totalItems: number;
   onPageChange: (page: number) => void;
+  hasActiveFilters: boolean;
+  onClearFilters: () => void;
+  onCreate?: () => void;
 }
 
-export const MovementTypeTable = ({
+function MovementTypePagination({
+  currentPage,
+  totalPages,
+  totalItems,
+  onPageChange,
+}: Pick<
+  MovementTypeTableProps,
+  "currentPage" | "totalPages" | "totalItems" | "onPageChange"
+>) {
+  if (totalItems === 0) return null;
+
+  return (
+    <div
+      className={cn(
+        "flex flex-col-reverse items-center justify-between gap-4 border-t border-border py-4 sm:flex-row",
+        movementTypeListPadding.x,
+      )}
+    >
+      <p className="text-sm text-muted-foreground">
+        Page {currentPage} of {totalPages} · {totalItems}{" "}
+        {totalItems === 1 ? "movement type" : "movement types"}
+      </p>
+
+      <Pagination className="mx-0 w-auto justify-end">
+        <PaginationContent>
+          <PaginationItem>
+            <PaginationPrevious
+              onClick={() => onPageChange(currentPage - 1)}
+              className={cn(
+                "cursor-pointer",
+                (currentPage <= 1 || totalPages <= 1) &&
+                  "pointer-events-none opacity-50",
+              )}
+            />
+          </PaginationItem>
+
+          {getPageNumbers(totalPages, currentPage).map((page, index) => (
+            <PaginationItem key={index} className="hidden sm:list-item">
+              {page === "ellipsis" ? (
+                <PaginationEllipsis />
+              ) : (
+                <PaginationLink
+                  onClick={() => onPageChange(page as number)}
+                  isActive={currentPage === page}
+                  className="cursor-pointer"
+                >
+                  {page}
+                </PaginationLink>
+              )}
+            </PaginationItem>
+          ))}
+
+          <PaginationItem>
+            <PaginationNext
+              onClick={() => onPageChange(currentPage + 1)}
+              className={cn(
+                "cursor-pointer",
+                (currentPage >= totalPages || totalPages <= 1) &&
+                  "pointer-events-none opacity-50",
+              )}
+            />
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
+    </div>
+  );
+}
+
+export function MovementTypeTable({
   tiposMovimiento,
   isLoading,
+  isFetching = false,
   onEdit,
   onDelete,
   currentPage,
   totalPages,
   totalItems,
   onPageChange,
-}: MovementTypeTableProps) => {
+  hasActiveFilters,
+  onClearFilters,
+  onCreate,
+}: MovementTypeTableProps) {
   if (isLoading) {
-    return (
-      <div className="space-y-4">
-        {[...Array(5)].map((_, i) => (
-          <div key={i} className="flex items-center space-x-4 p-4">
-            <Skeleton className="h-12 w-12 rounded-full" />
-            <div className="flex items-center space-x-4">
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-[250px]" />
-                <Skeleton className="h-4 w-[200px]" />
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
+    return <MovementTypeTableSkeleton />;
   }
 
   if (tiposMovimiento.length === 0) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
-        No movement types found
-      </div>
+      <MovementTypeEmptyState
+        hasFilters={hasActiveFilters}
+        onClearFilters={onClearFilters}
+        onCreate={onCreate}
+      />
     );
   }
 
   return (
-    <div className="py-4">
-      <div className="overflow-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Type</TableHead>
-              <TableHead>Class</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead>Abbreviation</TableHead>
-              <TableHead>Affects</TableHead>
-              <TableHead>Order</TableHead>
-              <TableHead>Invoice</TableHead>
-              <TableHead>Provider</TableHead>
-              <TableHead className="w-[80px]"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {tiposMovimiento.map((tipoMovimiento) => (
-              <TableRow key={tipoMovimiento.TId}>
-                <TableCell>
-                  {getMovementTypeDescription(tipoMovimiento.TTipo)}
-                </TableCell>
-                <TableCell>{tipoMovimiento.TClase}</TableCell>
-                <TableCell>{tipoMovimiento.TDescripcion}</TableCell>
-                <TableCell>{tipoMovimiento.TAbreviatura}</TableCell>
-                <TableCell>
-                  <Badge
-                    variant={getBooleanBadgeVariant(tipoMovimiento.TAfecta)}
-                  >
-                    {getBooleanDisplayText(tipoMovimiento.TAfecta)}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <Badge
-                    variant={getBooleanBadgeVariant(tipoMovimiento.TPedido)}
-                  >
-                    {getBooleanDisplayText(tipoMovimiento.TPedido)}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <Badge
-                    variant={getBooleanBadgeVariant(tipoMovimiento.TFactura)}
-                  >
-                    {getBooleanDisplayText(tipoMovimiento.TFactura)}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <Badge
-                    variant={getBooleanBadgeVariant(tipoMovimiento.TProv)}
-                  >
-                    {getBooleanDisplayText(tipoMovimiento.TProv)}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <MoreHorizontal className="h-4 w-4" />
-                        <span className="sr-only">Open Menu</span>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem asChild>
-                        <Link
-                          className="text-green-800"
-                          href={`/movement-types/${tipoMovimiento.TOrgSecuencia}`}
-                        >
-                          View details
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onEdit(tipoMovimiento)}>
-                        Edit
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="text-red-600"
-                        onClick={() =>
-                          onDelete(
-                            tipoMovimiento.TId,
-                            tipoMovimiento.TDescripcion,
-                            tipoMovimiento.TOrgSecuencia
-                          )
-                        }
-                      >
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
+    <div
+      className={cn("relative", isFetching && "opacity-70 transition-opacity")}
+    >
+      <div
+        className={cn("space-y-3 py-4 md:hidden", movementTypeListPadding.x)}
+      >
+        {tiposMovimiento.map((movementType) => (
+          <MovementTypeMobileCard
+            key={movementType.TId}
+            movementType={movementType}
+            onEdit={onEdit}
+            onDelete={onDelete}
+          />
+        ))}
+      </div>
+
+      <div className={cn("hidden md:block", movementTypeListPadding.x)}>
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="pl-0">Movement Type</TableHead>
+                <TableHead>Class</TableHead>
+                <TableHead>Abbrev.</TableHead>
+                <TableHead>Affects</TableHead>
+                <TableHead>Order</TableHead>
+                <TableHead>Invoice</TableHead>
+                <TableHead>Supplier</TableHead>
+                <TableHead className="w-[72px] pr-0">
+                  <span className="sr-only">Actions</span>
+                </TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-
-      {/* Pagination Controls */}
-      <div className="flex flex-col-reverse gap-4 items-center justify-center p-4">
-        <div className="text-sm text-muted-foreground">
-          {totalItems === 0 ? (
-            "No movement types found"
-          ) : (
-            <>
-              Showing page {currentPage} of {totalPages}
-            </>
-          )}
+            </TableHeader>
+            <TableBody>
+              {tiposMovimiento.map((movementType) => (
+                <TableRow
+                  key={movementType.TId}
+                  className="transition-colors hover:bg-muted/40"
+                >
+                  <TableCell className="pl-0">
+                    <div className="space-y-1">
+                      <Link
+                        href={`/movement-types/${movementType.TOrgSecuencia}`}
+                        className="font-medium text-foreground transition-colors hover:text-primary"
+                      >
+                        {movementType.TDescripcion}
+                      </Link>
+                      <p className="text-xs text-muted-foreground">
+                        {getMovementTypeDescription(movementType.TTipo)}
+                      </p>
+                    </div>
+                  </TableCell>
+                  <TableCell>{movementType.TClase}</TableCell>
+                  <TableCell>{movementType.TAbreviatura}</TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={getBooleanBadgeVariant(movementType.TAfecta)}
+                    >
+                      {getBooleanDisplayText(movementType.TAfecta)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={getBooleanBadgeVariant(movementType.TPedido)}
+                    >
+                      {getBooleanDisplayText(movementType.TPedido)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={getBooleanBadgeVariant(movementType.TFactura)}
+                    >
+                      {getBooleanDisplayText(movementType.TFactura)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={getBooleanBadgeVariant(movementType.TProv)}
+                    >
+                      {getBooleanDisplayText(movementType.TProv)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="pr-0">
+                    <MovementTypeRowActions
+                      movementType={movementType}
+                      onEdit={onEdit}
+                      onDelete={onDelete}
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
-
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                onClick={() => onPageChange(currentPage - 1)}
-                className={
-                  currentPage <= 1 || totalPages <= 1
-                    ? "pointer-events-none opacity-50"
-                    : "cursor-pointer"
-                }
-              />
-            </PaginationItem>
-
-            {getPageNumbers(totalPages, currentPage).map((page, index) => (
-              <PaginationItem key={index}>
-                {page === "ellipsis" ? (
-                  <PaginationEllipsis />
-                ) : (
-                  <PaginationLink
-                    onClick={() => onPageChange(page as number)}
-                    isActive={currentPage === page}
-                    className="cursor-pointer"
-                  >
-                    {page}
-                  </PaginationLink>
-                )}
-              </PaginationItem>
-            ))}
-
-            <PaginationItem>
-              <PaginationNext
-                onClick={() => onPageChange(currentPage + 1)}
-                className={
-                  currentPage >= totalPages || totalPages <= 1
-                    ? "pointer-events-none opacity-50"
-                    : "cursor-pointer"
-                }
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
       </div>
+
+      <MovementTypePagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        onPageChange={onPageChange}
+      />
     </div>
   );
-};
+}

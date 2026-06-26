@@ -1,11 +1,12 @@
 // Features exports - Movement Types Module
 
 // Components
-export { MovementTypeContent } from "./components/MovementTypeContent";
+export { MovementTypesContent } from "./components/MovementTypesContent";
 export { MovementTypeTable } from "./components/MovementTypeTable";
 export { MovementTypeDetail } from "./components/MovementTypeDetail";
-export { MovementTypeFilter } from "./components/MovementTypeFilter";
+export { MovementTypeListToolbar } from "./components/MovementTypeListToolbar";
 export { MovementTypeAction } from "./components/MovementTypeAction";
+export { MovementTypePageHeader } from "./components/layout/MovementTypePageHeader";
 export { MovementTypeMovementsTable } from "./components/MovementTypeMovementsTable";
 
 // Forms
@@ -25,6 +26,7 @@ export {
 export { useMovementTypeActions } from "./hooks/useMovementTypeActions";
 export { useMovementTypeManager } from "./hooks/useMovementTypeManager";
 export { useMovementTypeDelete } from "./hooks/useMovementTypeDelete";
+export { useMovementTypeListParams } from "./hooks/useMovementTypeListParams";
 
 // Services
 export {

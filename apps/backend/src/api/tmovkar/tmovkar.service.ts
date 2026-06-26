@@ -25,9 +25,12 @@ export const listTiposMovimiento = async (
 
   const where: Prisma.TmovkarWhereInput = { TOrganizationId: organizationId };
   if (search?.trim()) {
+    const searchNumber = parseInt(search, 10);
+    const isNumber = !Number.isNaN(searchNumber);
     where.OR = [
       { TDescripcion: { contains: search, mode: "insensitive" } },
       { TAbreviatura: { contains: search, mode: "insensitive" } },
+      ...(isNumber ? [{ TClase: searchNumber }] : []),
     ];
   }
 

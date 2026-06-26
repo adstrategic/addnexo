@@ -1,4 +1,4 @@
-import { MovementTypeContent } from "@/features/movement-types";
+import { MovementTypesContent } from "@/features/movement-types";
 import { LoadingComponent } from "@/components/loading-component";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
@@ -24,7 +24,7 @@ export default async function MovementTypesPage() {
         </div>
       }
     >
-      <MovementTypeContent />
+      <MovementTypesContent />
     </Suspense>
   );
 }

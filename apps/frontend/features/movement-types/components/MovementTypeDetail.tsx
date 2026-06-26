@@ -1,19 +1,28 @@
 "use client";
 
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import {
+  ArrowLeft,
+  FileText,
+  Plus,
+  Settings,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useMovementType } from "../hooks/useMovementTypes";
 import { useMovementTypeManager } from "../hooks/useMovementTypeManager";
 import { useMovementTypeDelete } from "../hooks/useMovementTypeDelete";
-import {
-  EntityDetails,
-  EntitySection,
-  EntityAction,
-} from "@/components/shared/EntityDetails";
-import { FileText, Settings, Plus } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { MovementTypeFormModal } from "../forms/MovementTypeFormModal";
 import { MovementTypeMovementsTable } from "./MovementTypeMovementsTable";
 import { EntityDeleteModal } from "@/components/shared/EntityDeleteModal";
-import { getMovementTypeDescription } from "../lib/utils";
+import { ErrorBoundary } from "@/components/error-boundary";
+import { MovementTypeDetailsView } from "./MovementTypeDetailsView";
+import {
+  formatPurpose,
+  getBooleanDisplayText,
+  getMovementTypeDescription,
+} from "../lib/utils";
 
 interface MovementTypeDetailProps {
   sequence: number;
@@ -21,141 +30,176 @@ interface MovementTypeDetailProps {
 
 export function MovementTypeDetail({ sequence }: MovementTypeDetailProps) {
   const router = useRouter();
-
-  // Hook para obtener el tipo de movimiento
   const { data: tipoMovimiento, isLoading, error } = useMovementType(sequence);
 
-  // Hook para manejo del Formulario (Create/Edit)
   const movementTypeManager = useMovementTypeManager();
+  const movementTypeDelete = useMovementTypeDelete({
+    onAfterDelete: () => router.push("/movement-types"),
+  });
 
-  // Hook para manejo de Eliminación
-  const movementTypeDelete = useMovementTypeDelete();
-
-  const handleViewMovements = () => {
-    // TODO: Implement navigation to movements list
-    console.log("View movements for type:", tipoMovimiento?.TId);
+  const handleEdit = () => {
+    if (tipoMovimiento) {
+      movementTypeManager.openEdit(tipoMovimiento.TOrgSecuencia);
+    }
   };
 
-  const handleAddMovement = () => {
-    // TODO: Implement add movement functionality
-    console.log("Add movement for type:", tipoMovimiento?.TId);
+  const handleDelete = () => {
+    if (tipoMovimiento) {
+      movementTypeDelete.openDeleteModal(
+        tipoMovimiento.TId,
+        tipoMovimiento.TDescripcion,
+        tipoMovimiento.TOrgSecuencia,
+      );
+    }
   };
 
-  const handleBackToList = () => {
-    router.push("/movement-types");
-  };
+  if (error) {
+    return (
+      <div className="p-4 md:p-8">
+        <ErrorBoundary error={error} entityName="Movement Type" />
+      </div>
+    );
+  }
 
-  // Prepare information sections
-  const sections: EntitySection[] = tipoMovimiento
+  if (!isLoading && !tipoMovimiento) {
+    return (
+      <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 p-4 text-center md:p-8">
+        <FileText className="size-12 text-muted-foreground" aria-hidden />
+        <div className="space-y-1">
+          <h2 className="text-lg font-semibold">Movement type not found</h2>
+          <p className="text-sm text-muted-foreground">
+            The movement type you are looking for does not exist or has been
+            deleted.
+          </p>
+        </div>
+        <Button asChild variant="outline" className="cursor-pointer">
+          <Link href="/movement-types">
+            <ArrowLeft className="mr-2 size-4" aria-hidden />
+            Back to movement types
+          </Link>
+        </Button>
+      </div>
+    );
+  }
+
+  const sections = tipoMovimiento
     ? [
         {
           title: "General Information",
-          icon: <FileText className="h-5 w-5" />,
+          icon: <FileText className="size-4" aria-hidden />,
           fields: [
+            {
+              label: "Type",
+              value: getMovementTypeDescription(tipoMovimiento.TTipo),
+              icon: <FileText className="size-4" aria-hidden />,
+            },
+            {
+              label: "Class",
+              value: (
+                <Badge variant="secondary">Class {tipoMovimiento.TClase}</Badge>
+              ),
+              icon: <FileText className="size-4" aria-hidden />,
+            },
             {
               label: "Description",
               value: tipoMovimiento.TDescripcion,
-              icon: <FileText className="h-4 w-4 text-muted-foreground" />,
+              icon: <FileText className="size-4" aria-hidden />,
             },
             {
               label: "Abbreviation",
               value: tipoMovimiento.TAbreviatura,
-              icon: <FileText className="h-4 w-4 text-muted-foreground" />,
+              icon: <FileText className="size-4" aria-hidden />,
+            },
+            {
+              label: "Purpose",
+              value: formatPurpose(tipoMovimiento.TProposito),
+              icon: <Settings className="size-4" aria-hidden />,
             },
           ],
         },
         {
           title: "Configuration",
-          icon: <Settings className="h-5 w-5" />,
+          icon: <Settings className="size-4" aria-hidden />,
           fields: [
             {
               label: "Affects Inventory",
-              value: tipoMovimiento.TAfecta ? "Yes" : "No",
-              icon: <Settings className="h-4 w-4 text-muted-foreground" />,
+              value: getBooleanDisplayText(tipoMovimiento.TAfecta),
+              icon: <Settings className="size-4" aria-hidden />,
             },
             {
               label: "Requires Client Purchase Order",
-              value: tipoMovimiento.TPedido ? "Yes" : "No",
-              icon: <Settings className="h-4 w-4 text-muted-foreground" />,
+              value: getBooleanDisplayText(tipoMovimiento.TPedido),
+              icon: <Settings className="size-4" aria-hidden />,
             },
             {
               label: "Requires Supplier Purchase Order",
-              value: tipoMovimiento.TRequiere ? "Yes" : "No",
-              icon: <Settings className="h-4 w-4 text-muted-foreground" />,
+              value: getBooleanDisplayText(tipoMovimiento.TRequiere),
+              icon: <Settings className="size-4" aria-hidden />,
             },
             {
               label: "Requires Invoice",
-              value: tipoMovimiento.TFactura ? "Yes" : "No",
-              icon: <Settings className="h-4 w-4 text-muted-foreground" />,
+              value: getBooleanDisplayText(tipoMovimiento.TFactura),
+              icon: <Settings className="size-4" aria-hidden />,
             },
             {
               label: "Requires Supplier",
-              value: tipoMovimiento.TProv ? "Yes" : "No",
-              icon: <Settings className="h-4 w-4 text-muted-foreground" />,
+              value: getBooleanDisplayText(tipoMovimiento.TProv),
+              icon: <Settings className="size-4" aria-hidden />,
+            },
+            {
+              label: "Requires Client",
+              value: getBooleanDisplayText(tipoMovimiento.TCliente),
+              icon: <Settings className="size-4" aria-hidden />,
             },
           ],
         },
       ]
     : [];
 
-  // Prepare quick actions
-  const quickActions: EntityAction[] = [
+  const quickActions = [
     {
       label: "View Movements",
-      icon: <FileText className="h-6 w-6" />,
-      onClick: handleViewMovements,
+      icon: <FileText className="size-5" aria-hidden />,
+      onClick: () => {
+        document.getElementById("movement-type-movements")?.scrollIntoView({
+          behavior: "smooth",
+        });
+      },
     },
     {
       label: "Add Movement",
-      icon: <Plus className="h-6 w-6" />,
-      onClick: handleAddMovement,
+      icon: <Plus className="size-5" aria-hidden />,
+      onClick: () => {
+        // TODO: Implement add movement functionality
+      },
     },
   ];
 
   return (
     <>
-      <EntityDetails
-        title={tipoMovimiento?.TDescripcion || ""}
+      <MovementTypeDetailsView
+        title={tipoMovimiento?.TDescripcion ?? ""}
         subtitle={
           tipoMovimiento
-            ? `${getMovementTypeDescription(tipoMovimiento.TTipo)} | Class: ${tipoMovimiento.TClase}`
-            : ""
+            ? `${getMovementTypeDescription(tipoMovimiento.TTipo)} · Class ${tipoMovimiento.TClase}`
+            : undefined
         }
         sections={sections}
         isLoading={isLoading}
-        error={error}
-        onEdit={() => {
-          if (tipoMovimiento) {
-            movementTypeManager.openEdit(tipoMovimiento.TOrgSecuencia);
-          }
-        }}
-        onDelete={() => {
-          if (tipoMovimiento) {
-            movementTypeDelete.openDeleteModal(
-              tipoMovimiento.TId,
-              tipoMovimiento.TDescripcion,
-              tipoMovimiento.TOrgSecuencia,
-            );
-          }
-        }}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
         quickActions={quickActions}
-        notFoundMessage="The movement type you are looking for does not exist or has been deleted."
-        notFoundIcon={<FileText className="h-12 w-12 text-muted-foreground" />}
-        onBack={handleBackToList}
-        backButtonText="Back to Movement Types"
-      />
+      >
+        {tipoMovimiento ? (
+          <div id="movement-type-movements" className="mt-2">
+            <MovementTypeMovementsTable
+              sequence={sequence}
+              tipoMovimiento={tipoMovimiento}
+            />
+          </div>
+        ) : null}
+      </MovementTypeDetailsView>
 
-      {/* Movimientos asociados */}
-      {tipoMovimiento && (
-        <div className="mt-6">
-          <MovementTypeMovementsTable
-            sequence={sequence}
-            tipoMovimiento={tipoMovimiento}
-          />
-        </div>
-      )}
-
-      {/* Edit Modal */}
       <MovementTypeFormModal
         isOpen={movementTypeManager.isOpen}
         onClose={movementTypeManager.close}
@@ -168,13 +212,12 @@ export function MovementTypeDetail({ sequence }: MovementTypeDetailProps) {
         movementTypeError={movementTypeManager.movementTypeError}
       />
 
-      {/* Delete Confirmation Modal */}
       <EntityDeleteModal
         isOpen={movementTypeDelete.isDeleteModalOpen}
         onClose={movementTypeDelete.closeDeleteModal}
         onConfirm={movementTypeDelete.handleDeleteConfirm}
         entity="movement type"
-        entityName={movementTypeDelete.movementTypeAEliminar?.descripcion || ""}
+        entityName={movementTypeDelete.movementTypeAEliminar?.descripcion ?? ""}
         isDeleting={movementTypeDelete.isDeleting}
       />
     </>

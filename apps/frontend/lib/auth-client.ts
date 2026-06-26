@@ -26,9 +26,8 @@ export const authClient = createAuthClient({
     organizationClient({
       ac,
       roles: {
-        owner: roles.owner,
         admin: roles.admin,
-        warehouseManager: roles.warehouseManager,
+        warehouse_manager: roles.warehouse_manager,
       },
     }),
     lastLoginMethodClient(),

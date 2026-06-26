@@ -1,0 +1,8 @@
+export type ErrorCode =
+  | "BUSINESS_REQUIRED"
+  | "CONFLICT"
+  | "ERR_NF"
+  | "ERR_VALID"
+  | "INTERNAL_ERROR"
+  | "SUBSCRIPTION_REQUIRED"
+  | "UNAUTHORIZED";

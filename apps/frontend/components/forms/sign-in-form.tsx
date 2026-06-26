@@ -36,7 +36,7 @@ interface SignInFormProps {
 
 export function SignInForm({
   onSuccess,
-  callbackURL = "/dashboard",
+  callbackURL = "/",
   showPasswordToggle = false,
 }: SignInFormProps) {
   const [loading, startTransition] = useTransition();

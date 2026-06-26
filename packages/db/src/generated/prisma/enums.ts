@@ -9,7 +9,119 @@
 * 🟢 You can import this file directly.
 */
 
+export const StatementClientScope = {
+  OVERDUE: 'OVERDUE',
+  BALANCE: 'BALANCE'
+} as const
+
+export type StatementClientScope = (typeof StatementClientScope)[keyof typeof StatementClientScope]
 
 
-// This file is empty because there are no enums in the schema.
-export {}
+export const TipoPropositoMovkar = {
+  DISPATCH_ORDER: 'DISPATCH_ORDER',
+  DISPATCH_ORDER_DEVOLUCION: 'DISPATCH_ORDER_DEVOLUCION',
+  DISPATCH_ORDER_ANULACION: 'DISPATCH_ORDER_ANULACION',
+  FACTURA_DEVOLUCION: 'FACTURA_DEVOLUCION',
+  NOTA_CREDITO: 'NOTA_CREDITO',
+  NOTA_CREDITO_CON_DEVOLUCION: 'NOTA_CREDITO_CON_DEVOLUCION',
+  NOTA_DEBITO: 'NOTA_DEBITO',
+  ABONO: 'ABONO'
+} as const
+
+export type TipoPropositoMovkar = (typeof TipoPropositoMovkar)[keyof typeof TipoPropositoMovkar]
+
+
+export const RegistroInvitacionModulo = {
+  CLIENTE: 'CLIENTE',
+  PROVEEDOR: 'PROVEEDOR',
+  VENDEDOR: 'VENDEDOR'
+} as const
+
+export type RegistroInvitacionModulo = (typeof RegistroInvitacionModulo)[keyof typeof RegistroInvitacionModulo]
+
+
+export const EstadoDispatchOrder = {
+  DRAFT: 'DRAFT',
+  EMITTED: 'EMITTED',
+  INVOICED: 'INVOICED',
+  DISPATCHED: 'DISPATCHED',
+  ANULATED: 'ANULATED'
+} as const
+
+export type EstadoDispatchOrder = (typeof EstadoDispatchOrder)[keyof typeof EstadoDispatchOrder]
+
+
+export const EstadoReserva = {
+  ACTIVE: 'ACTIVE',
+  EXPIRED: 'EXPIRED',
+  RELEASED: 'RELEASED',
+  CONSUMED: 'CONSUMED'
+} as const
+
+export type EstadoReserva = (typeof EstadoReserva)[keyof typeof EstadoReserva]
+
+
+export const ModoSalida = {
+  MANUAL: 'MANUAL',
+  AUTOMATICO: 'AUTOMATICO'
+} as const
+
+export type ModoSalida = (typeof ModoSalida)[keyof typeof ModoSalida]
+
+
+export const DocumentType = {
+  DISPATCH_ORDER: 'DISPATCH_ORDER',
+  PURCHASE_ORDER: 'PURCHASE_ORDER',
+  INVOICE: 'INVOICE'
+} as const
+
+export type DocumentType = (typeof DocumentType)[keyof typeof DocumentType]
+
+
+export const OutboxStatus = {
+  PENDING: 'PENDING',
+  PROCESSING: 'PROCESSING',
+  PROCESSED: 'PROCESSED',
+  FAILED: 'FAILED'
+} as const
+
+export type OutboxStatus = (typeof OutboxStatus)[keyof typeof OutboxStatus]
+
+
+export const OutboxEventType = {
+  INVOICE_CREATED: 'INVOICE_CREATED',
+  DISPATCH_ORDER_EMITTED: 'DISPATCH_ORDER_EMITTED'
+} as const
+
+export type OutboxEventType = (typeof OutboxEventType)[keyof typeof OutboxEventType]
+
+
+export const AggregateType = {
+  FACTURA: 'FACTURA',
+  DISPATCH_ORDER: 'DISPATCH_ORDER'
+} as const
+
+export type AggregateType = (typeof AggregateType)[keyof typeof AggregateType]
+
+
+export const EstadoFactura = {
+  ACTIVE: 'ACTIVE',
+  PAID: 'PAID',
+  OVERDUE: 'OVERDUE',
+  ANULATED: 'ANULATED'
+} as const
+
+export type EstadoFactura = (typeof EstadoFactura)[keyof typeof EstadoFactura]
+
+
+export const TipoPago = {
+  CONTADO: 'CONTADO',
+  CANJE: 'CANJE',
+  CREDITO: 'CREDITO',
+  WALLET: 'WALLET',
+  CREDIT_CARD: 'CREDIT_CARD',
+  TRANSFER: 'TRANSFER',
+  CHECK: 'CHECK'
+} as const
+
+export type TipoPago = (typeof TipoPago)[keyof typeof TipoPago]

@@ -38,10 +38,7 @@ interface SignUpFormProps {
   callbackURL?: string;
 }
 
-export function SignUpForm({
-  onSuccess,
-  callbackURL = "/dashboard",
-}: SignUpFormProps) {
+export function SignUpForm({ onSuccess, callbackURL = "/" }: SignUpFormProps) {
   const [loading, startTransition] = useTransition();
   const { image, imagePreview, handleImageChange, clearImage } =
     useImagePreview();

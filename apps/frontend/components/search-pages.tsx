@@ -44,8 +44,6 @@ const searchOptions = [
 
   // Dispatch Management
   { title: "Dispatch Orders", href: "/dispatch-orders", category: "Pages" },
-  { title: "Dispatch Issued", href: "/dispatch-issued", category: "Pages" },
-  { title: "Dispatch Unissued", href: "/dispatch-unissued", category: "Pages" },
 
   // Documents
   { title: "Documents", href: "/documents", category: "Pages" },
@@ -116,14 +114,19 @@ export function SearchPages() {
   const [searchValue, setSearchValue] = useState("");
 
   const filteredOptions = searchOptions.filter((option) =>
-    option.title.toLowerCase().includes(searchValue.toLowerCase())
+    option.title.toLowerCase().includes(searchValue.toLowerCase()),
   );
 
-  const groupedOptions = filteredOptions.reduce((acc, option) => {
-    if (!acc[option.category]) acc[option.category] = [];
-    acc[option.category].push(option);
-    return acc;
-  }, {} as Record<string, typeof searchOptions>);
+  const groupedOptions = filteredOptions.reduce(
+    (acc, option) => {
+      const key = option.category;
+      const group = acc[key] ?? [];
+      group.push(option);
+      acc[key] = group;
+      return acc;
+    },
+    {} as Record<string, (typeof searchOptions)[number][]>,
+  );
 
   return (
     <Popover open={searchOpen} onOpenChange={setSearchOpen}>

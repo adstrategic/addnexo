@@ -3,7 +3,6 @@ import { ac, roles } from "@repo/auth-config";
 import { prisma } from "@repo/db";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
-import { APIError } from "better-auth/api";
 import { organization } from "better-auth/plugins/organization";
 
 import { envVars } from "./envVars.js";
@@ -16,6 +15,30 @@ import { envVars } from "./envVars.js";
 export const auth = betterAuth({
   advanced: {
     crossSubDomainCookies: { enabled: false },
+  },
+
+  databaseHooks: {
+    session: {
+      create: {
+        before: async (data) => {
+          if (data.activeOrganizationId != null) return;
+          const userId = data.userId as string | undefined;
+          if (!userId) return;
+
+          const members = await prisma.member.findMany({
+            where: { userId },
+            select: { organizationId: true },
+          });
+          if (members.length !== 1) return;
+          const sole = members[0];
+          if (!sole) return;
+
+          return {
+            data: { activeOrganizationId: sole.organizationId },
+          };
+        },
+      },
+    },
   },
 
   database: prismaAdapter(prisma, {
@@ -36,18 +59,15 @@ export const auth = betterAuth({
     organization({
       ac,
       allowUserToCreateOrganization: true,
+      // The organization creator is assigned this role. Must exist in `roles`
+      // below and carry `invitation: ["create"]` so the creator can invite.
+      creatorRole: "admin",
       invitationExpiresIn: 60 * 60 * 48, // 48 hours
       organizationHooks: {
         afterAcceptInvitation: async ({ organization, user }) => {
           console.log(
             `✓ ${user.email} accepted invitation to ${organization.name}`,
           );
-        },
-        afterCreateOrganization: async ({ member }) => {
-          await prisma.member.update({
-            data: { role: "owner" },
-            where: { id: member.id },
-          });
         },
         afterDeleteOrganization: async ({ user }) => {
           const remainingOrgs = await prisma.member.count({
@@ -61,29 +81,11 @@ export const auth = betterAuth({
             console.log(`⚠️ User ${user.email} has no organizations left`);
           }
         },
-        beforeSetActiveOrganization: async ({
-          organizationId,
-          user,
-        }: {
-          organizationId: null | string;
-          user: { email: string; id: string; name: string };
-        }) => {
-          if (!organizationId) return;
-          const membership = await prisma.member.findFirst({
-            where: { organizationId, userId: user.id },
-          });
-          if (!membership) {
-            throw new APIError("FORBIDDEN", {
-              message: "You are not a member of this organization.",
-            });
-          }
-        },
       },
       organizationLimit: 5,
       roles: {
         admin: roles.admin,
-        owner: roles.owner,
-        warehouseManager: roles.warehouseManager,
+        warehouse_manager: roles.warehouse_manager,
       },
       async sendInvitationEmail(data) {
         console.log("📧 Invitation email would be sent to:", data.email);
@@ -113,9 +115,7 @@ export const auth = betterAuth({
     updateAge: 60 * 60 * 24, // refresh every day
   },
 
-  trustedOrigins: [envVars.FRONTEND_URL, envVars.BETTER_AUTH_URL].filter(
-    Boolean,
-  ),
+  trustedOrigins: [envVars.FRONTEND_URL].filter(Boolean),
 });
 
 export type Auth = typeof auth;

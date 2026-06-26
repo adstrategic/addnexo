@@ -17,7 +17,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { authClient } from "@/lib/auth-client";
-import { getCallbackURL } from "@/lib/shared";
+import { getCallbackURL, getPostAuthRedirect } from "@/lib/shared";
 import { cn } from "@/lib/utils";
 
 export default function SignIn() {
@@ -41,7 +41,7 @@ export default function SignIn() {
         <div className="grid gap-4">
           <SignInForm
             onSuccess={() => router.push(getCallbackURL(params))}
-            callbackURL="/dashboard"
+            callbackURL={getPostAuthRedirect("/")}
           />
 
           {/* OAuth Buttons - 2 per row */}
@@ -52,7 +52,7 @@ export default function SignIn() {
               onClick={async () => {
                 await authClient.signIn.social({
                   provider: "google",
-                  callbackURL: "/dashboard",
+                  callbackURL: getPostAuthRedirect("/"),
                 });
               }}
               aria-label="Sign in with Google"
@@ -91,7 +91,7 @@ export default function SignIn() {
               onClick={async () => {
                 await authClient.signIn.social({
                   provider: "github",
-                  callbackURL: "/dashboard",
+                  callbackURL: getPostAuthRedirect("/"),
                 });
               }}
               aria-label="Sign in with GitHub"
@@ -118,7 +118,7 @@ export default function SignIn() {
               onClick={async () => {
                 await authClient.signIn.social({
                   provider: "microsoft",
-                  callbackURL: "/dashboard",
+                  callbackURL: getPostAuthRedirect("/"),
                 });
               }}
               aria-label="Sign in with Microsoft"
@@ -145,7 +145,7 @@ export default function SignIn() {
               onClick={async () => {
                 await authClient.signIn.social({
                   provider: "vercel",
-                  callbackURL: "/dashboard",
+                  callbackURL: getPostAuthRedirect("/"),
                 });
               }}
               aria-label="Sign in with Vercel"

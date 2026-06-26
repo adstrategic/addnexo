@@ -72,6 +72,13 @@ model Verification {
   @@schema("auth")
 }
 
+enum StatementClientScope {
+  OVERDUE
+  BALANCE
+
+  @@schema("auth")
+}
+
 model Organization {
   id          String       @id
   name        String
@@ -129,6 +136,15 @@ model Organization {
   transferPayments      TransferPayment[]
   checkPayments         CheckPayment[]
   banks                 Bank[]
+
+  registroInvitaciones  RegistroInvitacion[]
+  businessEmailSendLogs BusinessEmailSendLog[]
+
+  periodosCierres PeriodoCierre[]
+  periodosActivos PeriodoActivo[]
+
+  statementScheduledRemindersEnabled Boolean              @default(false)
+  statementClientScope               StatementClientScope @default(OVERDUE)
 
   @@unique([slug])
   @@map("organization")

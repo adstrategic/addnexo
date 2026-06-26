@@ -12,7 +12,8 @@
     "db:migrate:dev": "turbo run db:migrate:dev",
     "db:push": "turbo run db:push",
     "dev:backend": "turbo run dev --filter=@repo/backend",
-    "dev:frontend": "turbo run dev --filter=@repo/frontend"
+    "dev:frontend": "turbo run dev --filter=@repo/frontend",
+    "dev:pdf-service": "turbo run dev --filter=@repo/pdf-service"
   },
   "devDependencies": {
     "prettier": "^3.7.4",

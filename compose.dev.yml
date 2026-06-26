@@ -78,12 +78,50 @@ services:
       REDIS_URL: redis://redis:6379
       REDIS_HOST: redis
       REDIS_PORT: "6379"
-      # PDF_SERVICE_URL: http://pdf-service:4001
+      PDF_SERVICE_URL: http://pdf-service:4001
       FRONTEND_URL: http://localhost:3000
     depends_on:
       postgres: { condition: service_healthy }
       redis: { condition: service_healthy }
-      # pdf-service: { condition: service_started }
+      pdf-service: { condition: service_started }
+
+  # Same image as backend-dev; just runs the BullMQ worker (worker.ts) instead of the API.
+  # This process is what actually delivers statement/invoice emails off the Redis queues.
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      target: backend-dev
+    command: pnpm --filter @repo/backend run dev:worker
+    develop:
+      watch:
+        - action: sync
+          path: .
+          target: /app
+          initial_sync: true
+          ignore:
+            - node_modules/
+            - .git/
+            - "**/dist/"
+            - "**/.next/"
+            - .turbo/
+        - action: rebuild
+          path: package.json
+        - action: rebuild
+          path: pnpm-lock.yaml
+    env_file:
+      - apps/backend/.env
+    environment:
+      DATABASE_URL: postgresql://nicoiscoding:Nicopro0205@postgres:5432/erp_demo
+      REDIS_URL: redis://redis:6379
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      PDF_SERVICE_URL: http://pdf-service:4001
+      FRONTEND_URL: http://localhost:3000
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      pdf-service: { condition: service_started }
 
   frontend:
     build:
@@ -118,72 +156,36 @@ services:
     depends_on:
       - backend
 
-  # pdf-service:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile.dev
-  #     target: pdf-service-dev
-  #   ports:
-  #     - "4001:4001"
-  #   develop:
-  #     watch:
-  #       - action: sync
-  #         path: .
-  #         target: /app
-  #         initial_sync: true
-  #         ignore:
-  #           - node_modules/
-  #           - .git/
-  #           - "**/dist/"
-  #           - "**/.next/"
-  #           - .turbo/
-  #       - action: rebuild
-  #         path: package.json
-  #       - action: rebuild
-  #         path: pnpm-lock.yaml
-  #   env_file:
-  #     - apps/pdf-service/.env
-  #   environment:
-  #     PORT: "4001"
-  #     PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "1"
-  #     PUPPETEER_EXECUTABLE_PATH: /usr/bin/chromium
-  #   depends_on:
-  #     postgres: { condition: service_healthy }
-
-  # worker:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile.dev
-  #     target: worker-dev
-  #   develop:
-  #     watch:
-  #       - action: sync
-  #         path: .
-  #         target: /app
-  #         initial_sync: true
-  #         ignore:
-  #           - node_modules/
-  #           - .git/
-  #           - "**/dist/"
-  #           - "**/.next/"
-  #           - .turbo/
-  #       - action: rebuild
-  #         path: package.json
-  #       - action: rebuild
-  #         path: pnpm-lock.yaml
-  #   env_file:
-  #     - apps/backend/.env
-  #   environment:
-  #     DATABASE_URL: postgresql://nicoiscoding:Nicopro0205@postgres:5432/addinvoices
-  #     REDIS_URL: redis://redis:6379
-  #     REDIS_HOST: redis
-  #     REDIS_PORT: "6379"
-  #     PDF_SERVICE_URL: http://pdf-service:4001
-  #   # No command override: use Dockerfile CMD (pnpm --filter @addinvoice/backend run dev:worker)
-  #   depends_on:
-  #     postgres: { condition: service_healthy }
-  #     redis: { condition: service_healthy }
-  #     pdf-service: { condition: service_started }
-
+  pdf-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      target: pdf-service-dev
+    ports:
+      - "4001:4001"
+    develop:
+      watch:
+        - action: sync
+          path: .
+          target: /app
+          initial_sync: true
+          ignore:
+            - node_modules/
+            - .git/
+            - "**/dist/"
+            - "**/.next/"
+            - .turbo/
+        - action: rebuild
+          path: package.json
+        - action: rebuild
+          path: pnpm-lock.yaml
+    env_file:
+      - apps/pdf-service/.env
+    environment:
+      PORT: "4001"
+      PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "1"
+      PUPPETEER_EXECUTABLE_PATH: /usr/bin/chromium
+    depends_on:
+      postgres: { condition: service_healthy }
 volumes:
   postgres_data_dev:

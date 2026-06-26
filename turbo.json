@@ -1,12 +1,19 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
-  "globalEnv": ["API_SERVER_URL", "DATABASE_URL", "BETTER_AUTH_SECRET"],
+  "globalEnv": [
+    "API_SERVER_URL",
+    "DATABASE_URL",
+    "BETTER_AUTH_SECRET",
+    "AWS_*",
+    "RESEND_*",
+    "REDIS_*"
+  ],
   "ui": "tui",
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".next/**", "!.next/cache/**"]
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     },
     "dev": {
       "dependsOn": ["^db:generate"],

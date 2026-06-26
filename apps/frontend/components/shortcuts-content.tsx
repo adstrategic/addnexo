@@ -17,6 +17,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { SettingsModal } from "@/components/settings-modal";
 
 import { SearchPages } from "./search-pages";
+import Image from "next/image";
 
 // const searchOptions = [
 //   { title: "Quick Info", href: "/", category: "Pages" },
@@ -115,12 +116,18 @@ export function ShortcutsContent() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#F8FAFC] via-[#E6FAFB] to-[#B8F0F3]">
+    <div className="min-h-screen bg-linear-to-b from-[#F8FAFC] via-[#E6FAFB] to-[#B8F0F3]">
       {/* Header con funcionalidades */}
       <header className="flex h-16 items-center justify-between border-b px-4 bg-white shadow-sm">
         <div className="flex items-center gap-4">
           <div className="flex items-center justify-center">
-            <img src="/180.png" alt="Logo" className="h-10 w-auto" />
+            <Image
+              src="/addstrategic-icon.png"
+              alt="Logo"
+              className="h-10 w-auto"
+              width={180}
+              height={180}
+            />
           </div>
           <div className="font-semibold text-lg text-gray-800">
             ADDSTRATEGIC

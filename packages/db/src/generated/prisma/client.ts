@@ -74,3 +74,315 @@ export type Member = Prisma.MemberModel
  * 
  */
 export type Invitation = Prisma.InvitationModel
+/**
+ * Model Pais
+ * 
+ */
+export type Pais = Prisma.PaisModel
+/**
+ * Model Estado
+ * 
+ */
+export type Estado = Prisma.EstadoModel
+/**
+ * Model Ciudad
+ * 
+ */
+export type Ciudad = Prisma.CiudadModel
+/**
+ * Model OrganizationCiudad
+ * 
+ */
+export type OrganizationCiudad = Prisma.OrganizationCiudadModel
+/**
+ * Model AcumuladoPais
+ * 
+ */
+export type AcumuladoPais = Prisma.AcumuladoPaisModel
+/**
+ * Model AcumuladoEstado
+ * 
+ */
+export type AcumuladoEstado = Prisma.AcumuladoEstadoModel
+/**
+ * Model AcumuladoCiudad
+ * 
+ */
+export type AcumuladoCiudad = Prisma.AcumuladoCiudadModel
+/**
+ * Model UnidadMedida
+ * 
+ */
+export type UnidadMedida = Prisma.UnidadMedidaModel
+/**
+ * Model ClaseAlmacen
+ * 
+ */
+export type ClaseAlmacen = Prisma.ClaseAlmacenModel
+/**
+ * Model Almacen
+ * 
+ */
+export type Almacen = Prisma.AlmacenModel
+/**
+ * Model Pdsucu
+ * 
+ */
+export type Pdsucu = Prisma.PdsucuModel
+/**
+ * Model Invcaruni
+ * 
+ */
+export type Invcaruni = Prisma.InvcaruniModel
+/**
+ * Model Invgrupos
+ * 
+ */
+export type Invgrupos = Prisma.InvgruposModel
+/**
+ * Model Kardex
+ * 
+ */
+export type Kardex = Prisma.KardexModel
+/**
+ * Model KardexLote
+ * 
+ */
+export type KardexLote = Prisma.KardexLoteModel
+/**
+ * Model KardexDet
+ * 
+ */
+export type KardexDet = Prisma.KardexDetModel
+/**
+ * Model Movkar
+ * 
+ */
+export type Movkar = Prisma.MovkarModel
+/**
+ * Model Tmovkar
+ * 
+ */
+export type Tmovkar = Prisma.TmovkarModel
+/**
+ * Model Rotado
+ * 
+ */
+export type Rotado = Prisma.RotadoModel
+/**
+ * Model Karrev
+ * 
+ */
+export type Karrev = Prisma.KarrevModel
+/**
+ * Model MprovedAcum
+ * 
+ */
+export type MprovedAcum = Prisma.MprovedAcumModel
+/**
+ * Model Mproved
+ * 
+ */
+export type Mproved = Prisma.MprovedModel
+/**
+ * Model Proved
+ * 
+ */
+export type Proved = Prisma.ProvedModel
+/**
+ * Model Paprovee
+ * 
+ */
+export type Paprovee = Prisma.PaproveeModel
+/**
+ * Model Pclteu
+ * 
+ */
+export type Pclteu = Prisma.PclteuModel
+/**
+ * Model Pclteg
+ * 
+ */
+export type Pclteg = Prisma.PcltegModel
+/**
+ * Model Vendedor
+ * 
+ */
+export type Vendedor = Prisma.VendedorModel
+/**
+ * Model Cltemae
+ * 
+ */
+export type Cltemae = Prisma.CltemaeModel
+/**
+ * Model RegistroInvitacion
+ * 
+ */
+export type RegistroInvitacion = Prisma.RegistroInvitacionModel
+/**
+ * Model BusinessEmailSendLog
+ * 
+ */
+export type BusinessEmailSendLog = Prisma.BusinessEmailSendLogModel
+/**
+ * Model KardexFacturacion
+ * 
+ */
+export type KardexFacturacion = Prisma.KardexFacturacionModel
+/**
+ * Model Document
+ * 
+ */
+export type Document = Prisma.DocumentModel
+/**
+ * Model OutboxEvent
+ * 
+ */
+export type OutboxEvent = Prisma.OutboxEventModel
+/**
+ * Model DispatchOrderG
+ * 
+ */
+export type DispatchOrderG = Prisma.DispatchOrderGModel
+/**
+ * Model DispatchOrderU
+ * 
+ */
+export type DispatchOrderU = Prisma.DispatchOrderUModel
+/**
+ * Model ReservationConfig
+ * 
+ */
+export type ReservationConfig = Prisma.ReservationConfigModel
+/**
+ * Model InventoryReservation
+ * 
+ */
+export type InventoryReservation = Prisma.InventoryReservationModel
+/**
+ * Model Facturag
+ * 
+ */
+export type Facturag = Prisma.FacturagModel
+/**
+ * Model MovCXC
+ * 
+ */
+export type MovCXC = Prisma.MovCXCModel
+/**
+ * Model Bank
+ * 
+ */
+export type Bank = Prisma.BankModel
+/**
+ * Model WalletPayment
+ * 
+ */
+export type WalletPayment = Prisma.WalletPaymentModel
+/**
+ * Model CreditCardPayment
+ * 
+ */
+export type CreditCardPayment = Prisma.CreditCardPaymentModel
+/**
+ * Model TransferPayment
+ * 
+ */
+export type TransferPayment = Prisma.TransferPaymentModel
+/**
+ * Model CheckPayment
+ * 
+ */
+export type CheckPayment = Prisma.CheckPaymentModel
+/**
+ * Model Facturau
+ * 
+ */
+export type Facturau = Prisma.FacturauModel
+/**
+ * Model Rclteg
+ * 
+ */
+export type Rclteg = Prisma.RcltegModel
+/**
+ * Model Rclteu
+ * 
+ */
+export type Rclteu = Prisma.RclteuModel
+/**
+ * Model AccountsReceivable
+ * 
+ */
+export type AccountsReceivable = Prisma.AccountsReceivableModel
+/**
+ * Model DSO
+ * 
+ */
+export type DSO = Prisma.DSOModel
+/**
+ * Model InventoryFisCaruni
+ * 
+ */
+export type InventoryFisCaruni = Prisma.InventoryFisCaruniModel
+/**
+ * Model InventoryFisKardex
+ * 
+ */
+export type InventoryFisKardex = Prisma.InventoryFisKardexModel
+/**
+ * Model InventoryFisKardexLote
+ * 
+ */
+export type InventoryFisKardexLote = Prisma.InventoryFisKardexLoteModel
+/**
+ * Model InventoryFisMovkar
+ * 
+ */
+export type InventoryFisMovkar = Prisma.InventoryFisMovkarModel
+/**
+ * Model InventoryRotacion
+ * 
+ */
+export type InventoryRotacion = Prisma.InventoryRotacionModel
+/**
+ * Model LiquidacionesEncabezado
+ * 
+ */
+export type LiquidacionesEncabezado = Prisma.LiquidacionesEncabezadoModel
+/**
+ * Model LiquidacionesGastos
+ * 
+ */
+export type LiquidacionesGastos = Prisma.LiquidacionesGastosModel
+/**
+ * Model LiquidacionesCostos
+ * 
+ */
+export type LiquidacionesCostos = Prisma.LiquidacionesCostosModel
+/**
+ * Model LiquidacionesVentas
+ * 
+ */
+export type LiquidacionesVentas = Prisma.LiquidacionesVentasModel
+/**
+ * Model LiquidacionesResumen
+ * 
+ */
+export type LiquidacionesResumen = Prisma.LiquidacionesResumenModel
+/**
+ * Model SalesAc
+ * 
+ */
+export type SalesAc = Prisma.SalesAcModel
+/**
+ * Model PeriodoCierre
+ * Registra cada mes cerrado formalmente.
+ * Una vez existe este registro, el período queda bloqueado para nuevos movimientos.
+ */
+export type PeriodoCierre = Prisma.PeriodoCierreModel
+/**
+ * Model PeriodoActivo
+ * Almacena el período activo seleccionado por cada usuario (una fila por usuario-org).
+ * Se usa para filtrar todos los datos de inventario por el período de trabajo elegido.
+ */
+export type PeriodoActivo = Prisma.PeriodoActivoModel

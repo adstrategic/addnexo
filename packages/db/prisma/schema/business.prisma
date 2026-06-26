@@ -14,9 +14,11 @@ model Pais {
   codigo         String
 
   // Relaciones
-  estados      Estado[]
-  acumulados   AcumuladoPais[]
-  Organization Organization?   @relation(fields: [organizationId], references: [id])
+  estados    Estado[]
+  acumulados AcumuladoPais[]
+  invcaruni  Invcaruni[]
+
+  Organization Organization? @relation(fields: [organizationId], references: [id])
 
   @@map("paises")
   @@schema("business")
@@ -49,44 +51,24 @@ model Ciudad {
   estado       Estado        @relation(fields: [estadoId], references: [id])
   Organization Organization? @relation(fields: [organizationId], references: [id])
 
-  acumulados            AcumuladoCiudad[]
-  Mproved               Mproved[]
-  clientes              Cltemae[]
+  acumulados                  AcumuladoCiudad[]
+  Mproved                     Mproved[]
+  clientes                    Cltemae[]
   // almacenes   Almacen[]
-  Pclteg                Pclteg[]
-  comprasProveedor      Proved[]
-  organizationesActivas OrganizationCiudad[]
-  Almacen               Almacen[]
-  KardexLote            KardexLote[]
-  Movkar                Movkar[]
-  KardexDet             KardexDet[]
-  Facturag              Facturag[]
-  dispatchOrderGs       DispatchOrderG[]
+  Pclteg                      Pclteg[]
+  comprasProveedor            Proved[]
+  ActivatedOrganizationCiudad OrganizationCiudad[]
+  Almacen                     Almacen[]
+  KardexLote                  KardexLote[]
+  Movkar                      Movkar[]
+  KardexDet                   KardexDet[]
+  Facturag                    Facturag[]
+  dispatchOrderGs             DispatchOrderG[]
 
   @@unique([nombre, estadoId], name: "nombre_estadoId")
   @@map("ciudades")
   @@schema("business")
 }
-
-// Tabla de Lotes: en este sistema, un lote se asocia a una ciudad de origen por producto
-// model Lote {
-//   id             Int    @id @default(autoincrement())
-//   organizationId String
-//   invcaruniId    Int
-//   ciudadId       Int
-
-//   codigo String? @db.VarChar(30)
-
-//   Organization Organization @relation(fields: [organizationId], references: [id])
-//   producto     Invcaruni    @relation(fields: [invcaruniId], references: [CKId])
-//   ciudad       Ciudad       @relation(fields: [ciudadId], references: [id])
-
-//   kardexLotes KardexLote[]
-//   movimientos Movkar[]
-
-//   @@unique([organizationId, invcaruniId, ciudadId])
-//   @@map("lotes")
-// }
 
 model OrganizationCiudad {
   organizationId String
@@ -289,7 +271,7 @@ model Invcaruni {
 
   CKCodigo               Int
   CKDescripcion          String  @db.VarChar(40)
-  CKOrigen               String  @default("N/A") @db.VarChar(20)
+  CKOrigenId             Int
   CKPrecioPublico        Decimal @db.Decimal(9, 2)
   CKPrecioVenta1         Decimal @db.Decimal(9, 2)
   CKPrecioVenta2         Decimal @db.Decimal(9, 2)
@@ -297,13 +279,9 @@ model Invcaruni {
   CKPorcenMargenTopeDesc Decimal @default(0) @db.Decimal(4, 2)
   CKTopeDescuento        Decimal @default(0) @db.Decimal(9, 2)
   CKIva                  Decimal @default(0) @db.Decimal(4, 2)
+  CKPesoPromedioKg       Decimal @default(0) @db.Decimal(9, 2)
   CKExento               Boolean @default(false)
   CKOrgSecuencia         Int
-
-  // Product Variant System
-  CKProductoPadreId Int?
-  productoPadre     Invcaruni?  @relation("ProductVariants", fields: [CKProductoPadreId], references: [CKId])
-  variantes         Invcaruni[] @relation("ProductVariants")
 
   // Auditoria
   creadoOModificado DateTime @default(now())
@@ -312,6 +290,7 @@ model Invcaruni {
   organization   Organization @relation(fields: [CKOrganizationId], references: [id])
   grupo          Invgrupos    @relation(fields: [CKGrupoId], references: [GId])
   unidadDeMedida UnidadMedida @relation(fields: [CKUnidadMedidaId], references: [UMId])
+  origenPais     Pais         @relation(fields: [CKOrigenId], references: [id])
 
   proved   Proved[]
   pclteu   Pclteu[]
@@ -330,7 +309,7 @@ model Invcaruni {
   @@unique([CKOrganizationId, CKGrupoId, CKCodigo])
   @@unique([CKOrganizationId, CKOrgSecuencia])
   @@index([CKOrganizationId, CKDescripcion])
-  @@index([CKOrganizationId, CKOrigen])
+  @@index([CKOrganizationId, CKOrigenId])
   @@map("invcaruni")
   @@schema("business")
 }
@@ -423,7 +402,7 @@ model KardexLote {
   KLInvcaruniId    Int
   KAlmacenId       Int
 
-  KLLote               Int
+  KLLote               String
   KLNroDocumento       String    @db.VarChar(50) // Document number to differentiate lots
   KLExistenciaInicial  Decimal   @default(0) @db.Decimal(9, 2)
   KLEntradas           Decimal   @default(0) @db.Decimal(7, 2)
@@ -435,7 +414,7 @@ model KardexLote {
   KLCostoPromedio      Decimal   @default(0) @db.Decimal(9, 2)
   KLValorCostoUltimo   Decimal   @default(0) @db.Decimal(9, 2)
   KLValorCostoPromedio Decimal   @default(0) @db.Decimal(9, 2)
-  KLFechaUltimaEntrada DateTime
+  KLFechaUltimaEntrada DateTime? @db.Date
   KLFechaUltimoConteo  DateTime? @db.Date
   KLUltimoConteo       Decimal?  @default(0) @db.Decimal(9, 2)
   KLMes                Int       @db.SmallInt
@@ -473,7 +452,7 @@ model KardexDet {
   KDAlmacenId      Int
   KDInvcaruniId    Int
   KDCiudadId       Int
-  KDLote           Int // Agregamos el lote para el constraint completo
+  KDLote           String // Denormalized lot ref (matches KardexLote.KLLote)
 
   KDFecha             DateTime @db.Date
   KDExistenciaInicial Decimal  @default(0) @db.Decimal(9, 2)
@@ -514,7 +493,7 @@ model Movkar {
   MVId               Int    @id @default(autoincrement())
   MVKardexDetId      Int // Solo referencia al padre KardexDet
   MVTipoMovimientoId Int
-  MVLote             Int
+  MVLote             String // Lot identifier (purchase order ref / same concept)
   MVLoteNroDocumento String
   MVProveedorId      Int?
   MVClienteId        Int?
@@ -524,8 +503,7 @@ model Movkar {
   MVCiudadId         Int
 
   MVSecuencial          Int
-  MVFecha               DateTime
-  MVPedido              Decimal  @db.Decimal(3, 0)
+  MVFecha               DateTime @db.Date
   MVNroDocumento        String
   MVCantidad            Decimal  @db.Decimal(7, 0)
   MVCostoSalida         Decimal? @db.Decimal(9, 2)
@@ -576,6 +554,7 @@ enum TipoPropositoMovkar {
   NOTA_CREDITO_CON_DEVOLUCION
   NOTA_DEBITO
   ABONO
+
   @@schema("business")
 }
 
@@ -584,19 +563,21 @@ model Tmovkar {
   TId             Int    @id @default(autoincrement())
   TOrganizationId String
 
-  TProposito    TipoPropositoMovkar?
-  TTipo         Int
-  TClase        Int
-  TDescripcion  String               @db.VarChar(30)
-  TAbreviatura  String               @db.VarChar(10)
-  TValor        Int
-  TAfecta       Boolean              @default(true)
-  TRequiere     Boolean              @default(false)
-  TPedido       Boolean              @default(false)
-  TFactura      Boolean              @default(false)
-  TProv         Boolean              @default(false)
-  TRecalcular   Boolean              @default(false)
-  TOrgSecuencia Int
+  TProposito        TipoPropositoMovkar?
+  TTipo             Int
+  TClase            Int
+  TDescripcion      String               @db.VarChar(30)
+  TAbreviatura      String               @db.VarChar(10)
+  TValor            Int
+  TAjusteInventario Boolean              @default(false)
+  TAfecta           Boolean              @default(true)
+  TRequiere         Boolean              @default(false)
+  TPedido           Boolean              @default(false)
+  TFactura          Boolean              @default(false)
+  TProv             Boolean              @default(false)
+  TCliente          Boolean              @default(false)
+  TRecalcular       Boolean              @default(false)
+  TOrgSecuencia     Int
 
   // Auditoria
   creadoOModificado DateTime @default(now())
@@ -922,8 +903,6 @@ model Vendedor {
   dispatchOrderGs DispatchOrderG[]
 
   @@unique([VOrganizationId, VOrgSecuencia])
-  @@unique([VCorreo, VOrganizationId])
-  @@unique([VTelefono, VOrganizationId])
   @@unique([VNitCedula, VOrganizationId])
   @@map("vendedores")
   @@schema("business")
@@ -954,7 +933,7 @@ model Cltemae {
   CRecordatorioPostVencido Decimal  @db.Decimal(2, 0)
   CCupoAutorizado          Int      @default(0)
   CAbonos                  Int      @default(0)
-  CFechaIngreso            DateTime
+  CFechaIngreso            DateTime @db.Date
   COrgSecuencia            Int
 
   // Auditoria
@@ -978,6 +957,53 @@ model Cltemae {
   @@unique([COrganizationId, COrgSecuencia])
   @@index([CRazonSocial])
   @@map("cltemae")
+  @@schema("business")
+}
+
+// Self-registration invite: one row per magic link, discriminated by `modulo`.
+// Module-specific defaults live in `defaultsJson` (see backend registro-invite/defaults/*).
+enum RegistroInvitacionModulo {
+  CLIENTE
+  PROVEEDOR
+  VENDEDOR
+
+  @@schema("business")
+}
+
+model RegistroInvitacion {
+  id               String                   @id @default(cuid())
+  tokenHash        String                   @unique
+  organizationId   String
+  modulo           RegistroInvitacionModulo
+  expiresAt        DateTime
+  usedAt           DateTime?
+  createdAt        DateTime                 @default(now())
+  createdByUsuario String                   @db.VarChar(100)
+
+  invitedEmail String?
+
+  /// JSON snapshot merged on submit (shape depends on `modulo`).
+  defaultsJson Json
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, modulo, usedAt])
+  @@map("registro_invitacion")
+  @@schema("business")
+}
+
+// Idempotent send log for scheduled / due-today email crons (dedupe by org + scopeKey).
+model BusinessEmailSendLog {
+  id             String   @id @default(cuid())
+  organizationId String
+  scopeKey       String
+  sentAt         DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([organizationId, scopeKey])
+  @@index([organizationId])
+  @@map("business_email_send_logs")
   @@schema("business")
 }
 
@@ -1037,6 +1063,7 @@ enum DocumentType {
   DISPATCH_ORDER
   PURCHASE_ORDER
   INVOICE
+
   @@schema("business")
 }
 
@@ -1068,18 +1095,21 @@ enum OutboxStatus {
   PROCESSING
   PROCESSED
   FAILED
+
   @@schema("business")
 }
 
 enum OutboxEventType {
   INVOICE_CREATED
   DISPATCH_ORDER_EMITTED
+
   @@schema("business")
 }
 
 enum AggregateType {
   FACTURA
   DISPATCH_ORDER
+
   @@schema("business")
 }
 
@@ -1157,15 +1187,18 @@ model DispatchOrderG {
   DOGValorTotalBruto Decimal @db.Decimal(9, 2)
   DOGTotalDescuento  Decimal @db.Decimal(9, 2)
   DOGTotalIVA        Decimal @db.Decimal(9, 2)
+  DOGPesoTotalKg     Decimal @default(0) @db.Decimal(9, 3)
   // DOGCostoPromedio   Decimal  @db.Decimal(9, 2)
 
   // Estados y aprobaciones
-  DOGEstado     EstadoDispatchOrder @default(DRAFT)
-  DOGAprobado   String              @db.VarChar(5)
-  DOGDespachado String              @db.VarChar(5)
+  DOGEstado                          EstadoDispatchOrder @default(DRAFT)
+  DOGAprobado                        String              @db.VarChar(5)
+  DOGDespachado                      String              @db.VarChar(5)
+  /// After a return on EMITTED, warehouse PDF/email must be refreshed before dispatch.
+  DOGEmittedPdfNeedsWarehouseRefresh Boolean             @default(false)
 
   // Fechas del ciclo de vida
-  DOGFechaCreado      DateTime
+  DOGFechaCreado      DateTime  @db.Date
   DOGFechaEmision     DateTime?
   DOGFechaDespacho    DateTime?
   DOGFechaFacturacion DateTime?
@@ -1210,6 +1243,7 @@ model DispatchOrderU {
   DOUId               Int        @id @default(autoincrement())
   DOUOrganizationId   String
   DOUDispatchOrderGId Int
+  DOUOriginalItemId   Int?
   DOUInvcaruniId      Int
   DOUTipoMovimientoId Int
   DOUModoSalida       ModoSalida @default(AUTOMATICO)
@@ -1224,7 +1258,8 @@ model DispatchOrderU {
   DOUTieneImpuesto Boolean @default(false)
   DOUReservado     Boolean @default(false)
   DOUCostoPromedio Decimal @db.Decimal(9, 2)
-  DOULote          Int // Store manual lot selection: [{ lote: number, cantidad: number }]
+  DOUPesoTotalKg   Decimal @default(0) @db.Decimal(9, 3)
+  DOULote          String // Lot / purchase-order id (matches KardexLote.KLLote)
   DOUNroDocumento  String  @db.VarChar(50) // Document number for lot lookup (composite key with DOULote)
 
   // Auditoria
@@ -1234,10 +1269,13 @@ model DispatchOrderU {
   // Relaciones
   organization          Organization           @relation(fields: [DOUOrganizationId], references: [id])
   dispatchOrderG        DispatchOrderG         @relation(fields: [DOUDispatchOrderGId], references: [DOGId])
+  originalDispatchItem  DispatchOrderU?        @relation("DispatchOrderUReturns", fields: [DOUOriginalItemId], references: [DOUId])
+  returnDispatchItems   DispatchOrderU[]       @relation("DispatchOrderUReturns")
   invcaruni             Invcaruni              @relation(fields: [DOUInvcaruniId], references: [CKId])
   tipoMovimiento        Tmovkar                @relation(fields: [DOUTipoMovimientoId], references: [TId])
   inventoryReservations InventoryReservation[]
 
+  @@index([DOUOrganizationId, DOUOriginalItemId])
   @@map("dispatch_order_u")
   @@schema("business")
 }
@@ -1325,7 +1363,6 @@ enum TipoPago {
 model Facturag {
   FGId               Int    @id @default(autoincrement())
   FGOrganizationId   String
-  FGPurchaseOrderId  Int?
   FGDispatchOrderGId Int?   @unique
   FGVendedorId       Int
   FGClienteId        Int
@@ -1354,8 +1391,8 @@ model Facturag {
   // Fechas del ciclo de vida
   // FGFechaEmision     DateTime? @db.Date
   // FGFechaFacturacion DateTime? @db.Date
-  FGFechaCreado      DateTime
-  FGFechaVencimiento DateTime // cuando vence la factura
+  FGFechaCreado      DateTime  @db.Date
+  FGFechaVencimiento DateTime  @db.Date // cuando vence la factura
   FGFechaPago        DateTime?
 
   // Información de contacto y entrega
@@ -1405,7 +1442,7 @@ model MovCXC {
   MCDescripcion  String
   MCValor        Decimal  @db.Decimal(9, 2)
   MCTipoPago     TipoPago
-  MCFecha        DateTime
+  MCFecha        DateTime @db.Date
   MCSecuencia    Int
 
   // Auditoria
@@ -1530,7 +1567,7 @@ model CheckPayment {
 
   CHPBancoId      Int // FK to Bank
   CHPNumeroCheque String   @db.VarChar(50) // Check number
-  CHPFechaCheque  DateTime // Check due date
+  CHPFechaCheque  DateTime @db.Date // Check due date
 
   creadoOModificado DateTime @default(now())
   usuario           String   @db.VarChar(50)
@@ -1548,6 +1585,7 @@ model Facturau {
   FUId             Int    @id @default(autoincrement())
   FUOrganizationId String
   FUFacturaId      Int
+  FUOriginalItemId Int?
   FUInvcaruniId    Int
 
   FUNro              Int
@@ -1558,7 +1596,7 @@ model Facturau {
   FUVrUnitario       Decimal @db.Decimal(9, 2)
   FUDetalle          String
   FUTieneImpuesto    Boolean @default(false)
-  FULote             Int
+  FULote             String
   FULoteNroDocumento String  @db.VarChar(50)
   FUMovCXCId         Int?
   FUCostoPromedio    Decimal @db.Decimal(9, 2)
@@ -1568,11 +1606,14 @@ model Facturau {
   usuario           String   @db.VarChar(50)
 
   // Relaciones
-  organization Organization @relation(fields: [FUOrganizationId], references: [id])
-  facturag     Facturag     @relation(fields: [FUFacturaId], references: [FGId])
-  invcaruni    Invcaruni    @relation(fields: [FUInvcaruniId], references: [CKId])
-  movCXCReturn MovCXC?      @relation(fields: [FUMovCXCId], references: [MCId])
+  organization        Organization @relation(fields: [FUOrganizationId], references: [id])
+  facturag            Facturag     @relation(fields: [FUFacturaId], references: [FGId])
+  originalFacturaItem Facturau?    @relation("FacturauReturns", fields: [FUOriginalItemId], references: [FUId])
+  returnFacturaItems  Facturau[]   @relation("FacturauReturns")
+  invcaruni           Invcaruni    @relation(fields: [FUInvcaruniId], references: [CKId])
+  movCXCReturn        MovCXC?      @relation(fields: [FUMovCXCId], references: [MCId])
 
+  @@index([FUOrganizationId, FUOriginalItemId])
   @@map("facturau")
   @@schema("business")
 }
@@ -1957,5 +1998,43 @@ model SalesAc {
   updatedAt DateTime @updatedAt
 
   @@map("sales_ac")
+  @@schema("business")
+}
+
+// ============================================
+// MÓDULO: GESTIÓN DE PERÍODOS
+// ============================================
+
+/// Registra cada mes cerrado formalmente.
+/// Una vez existe este registro, el período queda bloqueado para nuevos movimientos.
+model PeriodoCierre {
+  id             Int      @id @default(autoincrement())
+  organizationId String
+  mes            Int      @db.SmallInt // 1-12
+  ano            Int      @db.SmallInt // 2-digit year (e.g. 25 = 2025)
+  cerradoEn      DateTime @default(now())
+  cerradoPor     String   @db.VarChar(50) // email of user who closed
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([organizationId, mes, ano])
+  @@map("periodos_cierre")
+  @@schema("business")
+}
+
+/// Almacena el período activo seleccionado por cada usuario (una fila por usuario-org).
+/// Se usa para filtrar todos los datos de inventario por el período de trabajo elegido.
+model PeriodoActivo {
+  id             Int      @id @default(autoincrement())
+  userId         String
+  organizationId String
+  mes            Int      @db.SmallInt // 1-12
+  ano            Int      @db.SmallInt // 2-digit year (e.g. 25 = 2025)
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([userId, organizationId])
+  @@map("periodos_activos")
   @@schema("business")
 }

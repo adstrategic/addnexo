@@ -5,6 +5,8 @@ import express from "express";
 
 import { auth } from "./core/auth.js";
 import { envVars } from "./core/envVars.js";
+import { errorHandler } from "./errors/errMiddleware.js";
+import { v1Router } from "./routes/index.js";
 
 const app = express();
 const port = Number(envVars.PORT);
@@ -23,6 +25,9 @@ app.use(
 app.all("/api/auth/*splat", toNodeHandler(auth));
 
 app.use(express.json());
+
+// API routes
+app.use("/api/v1", v1Router);
 
 /**
  * Example protected route: get current session.
@@ -44,6 +49,8 @@ app.get("/api/me", async (req, res) => {
     user: session.user,
   });
 });
+
+app.use(errorHandler);
 
 app.get("/health", (_req, res) => {
   res.json({ ok: true });

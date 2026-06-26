@@ -57,7 +57,69 @@ export const ModelName = {
   Verification: 'Verification',
   Organization: 'Organization',
   Member: 'Member',
-  Invitation: 'Invitation'
+  Invitation: 'Invitation',
+  Pais: 'Pais',
+  Estado: 'Estado',
+  Ciudad: 'Ciudad',
+  OrganizationCiudad: 'OrganizationCiudad',
+  AcumuladoPais: 'AcumuladoPais',
+  AcumuladoEstado: 'AcumuladoEstado',
+  AcumuladoCiudad: 'AcumuladoCiudad',
+  UnidadMedida: 'UnidadMedida',
+  ClaseAlmacen: 'ClaseAlmacen',
+  Almacen: 'Almacen',
+  Pdsucu: 'Pdsucu',
+  Invcaruni: 'Invcaruni',
+  Invgrupos: 'Invgrupos',
+  Kardex: 'Kardex',
+  KardexLote: 'KardexLote',
+  KardexDet: 'KardexDet',
+  Movkar: 'Movkar',
+  Tmovkar: 'Tmovkar',
+  Rotado: 'Rotado',
+  Karrev: 'Karrev',
+  MprovedAcum: 'MprovedAcum',
+  Mproved: 'Mproved',
+  Proved: 'Proved',
+  Paprovee: 'Paprovee',
+  Pclteu: 'Pclteu',
+  Pclteg: 'Pclteg',
+  Vendedor: 'Vendedor',
+  Cltemae: 'Cltemae',
+  RegistroInvitacion: 'RegistroInvitacion',
+  BusinessEmailSendLog: 'BusinessEmailSendLog',
+  KardexFacturacion: 'KardexFacturacion',
+  Document: 'Document',
+  OutboxEvent: 'OutboxEvent',
+  DispatchOrderG: 'DispatchOrderG',
+  DispatchOrderU: 'DispatchOrderU',
+  ReservationConfig: 'ReservationConfig',
+  InventoryReservation: 'InventoryReservation',
+  Facturag: 'Facturag',
+  MovCXC: 'MovCXC',
+  Bank: 'Bank',
+  WalletPayment: 'WalletPayment',
+  CreditCardPayment: 'CreditCardPayment',
+  TransferPayment: 'TransferPayment',
+  CheckPayment: 'CheckPayment',
+  Facturau: 'Facturau',
+  Rclteg: 'Rclteg',
+  Rclteu: 'Rclteu',
+  AccountsReceivable: 'AccountsReceivable',
+  DSO: 'DSO',
+  InventoryFisCaruni: 'InventoryFisCaruni',
+  InventoryFisKardex: 'InventoryFisKardex',
+  InventoryFisKardexLote: 'InventoryFisKardexLote',
+  InventoryFisMovkar: 'InventoryFisMovkar',
+  InventoryRotacion: 'InventoryRotacion',
+  LiquidacionesEncabezado: 'LiquidacionesEncabezado',
+  LiquidacionesGastos: 'LiquidacionesGastos',
+  LiquidacionesCostos: 'LiquidacionesCostos',
+  LiquidacionesVentas: 'LiquidacionesVentas',
+  LiquidacionesResumen: 'LiquidacionesResumen',
+  SalesAc: 'SalesAc',
+  PeriodoCierre: 'PeriodoCierre',
+  PeriodoActivo: 'PeriodoActivo'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -141,7 +203,9 @@ export const OrganizationScalarFieldEnum = {
   slug: 'slug',
   logo: 'logo',
   createdAt: 'createdAt',
-  metadata: 'metadata'
+  metadata: 'metadata',
+  statementScheduledRemindersEnabled: 'statementScheduledRemindersEnabled',
+  statementClientScope: 'statementClientScope'
 } as const
 
 export type OrganizationScalarFieldEnum = (typeof OrganizationScalarFieldEnum)[keyof typeof OrganizationScalarFieldEnum]
@@ -172,12 +236,1206 @@ export const InvitationScalarFieldEnum = {
 export type InvitationScalarFieldEnum = (typeof InvitationScalarFieldEnum)[keyof typeof InvitationScalarFieldEnum]
 
 
+export const PaisScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  nombre: 'nombre',
+  codigo: 'codigo'
+} as const
+
+export type PaisScalarFieldEnum = (typeof PaisScalarFieldEnum)[keyof typeof PaisScalarFieldEnum]
+
+
+export const EstadoScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  paisId: 'paisId',
+  nombre: 'nombre'
+} as const
+
+export type EstadoScalarFieldEnum = (typeof EstadoScalarFieldEnum)[keyof typeof EstadoScalarFieldEnum]
+
+
+export const CiudadScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  estadoId: 'estadoId',
+  nombre: 'nombre'
+} as const
+
+export type CiudadScalarFieldEnum = (typeof CiudadScalarFieldEnum)[keyof typeof CiudadScalarFieldEnum]
+
+
+export const OrganizationCiudadScalarFieldEnum = {
+  organizationId: 'organizationId',
+  ciudadId: 'ciudadId'
+} as const
+
+export type OrganizationCiudadScalarFieldEnum = (typeof OrganizationCiudadScalarFieldEnum)[keyof typeof OrganizationCiudadScalarFieldEnum]
+
+
+export const AcumuladoPaisScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  paisId: 'paisId',
+  mes: 'mes',
+  ano: 'ano',
+  acumuladoCompras: 'acumuladoCompras',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AcumuladoPaisScalarFieldEnum = (typeof AcumuladoPaisScalarFieldEnum)[keyof typeof AcumuladoPaisScalarFieldEnum]
+
+
+export const AcumuladoEstadoScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  estadoId: 'estadoId',
+  mes: 'mes',
+  ano: 'ano',
+  acumuladoCompras: 'acumuladoCompras',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AcumuladoEstadoScalarFieldEnum = (typeof AcumuladoEstadoScalarFieldEnum)[keyof typeof AcumuladoEstadoScalarFieldEnum]
+
+
+export const AcumuladoCiudadScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  ciudadId: 'ciudadId',
+  mes: 'mes',
+  ano: 'ano',
+  acumuladoCompras: 'acumuladoCompras',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AcumuladoCiudadScalarFieldEnum = (typeof AcumuladoCiudadScalarFieldEnum)[keyof typeof AcumuladoCiudadScalarFieldEnum]
+
+
+export const UnidadMedidaScalarFieldEnum = {
+  UMId: 'UMId',
+  UMOrganizationId: 'UMOrganizationId',
+  UMNombre: 'UMNombre',
+  UMDescripcion: 'UMDescripcion',
+  UMOrgSecuencia: 'UMOrgSecuencia',
+  creadoOModificado: 'creadoOModificado',
+  usuario: 'usuario'
+} as const
+
+export type UnidadMedidaScalarFieldEnum = (typeof UnidadMedidaScalarFieldEnum)[keyof typeof UnidadMedidaScalarFieldEnum]
+
+
+export const ClaseAlmacenScalarFieldEnum = {
+  CAId: 'CAId',
+  CAOrganizationId: 'CAOrganizationId',
+  CACodigo: 'CACodigo',
+  CADescripcion: 'CADescripcion'
+} as const
+
+export type ClaseAlmacenScalarFieldEnum = (typeof ClaseAlmacenScalarFieldEnum)[keyof typeof ClaseAlmacenScalarFieldEnum]
+
+
+export const AlmacenScalarFieldEnum = {
+  ALId: 'ALId',
+  ALOrganizationId: 'ALOrganizationId',
+  ALCiudadId: 'ALCiudadId',
+  ALNombre: 'ALNombre',
+  ALResponsable: 'ALResponsable',
+  ALDireccion: 'ALDireccion',
+  ALTelefono: 'ALTelefono',
+  ALCuentaContable: 'ALCuentaContable',
+  ALOrgSecuencia: 'ALOrgSecuencia',
+  creadoOModificado: 'creadoOModificado',
+  usuario: 'usuario'
+} as const
+
+export type AlmacenScalarFieldEnum = (typeof AlmacenScalarFieldEnum)[keyof typeof AlmacenScalarFieldEnum]
+
+
+export const PdsucuScalarFieldEnum = {
+  PSId: 'PSId',
+  PSOrganizationId: 'PSOrganizationId',
+  PSAlmacenId: 'PSAlmacenId',
+  PSInvcaruniId: 'PSInvcaruniId',
+  PSCantidadPedida: 'PSCantidadPedida',
+  PSCantidadEntregada: 'PSCantidadEntregada',
+  PSValorUnitario: 'PSValorUnitario',
+  PSAProbado: 'PSAProbado',
+  PSPedido: 'PSPedido',
+  PSFechaPedido: 'PSFechaPedido',
+  PSFechaUltimaEntrega: 'PSFechaUltimaEntrega',
+  PSOrgSecuencia: 'PSOrgSecuencia'
+} as const
+
+export type PdsucuScalarFieldEnum = (typeof PdsucuScalarFieldEnum)[keyof typeof PdsucuScalarFieldEnum]
+
+
+export const InvcaruniScalarFieldEnum = {
+  CKId: 'CKId',
+  CKGrupoId: 'CKGrupoId',
+  CKOrganizationId: 'CKOrganizationId',
+  CKUnidadMedidaId: 'CKUnidadMedidaId',
+  CKCodigo: 'CKCodigo',
+  CKDescripcion: 'CKDescripcion',
+  CKOrigenId: 'CKOrigenId',
+  CKPrecioPublico: 'CKPrecioPublico',
+  CKPrecioVenta1: 'CKPrecioVenta1',
+  CKPrecioVenta2: 'CKPrecioVenta2',
+  CKPorcenMargen: 'CKPorcenMargen',
+  CKPorcenMargenTopeDesc: 'CKPorcenMargenTopeDesc',
+  CKTopeDescuento: 'CKTopeDescuento',
+  CKIva: 'CKIva',
+  CKPesoPromedioKg: 'CKPesoPromedioKg',
+  CKExento: 'CKExento',
+  CKOrgSecuencia: 'CKOrgSecuencia',
+  creadoOModificado: 'creadoOModificado',
+  usuario: 'usuario'
+} as const
+
+export type InvcaruniScalarFieldEnum = (typeof InvcaruniScalarFieldEnum)[keyof typeof InvcaruniScalarFieldEnum]
+
+
+export const InvgruposScalarFieldEnum = {
+  GId: 'GId',
+  GOrganizationId: 'GOrganizationId',
+  GNro: 'GNro',
+  GDescripcion: 'GDescripcion',
+  GOrgSecuencia: 'GOrgSecuencia',
+  creadoOModificado: 'creadoOModificado',
+  usuario: 'usuario'
+} as const
+
+export type InvgruposScalarFieldEnum = (typeof InvgruposScalarFieldEnum)[keyof typeof InvgruposScalarFieldEnum]
+
+
+export const KardexScalarFieldEnum = {
+  KId: 'KId',
+  KInvcaruniId: 'KInvcaruniId',
+  KOrganizationId: 'KOrganizationId',
+  KAlmacenId: 'KAlmacenId',
+  KExistenciaInicial: 'KExistenciaInicial',
+  KEntradas: 'KEntradas',
+  KValorEntradas: 'KValorEntradas',
+  KSalidas: 'KSalidas',
+  KValorSalidas: 'KValorSalidas',
+  KExistenciaFin: 'KExistenciaFin',
+  KCostoUltimo: 'KCostoUltimo',
+  KCostoPromedio: 'KCostoPromedio',
+  KLValorCostoUltimo: 'KLValorCostoUltimo',
+  KLValorCostoPromedio: 'KLValorCostoPromedio',
+  KFechaUltimoConteo: 'KFechaUltimoConteo',
+  KUltimoConteo: 'KUltimoConteo',
+  KMes: 'KMes',
+  KAno: 'KAno',
+  KExistenciaMin: 'KExistenciaMin',
+  KExistenciaMax: 'KExistenciaMax',
+  KTiempoReposicion: 'KTiempoReposicion',
+  KNroTarjeta: 'KNroTarjeta',
+  KUltimoDetalle: 'KUltimoDetalle',
+  KOrgSecuencia: 'KOrgSecuencia',
+  creadoOModificado: 'creadoOModificado',
+  usuario: 'usuario'
+} as const
+
+export type KardexScalarFieldEnum = (typeof KardexScalarFieldEnum)[keyof typeof KardexScalarFieldEnum]
+
+
+export const KardexLoteScalarFieldEnum = {
+  KLId: 'KLId',
+  KLKardexId: 'KLKardexId',
+  KLCiudadId: 'KLCiudadId',
+  KLOrganizationId: 'KLOrganizationId',
+  KLInvcaruniId: 'KLInvcaruniId',
+  KAlmacenId: 'KAlmacenId',
+  KLLote: 'KLLote',
+  KLNroDocumento: 'KLNroDocumento',
+  KLExistenciaInicial: 'KLExistenciaInicial',
+  KLEntradas: 'KLEntradas',
+  KLValorEntradas: 'KLValorEntradas',
+  KLSalidas: 'KLSalidas',
+  KLValorSalidas: 'KLValorSalidas',
+  KLExistenciaFin: 'KLExistenciaFin',
+  KLCostoUltimo: 'KLCostoUltimo',
+  KLCostoPromedio: 'KLCostoPromedio',
+  KLValorCostoUltimo: 'KLValorCostoUltimo',
+  KLValorCostoPromedio: 'KLValorCostoPromedio',
+  KLFechaUltimaEntrada: 'KLFechaUltimaEntrada',
+  KLFechaUltimoConteo: 'KLFechaUltimoConteo',
+  KLUltimoConteo: 'KLUltimoConteo',
+  KLMes: 'KLMes',
+  KLAno: 'KLAno',
+  creadoOModificado: 'creadoOModificado',
+  usuario: 'usuario'
+} as const
+
+export type KardexLoteScalarFieldEnum = (typeof KardexLoteScalarFieldEnum)[keyof typeof KardexLoteScalarFieldEnum]
+
+
+export const KardexDetScalarFieldEnum = {
+  KDId: 'KDId',
+  KDKardexLoteId: 'KDKardexLoteId',
+  KDOrganizationId: 'KDOrganizationId',
+  KDAlmacenId: 'KDAlmacenId',
+  KDInvcaruniId: 'KDInvcaruniId',
+  KDCiudadId: 'KDCiudadId',
+  KDLote: 'KDLote',
+  KDFecha: 'KDFecha',
+  KDExistenciaInicial: 'KDExistenciaInicial',
+  KDEntradas: 'KDEntradas',
+  KDValorEntradas: 'KDValorEntradas',
+  KDSalidas: 'KDSalidas',
+  KDValorSalidas: 'KDValorSalidas',
+  KDExistenciaFin: 'KDExistenciaFin',
+  KDCostoUltimo: 'KDCostoUltimo',
+  KDCostoPromedio: 'KDCostoPromedio',
+  KDMes: 'KDMes',
+  KDAno: 'KDAno',
+  creadoOModificado: 'creadoOModificado',
+  usuario: 'usuario'
+} as const
+
+export type KardexDetScalarFieldEnum = (typeof KardexDetScalarFieldEnum)[keyof typeof KardexDetScalarFieldEnum]
+
+
+export const MovkarScalarFieldEnum = {
+  MVId: 'MVId',
+  MVKardexDetId: 'MVKardexDetId',
+  MVTipoMovimientoId: 'MVTipoMovimientoId',
+  MVLote: 'MVLote',
+  MVLoteNroDocumento: 'MVLoteNroDocumento',
+  MVProveedorId: 'MVProveedorId',
+  MVClienteId: 'MVClienteId',
+  MVAlmacenId: 'MVAlmacenId',
+  MVInvcaruniId: 'MVInvcaruniId',
+  MVOrganizationId: 'MVOrganizationId',
+  MVCiudadId: 'MVCiudadId',
+  MVSecuencial: 'MVSecuencial',
+  MVFecha: 'MVFecha',
+  MVNroDocumento: 'MVNroDocumento',
+  MVCantidad: 'MVCantidad',
+  MVCostoSalida: 'MVCostoSalida',
+  MVCostoUltimo: 'MVCostoUltimo',
+  MVCostoPrecio: 'MVCostoPrecio',
+  MVDescuento: 'MVDescuento',
+  MVImpuesto: 'MVImpuesto',
+  MVEsCostoTemporalCero: 'MVEsCostoTemporalCero',
+  MVOrgSecuencia: 'MVOrgSecuencia',
+  creadoOModificado: 'creadoOModificado',
+  usuario: 'usuario'
+} as const
+
+export type MovkarScalarFieldEnum = (typeof MovkarScalarFieldEnum)[keyof typeof MovkarScalarFieldEnum]
+
+
+export const TmovkarScalarFieldEnum = {
+  TId: 'TId',
+  TOrganizationId: 'TOrganizationId',
+  TProposito: 'TProposito',
+  TTipo: 'TTipo',
+  TClase: 'TClase',
+  TDescripcion: 'TDescripcion',
+  TAbreviatura: 'TAbreviatura',
+  TValor: 'TValor',
+  TAjusteInventario: 'TAjusteInventario',
+  TAfecta: 'TAfecta',
+  TRequiere: 'TRequiere',
+  TPedido: 'TPedido',
+  TFactura: 'TFactura',
+  TProv: 'TProv',
+  TCliente: 'TCliente',
+  TRecalcular: 'TRecalcular',
+  TOrgSecuencia: 'TOrgSecuencia',
+  creadoOModificado: 'creadoOModificado',
+  usuario: 'usuario'
+} as const
+
+export type TmovkarScalarFieldEnum = (typeof TmovkarScalarFieldEnum)[keyof typeof TmovkarScalarFieldEnum]
+
+
+export const RotadoScalarFieldEnum = {
+  RId: 'RId',
+  ROrganizationId: 'ROrganizationId',
+  RInvcaruniId: 'RInvcaruniId',
+  RKardexId: 'RKardexId',
+  RTipoIO: 'RTipoIO',
+  RClase: 'RClase',
+  RMes: 'RMes',
+  RAno: 'RAno',
+  RMesCantidad: 'RMesCantidad',
+  RMesPrecio: 'RMesPrecio',
+  RMesCosto: 'RMesCosto',
+  RAnoCantidad: 'RAnoCantidad',
+  RAnoPrecio: 'RAnoPrecio',
+  RAnoCosto: 'RAnoCosto',
+  ROrgSecuencia: 'ROrgSecuencia',
+  creadoOModificado: 'creadoOModificado',
+  usuario: 'usuario'
+} as const
+
+export type RotadoScalarFieldEnum = (typeof RotadoScalarFieldEnum)[keyof typeof RotadoScalarFieldEnum]
+
+
+export const KarrevScalarFieldEnum = {
+  RKId: 'RKId',
+  RKKardexId: 'RKKardexId',
+  RKOrganizationId: 'RKOrganizationId',
+  RKCantidad: 'RKCantidad',
+  RKCaracter: 'RKCaracter',
+  RKFecha: 'RKFecha',
+  RKOrgSecuencia: 'RKOrgSecuencia',
+  creadoOModificado: 'creadoOModificado',
+  usuario: 'usuario'
+} as const
+
+export type KarrevScalarFieldEnum = (typeof KarrevScalarFieldEnum)[keyof typeof KarrevScalarFieldEnum]
+
+
+export const MprovedAcumScalarFieldEnum = {
+  MPAId: 'MPAId',
+  MPAOrganizationId: 'MPAOrganizationId',
+  MPAProveedorId: 'MPAProveedorId',
+  MPAMes: 'MPAMes',
+  MPAAno: 'MPAAno',
+  MPAAcumMes: 'MPAAcumMes',
+  MPAAcumAno: 'MPAAcumAno',
+  MPAOrgSecuencia: 'MPAOrgSecuencia',
+  creadoOModificado: 'creadoOModificado',
+  usuario: 'usuario'
+} as const
+
+export type MprovedAcumScalarFieldEnum = (typeof MprovedAcumScalarFieldEnum)[keyof typeof MprovedAcumScalarFieldEnum]
+
+
+export const MprovedScalarFieldEnum = {
+  MPId: 'MPId',
+  MPOrganizationId: 'MPOrganizationId',
+  MPCiudadId: 'MPCiudadId',
+  MPNro: 'MPNro',
+  MPDescripcion: 'MPDescripcion',
+  MPResponsable: 'MPResponsable',
+  MPDireccion: 'MPDireccion',
+  MPTelefono1: 'MPTelefono1',
+  MPTelefono2: 'MPTelefono2',
+  MPCorreo1: 'MPCorreo1',
+  MPCorreo2: 'MPCorreo2',
+  MPRetencion: 'MPRetencion',
+  MPFechaCreado: 'MPFechaCreado',
+  MPOrgSecuencia: 'MPOrgSecuencia',
+  creadoOModificado: 'creadoOModificado',
+  usuario: 'usuario'
+} as const
+
+export type MprovedScalarFieldEnum = (typeof MprovedScalarFieldEnum)[keyof typeof MprovedScalarFieldEnum]
+
+
+export const ProvedScalarFieldEnum = {
+  PId: 'PId',
+  POrganizationId: 'POrganizationId',
+  PProveedorId: 'PProveedorId',
+  PInvcaruniId: 'PInvcaruniId',
+  PCiudadId: 'PCiudadId',
+  PNro: 'PNro',
+  PCostoUltimo: 'PCostoUltimo',
+  PFecha: 'PFecha',
+  POrgSecuencia: 'POrgSecuencia',
+  creadoOModificado: 'creadoOModificado',
+  usuario: 'usuario'
+} as const
+
+export type ProvedScalarFieldEnum = (typeof ProvedScalarFieldEnum)[keyof typeof ProvedScalarFieldEnum]
+
+
+export const PaproveeScalarFieldEnum = {
+  PPId: 'PPId',
+  PPOrganizationId: 'PPOrganizationId',
+  PPProveedorId: 'PPProveedorId',
+  PPKardexId: 'PPKardexId',
+  PPNro: 'PPNro',
+  PPTipo: 'PPTipo',
+  PPCantidadPedida: 'PPCantidadPedida',
+  PPCantidadEntregada: 'PPCantidadEntregada',
+  PPValorUnitario: 'PPValorUnitario',
+  PPAprueba: 'PPAprueba',
+  PPFechaPedido: 'PPFechaPedido',
+  PPFechaUltimaCompra: 'PPFechaUltimaCompra',
+  PPOrgSecuencia: 'PPOrgSecuencia',
+  creadoOModificado: 'creadoOModificado',
+  usuario: 'usuario'
+} as const
+
+export type PaproveeScalarFieldEnum = (typeof PaproveeScalarFieldEnum)[keyof typeof PaproveeScalarFieldEnum]
+
+
+export const PclteuScalarFieldEnum = {
+  PUId: 'PUId',
+  PUOrganizationId: 'PUOrganizationId',
+  PUInvcaruniId: 'PUInvcaruniId',
+  PUPedidoId: 'PUPedidoId',
+  PUNroPedido: 'PUNroPedido',
+  PUSecuencia: 'PUSecuencia',
+  PUGrupo: 'PUGrupo',
+  PUCodigo: 'PUCodigo',
+  PUPedido: 'PUPedido',
+  PURegistro: 'PURegistro',
+  PUCantidad: 'PUCantidad',
+  PUFacturado: 'PUFacturado',
+  PUEntregada: 'PUEntregada',
+  PUDescuento: 'PUDescuento',
+  PUImpuesto: 'PUImpuesto',
+  PUVrUnitario: 'PUVrUnitario',
+  PUOrgSecuencia: 'PUOrgSecuencia',
+  creadoOModificado: 'creadoOModificado',
+  usuario: 'usuario'
+} as const
+
+export type PclteuScalarFieldEnum = (typeof PclteuScalarFieldEnum)[keyof typeof PclteuScalarFieldEnum]
+
+
+export const PcltegScalarFieldEnum = {
+  PGCiudadId: 'PGCiudadId',
+  PGOrganizationId: 'PGOrganizationId',
+  PGClienteId: 'PGClienteId',
+  PGVendedorId: 'PGVendedorId',
+  PGNro: 'PGNro',
+  PGNitCliente: 'PGNitCliente',
+  PGPago: 'PGPago',
+  PGComprador: 'PGComprador',
+  PGNitCedula: 'PGNitCedula',
+  PGDireccion: 'PGDireccion',
+  PGTipo: 'PGTipo',
+  PGZona: 'PGZona',
+  PGAprobado: 'PGAprobado',
+  PGDespachado: 'PGDespachado',
+  PGTelefono1: 'PGTelefono1',
+  PGTelefono2: 'PGTelefono2',
+  PGPedido: 'PGPedido',
+  PGOrdenCompra: 'PGOrdenCompra',
+  PGFechaEntrega: 'PGFechaEntrega',
+  PGFechaVencimiento: 'PGFechaVencimiento',
+  PGCondicion1: 'PGCondicion1',
+  PGCondicion2: 'PGCondicion2',
+  PGCondicion3: 'PGCondicion3',
+  PGCodigo: 'PGCodigo',
+  PGVrMercancia: 'PGVrMercancia',
+  PGMCIA: 'PGMCIA',
+  PGNMeses: 'PGNMeses',
+  PGCuota: 'PGCuota',
+  PGFecha: 'PGFecha',
+  PGDescuento: 'PGDescuento',
+  PGOrgSecuencia: 'PGOrgSecuencia',
+  creadoOModificado: 'creadoOModificado',
+  usuario: 'usuario'
+} as const
+
+export type PcltegScalarFieldEnum = (typeof PcltegScalarFieldEnum)[keyof typeof PcltegScalarFieldEnum]
+
+
+export const VendedorScalarFieldEnum = {
+  VId: 'VId',
+  VOrganizationId: 'VOrganizationId',
+  VNombre: 'VNombre',
+  VCorreo: 'VCorreo',
+  VTelefono: 'VTelefono',
+  VNitCedula: 'VNitCedula',
+  VOrgSecuencia: 'VOrgSecuencia',
+  creadoOModificado: 'creadoOModificado',
+  usuario: 'usuario'
+} as const
+
+export type VendedorScalarFieldEnum = (typeof VendedorScalarFieldEnum)[keyof typeof VendedorScalarFieldEnum]
+
+
+export const CltemaeScalarFieldEnum = {
+  CId: 'CId',
+  CCiudadId: 'CCiudadId',
+  COrganizationId: 'COrganizationId',
+  CVendedorVId: 'CVendedorVId',
+  CNitCedula: 'CNitCedula',
+  CRazonSocial: 'CRazonSocial',
+  CNombreCliente: 'CNombreCliente',
+  CDireccion: 'CDireccion',
+  CTelefono1: 'CTelefono1',
+  CTelefono2: 'CTelefono2',
+  CCorreo1: 'CCorreo1',
+  CCorreo2: 'CCorreo2',
+  CDiasParaVencerFactura: 'CDiasParaVencerFactura',
+  CRecordatorioPostVencido: 'CRecordatorioPostVencido',
+  CCupoAutorizado: 'CCupoAutorizado',
+  CAbonos: 'CAbonos',
+  CFechaIngreso: 'CFechaIngreso',
+  COrgSecuencia: 'COrgSecuencia',
+  creadoOModificado: 'creadoOModificado',
+  usuario: 'usuario'
+} as const
+
+export type CltemaeScalarFieldEnum = (typeof CltemaeScalarFieldEnum)[keyof typeof CltemaeScalarFieldEnum]
+
+
+export const RegistroInvitacionScalarFieldEnum = {
+  id: 'id',
+  tokenHash: 'tokenHash',
+  organizationId: 'organizationId',
+  modulo: 'modulo',
+  expiresAt: 'expiresAt',
+  usedAt: 'usedAt',
+  createdAt: 'createdAt',
+  createdByUsuario: 'createdByUsuario',
+  invitedEmail: 'invitedEmail',
+  defaultsJson: 'defaultsJson'
+} as const
+
+export type RegistroInvitacionScalarFieldEnum = (typeof RegistroInvitacionScalarFieldEnum)[keyof typeof RegistroInvitacionScalarFieldEnum]
+
+
+export const BusinessEmailSendLogScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  scopeKey: 'scopeKey',
+  sentAt: 'sentAt'
+} as const
+
+export type BusinessEmailSendLogScalarFieldEnum = (typeof BusinessEmailSendLogScalarFieldEnum)[keyof typeof BusinessEmailSendLogScalarFieldEnum]
+
+
+export const KardexFacturacionScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  invcaruniId: 'invcaruniId',
+  grupo: 'grupo',
+  codigo: 'codigo',
+  cantidadPedida: 'cantidadPedida',
+  cantidadEntregada: 'cantidadEntregada',
+  orgSecuencia: 'orgSecuencia',
+  creadoOModificado: 'creadoOModificado',
+  usuario: 'usuario'
+} as const
+
+export type KardexFacturacionScalarFieldEnum = (typeof KardexFacturacionScalarFieldEnum)[keyof typeof KardexFacturacionScalarFieldEnum]
+
+
+export const DocumentScalarFieldEnum = {
+  DOCId: 'DOCId',
+  DOCOrganizationId: 'DOCOrganizationId',
+  DOCDocumentType: 'DOCDocumentType',
+  DOCDocumentId: 'DOCDocumentId',
+  DOCFileName: 'DOCFileName',
+  DOCOriginalFileName: 'DOCOriginalFileName',
+  DOCFileKey: 'DOCFileKey',
+  DOCFileSize: 'DOCFileSize',
+  DOCMimeType: 'DOCMimeType',
+  DOCUploadedAt: 'DOCUploadedAt',
+  DOCUploadedBy: 'DOCUploadedBy'
+} as const
+
+export type DocumentScalarFieldEnum = (typeof DocumentScalarFieldEnum)[keyof typeof DocumentScalarFieldEnum]
+
+
+export const OutboxEventScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  eventType: 'eventType',
+  aggregateType: 'aggregateType',
+  aggregateId: 'aggregateId',
+  payload: 'payload',
+  status: 'status',
+  attempts: 'attempts',
+  maxAttempts: 'maxAttempts',
+  lastError: 'lastError',
+  processAfter: 'processAfter',
+  createdAt: 'createdAt',
+  processedAt: 'processedAt',
+  s3Uploaded: 's3Uploaded',
+  emailSent: 'emailSent',
+  emailSkipped: 'emailSkipped',
+  emailResults: 'emailResults'
+} as const
+
+export type OutboxEventScalarFieldEnum = (typeof OutboxEventScalarFieldEnum)[keyof typeof OutboxEventScalarFieldEnum]
+
+
+export const DispatchOrderGScalarFieldEnum = {
+  DOGId: 'DOGId',
+  DOGOrganizationId: 'DOGOrganizationId',
+  DOGPurchaseOrderId: 'DOGPurchaseOrderId',
+  DOGVendedorId: 'DOGVendedorId',
+  DOGClienteId: 'DOGClienteId',
+  DOGCiudadId: 'DOGCiudadId',
+  DOGNro: 'DOGNro',
+  DOGOrgSecuencia: 'DOGOrgSecuencia',
+  DOGPurchaseOrder: 'DOGPurchaseOrder',
+  DOGTipo: 'DOGTipo',
+  DOGZona: 'DOGZona',
+  DOGValorTotalNeto: 'DOGValorTotalNeto',
+  DOGValorTotalBruto: 'DOGValorTotalBruto',
+  DOGTotalDescuento: 'DOGTotalDescuento',
+  DOGTotalIVA: 'DOGTotalIVA',
+  DOGPesoTotalKg: 'DOGPesoTotalKg',
+  DOGEstado: 'DOGEstado',
+  DOGAprobado: 'DOGAprobado',
+  DOGDespachado: 'DOGDespachado',
+  DOGEmittedPdfNeedsWarehouseRefresh: 'DOGEmittedPdfNeedsWarehouseRefresh',
+  DOGFechaCreado: 'DOGFechaCreado',
+  DOGFechaEmision: 'DOGFechaEmision',
+  DOGFechaDespacho: 'DOGFechaDespacho',
+  DOGFechaFacturacion: 'DOGFechaFacturacion',
+  DOGTelefono1: 'DOGTelefono1',
+  DOGTelefono2: 'DOGTelefono2',
+  DOGCorreo1: 'DOGCorreo1',
+  DOGCorreo2: 'DOGCorreo2',
+  DOGDireccionEntrega: 'DOGDireccionEntrega',
+  DOGCondicion1: 'DOGCondicion1',
+  DOGCondicion2: 'DOGCondicion2',
+  DOGCondicion3: 'DOGCondicion3',
+  creadoOModificado: 'creadoOModificado',
+  usuario: 'usuario'
+} as const
+
+export type DispatchOrderGScalarFieldEnum = (typeof DispatchOrderGScalarFieldEnum)[keyof typeof DispatchOrderGScalarFieldEnum]
+
+
+export const DispatchOrderUScalarFieldEnum = {
+  DOUId: 'DOUId',
+  DOUOrganizationId: 'DOUOrganizationId',
+  DOUDispatchOrderGId: 'DOUDispatchOrderGId',
+  DOUOriginalItemId: 'DOUOriginalItemId',
+  DOUInvcaruniId: 'DOUInvcaruniId',
+  DOUTipoMovimientoId: 'DOUTipoMovimientoId',
+  DOUModoSalida: 'DOUModoSalida',
+  DOUNro: 'DOUNro',
+  DOUCantidad: 'DOUCantidad',
+  DOUDescuento: 'DOUDescuento',
+  DOUVrNeto: 'DOUVrNeto',
+  DOUVrBruto: 'DOUVrBruto',
+  DOUVrUnitario: 'DOUVrUnitario',
+  DOUDetalle: 'DOUDetalle',
+  DOUTieneImpuesto: 'DOUTieneImpuesto',
+  DOUReservado: 'DOUReservado',
+  DOUCostoPromedio: 'DOUCostoPromedio',
+  DOUPesoTotalKg: 'DOUPesoTotalKg',
+  DOULote: 'DOULote',
+  DOUNroDocumento: 'DOUNroDocumento',
+  creadoOModificado: 'creadoOModificado',
+  usuario: 'usuario'
+} as const
+
+export type DispatchOrderUScalarFieldEnum = (typeof DispatchOrderUScalarFieldEnum)[keyof typeof DispatchOrderUScalarFieldEnum]
+
+
+export const ReservationConfigScalarFieldEnum = {
+  RCId: 'RCId',
+  RCOrganizationId: 'RCOrganizationId',
+  RCDiasExpiracion: 'RCDiasExpiracion',
+  RCNotificarAntes: 'RCNotificarAntes',
+  RCAutoLiberarExpiradas: 'RCAutoLiberarExpiradas',
+  creadoOModificado: 'creadoOModificado',
+  usuario: 'usuario'
+} as const
+
+export type ReservationConfigScalarFieldEnum = (typeof ReservationConfigScalarFieldEnum)[keyof typeof ReservationConfigScalarFieldEnum]
+
+
+export const InventoryReservationScalarFieldEnum = {
+  IRId: 'IRId',
+  IROrganizationId: 'IROrganizationId',
+  IRDispatchOrderUId: 'IRDispatchOrderUId',
+  IRInvcaruniId: 'IRInvcaruniId',
+  IRKardexLoteId: 'IRKardexLoteId',
+  IRCantidadReservada: 'IRCantidadReservada',
+  IRFechaReserva: 'IRFechaReserva',
+  IRFechaExpiracion: 'IRFechaExpiracion',
+  IRFechaLiberacion: 'IRFechaLiberacion',
+  IREstado: 'IREstado',
+  IRMotivo: 'IRMotivo',
+  IROrgSecuencia: 'IROrgSecuencia',
+  creadoOModificado: 'creadoOModificado',
+  usuario: 'usuario'
+} as const
+
+export type InventoryReservationScalarFieldEnum = (typeof InventoryReservationScalarFieldEnum)[keyof typeof InventoryReservationScalarFieldEnum]
+
+
+export const FacturagScalarFieldEnum = {
+  FGId: 'FGId',
+  FGOrganizationId: 'FGOrganizationId',
+  FGDispatchOrderGId: 'FGDispatchOrderGId',
+  FGVendedorId: 'FGVendedorId',
+  FGClienteId: 'FGClienteId',
+  FGCiudadId: 'FGCiudadId',
+  FGNro: 'FGNro',
+  FGOrgSecuencia: 'FGOrgSecuencia',
+  FGPurchaseOrder: 'FGPurchaseOrder',
+  FGPago: 'FGPago',
+  FGValorTotalNeto: 'FGValorTotalNeto',
+  FGValorTotalBruto: 'FGValorTotalBruto',
+  FGTotalDescuento: 'FGTotalDescuento',
+  FGTotalIVA: 'FGTotalIVA',
+  FGSaldo: 'FGSaldo',
+  FGEstado: 'FGEstado',
+  FGFacturaDeSaldo: 'FGFacturaDeSaldo',
+  FGFechaCreado: 'FGFechaCreado',
+  FGFechaVencimiento: 'FGFechaVencimiento',
+  FGFechaPago: 'FGFechaPago',
+  FGTelefono1: 'FGTelefono1',
+  FGTelefono2: 'FGTelefono2',
+  FGCorreo1: 'FGCorreo1',
+  FGCorreo2: 'FGCorreo2',
+  FGDireccionEntrega: 'FGDireccionEntrega',
+  FGCondicion1: 'FGCondicion1',
+  FGCondicion2: 'FGCondicion2',
+  FGCondicion3: 'FGCondicion3',
+  creadoOModificado: 'creadoOModificado',
+  usuario: 'usuario'
+} as const
+
+export type FacturagScalarFieldEnum = (typeof FacturagScalarFieldEnum)[keyof typeof FacturagScalarFieldEnum]
+
+
+export const MovCXCScalarFieldEnum = {
+  MCId: 'MCId',
+  MCOrganizationId: 'MCOrganizationId',
+  MCFacturaId: 'MCFacturaId',
+  MCTipoMovimientoId: 'MCTipoMovimientoId',
+  MCNro: 'MCNro',
+  MCNroDocumento: 'MCNroDocumento',
+  MCDescripcion: 'MCDescripcion',
+  MCValor: 'MCValor',
+  MCTipoPago: 'MCTipoPago',
+  MCFecha: 'MCFecha',
+  MCSecuencia: 'MCSecuencia',
+  creadoOModificado: 'creadoOModificado',
+  usuario: 'usuario'
+} as const
+
+export type MovCXCScalarFieldEnum = (typeof MovCXCScalarFieldEnum)[keyof typeof MovCXCScalarFieldEnum]
+
+
+export const BankScalarFieldEnum = {
+  BId: 'BId',
+  BOrganizationId: 'BOrganizationId',
+  BNombre: 'BNombre',
+  BOrgSecuencia: 'BOrgSecuencia',
+  creadoOModificado: 'creadoOModificado',
+  usuario: 'usuario'
+} as const
+
+export type BankScalarFieldEnum = (typeof BankScalarFieldEnum)[keyof typeof BankScalarFieldEnum]
+
+
+export const WalletPaymentScalarFieldEnum = {
+  WPId: 'WPId',
+  WPMovCXCId: 'WPMovCXCId',
+  WPOrganizationId: 'WPOrganizationId',
+  WPBancoId: 'WPBancoId',
+  WPNombreWallet: 'WPNombreWallet',
+  WPTelefonoOClave: 'WPTelefonoOClave',
+  creadoOModificado: 'creadoOModificado',
+  usuario: 'usuario'
+} as const
+
+export type WalletPaymentScalarFieldEnum = (typeof WalletPaymentScalarFieldEnum)[keyof typeof WalletPaymentScalarFieldEnum]
+
+
+export const CreditCardPaymentScalarFieldEnum = {
+  CCPId: 'CCPId',
+  CCPMovCXCId: 'CCPMovCXCId',
+  CCPOrganizationId: 'CCPOrganizationId',
+  CCPBancoId: 'CCPBancoId',
+  CCPMarca: 'CCPMarca',
+  CCPUltimos4Digitos: 'CCPUltimos4Digitos',
+  creadoOModificado: 'creadoOModificado',
+  usuario: 'usuario'
+} as const
+
+export type CreditCardPaymentScalarFieldEnum = (typeof CreditCardPaymentScalarFieldEnum)[keyof typeof CreditCardPaymentScalarFieldEnum]
+
+
+export const TransferPaymentScalarFieldEnum = {
+  TPId: 'TPId',
+  TPMovCXCId: 'TPMovCXCId',
+  TPOrganizationId: 'TPOrganizationId',
+  TPBancoId: 'TPBancoId',
+  TPTipoCuenta: 'TPTipoCuenta',
+  TPNumeroCuenta: 'TPNumeroCuenta',
+  creadoOModificado: 'creadoOModificado',
+  usuario: 'usuario'
+} as const
+
+export type TransferPaymentScalarFieldEnum = (typeof TransferPaymentScalarFieldEnum)[keyof typeof TransferPaymentScalarFieldEnum]
+
+
+export const CheckPaymentScalarFieldEnum = {
+  CHPId: 'CHPId',
+  CHPMovCXCId: 'CHPMovCXCId',
+  CHPOrganizationId: 'CHPOrganizationId',
+  CHPBancoId: 'CHPBancoId',
+  CHPNumeroCheque: 'CHPNumeroCheque',
+  CHPFechaCheque: 'CHPFechaCheque',
+  creadoOModificado: 'creadoOModificado',
+  usuario: 'usuario'
+} as const
+
+export type CheckPaymentScalarFieldEnum = (typeof CheckPaymentScalarFieldEnum)[keyof typeof CheckPaymentScalarFieldEnum]
+
+
+export const FacturauScalarFieldEnum = {
+  FUId: 'FUId',
+  FUOrganizationId: 'FUOrganizationId',
+  FUFacturaId: 'FUFacturaId',
+  FUOriginalItemId: 'FUOriginalItemId',
+  FUInvcaruniId: 'FUInvcaruniId',
+  FUNro: 'FUNro',
+  FUCantidad: 'FUCantidad',
+  FUDescuento: 'FUDescuento',
+  FUVrNeto: 'FUVrNeto',
+  FUVrBruto: 'FUVrBruto',
+  FUVrUnitario: 'FUVrUnitario',
+  FUDetalle: 'FUDetalle',
+  FUTieneImpuesto: 'FUTieneImpuesto',
+  FULote: 'FULote',
+  FULoteNroDocumento: 'FULoteNroDocumento',
+  FUMovCXCId: 'FUMovCXCId',
+  FUCostoPromedio: 'FUCostoPromedio',
+  creadoOModificado: 'creadoOModificado',
+  usuario: 'usuario'
+} as const
+
+export type FacturauScalarFieldEnum = (typeof FacturauScalarFieldEnum)[keyof typeof FacturauScalarFieldEnum]
+
+
+export const RcltegScalarFieldEnum = {
+  RGId: 'RGId',
+  RGOrganizationId: 'RGOrganizationId',
+  RGClienteId: 'RGClienteId',
+  RGVendedorId: 'RGVendedorId',
+  RGNro: 'RGNro',
+  RGNitCliente: 'RGNitCliente',
+  RGPago: 'RGPago',
+  RGComprador: 'RGComprador',
+  RGNitCedula: 'RGNitCedula',
+  RGDireccion: 'RGDireccion',
+  RGTipo: 'RGTipo',
+  RGZona: 'RGZona',
+  RGAprobado: 'RGAprobado',
+  RGDespachado: 'RGDespachado',
+  RGTelefono1: 'RGTelefono1',
+  RGTelefono2: 'RGTelefono2',
+  RGCiudad: 'RGCiudad',
+  RGPedido: 'RGPedido',
+  RGOrdenCompra: 'RGOrdenCompra',
+  RGFechaEntrega: 'RGFechaEntrega',
+  RGFechaVencimiento: 'RGFechaVencimiento',
+  RGCondicion1: 'RGCondicion1',
+  RGCondicion2: 'RGCondicion2',
+  RGCondicion3: 'RGCondicion3',
+  RGOrgSecuencia: 'RGOrgSecuencia',
+  creadoOModificado: 'creadoOModificado',
+  usuario: 'usuario'
+} as const
+
+export type RcltegScalarFieldEnum = (typeof RcltegScalarFieldEnum)[keyof typeof RcltegScalarFieldEnum]
+
+
+export const RclteuScalarFieldEnum = {
+  RUId: 'RUId',
+  RUOrganizationId: 'RUOrganizationId',
+  RURemisionId: 'RURemisionId',
+  RUNroRemision: 'RUNroRemision',
+  RUSecuencia: 'RUSecuencia',
+  RUGrupo: 'RUGrupo',
+  RUCodigo: 'RUCodigo',
+  RUCantidad: 'RUCantidad',
+  RUVrUnitario: 'RUVrUnitario',
+  creadoOModificado: 'creadoOModificado',
+  usuario: 'usuario'
+} as const
+
+export type RclteuScalarFieldEnum = (typeof RclteuScalarFieldEnum)[keyof typeof RclteuScalarFieldEnum]
+
+
+export const AccountsReceivableScalarFieldEnum = {
+  id: 'id',
+  date: 'date',
+  customer: 'customer',
+  country: 'country',
+  seller: 'seller',
+  upcoming_amount_receivable_usd: 'upcoming_amount_receivable_usd',
+  due_date: 'due_date',
+  method_of_payment: 'method_of_payment',
+  upcoming_due_days: 'upcoming_due_days',
+  days_expired_1_a_30: 'days_expired_1_a_30',
+  days_expired_31_a_60: 'days_expired_31_a_60',
+  days_expired_61_a_90: 'days_expired_61_a_90',
+  days_expired_mas_de_90: 'days_expired_mas_de_90',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AccountsReceivableScalarFieldEnum = (typeof AccountsReceivableScalarFieldEnum)[keyof typeof AccountsReceivableScalarFieldEnum]
+
+
+export const DSOScalarFieldEnum = {
+  id: 'id',
+  fecha_periodo: 'fecha_periodo',
+  cuentas_por_cobrar: 'cuentas_por_cobrar',
+  ventas_a_credito: 'ventas_a_credito',
+  periodo: 'periodo',
+  dso: 'dso',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DSOScalarFieldEnum = (typeof DSOScalarFieldEnum)[keyof typeof DSOScalarFieldEnum]
+
+
+export const InventoryFisCaruniScalarFieldEnum = {
+  id: 'id',
+  cgrupo: 'cgrupo',
+  ccodigo: 'ccodigo',
+  cdescripcion: 'cdescripcion',
+  cunidad: 'cunidad',
+  cprecio_pub: 'cprecio_pub',
+  cmargen: 'cmargen',
+  ctope_desc: 'ctope_desc',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type InventoryFisCaruniScalarFieldEnum = (typeof InventoryFisCaruniScalarFieldEnum)[keyof typeof InventoryFisCaruniScalarFieldEnum]
+
+
+export const InventoryFisKardexScalarFieldEnum = {
+  id: 'id',
+  ckgrupo: 'ckgrupo',
+  ckcodigo: 'ckcodigo',
+  cdescripcion: 'cdescripcion',
+  kexistencia_fis_i: 'kexistencia_fis_i',
+  kentradas: 'kentradas',
+  kvalor_entradas: 'kvalor_entradas',
+  ksalidas: 'ksalidas',
+  kvalor_salidas: 'kvalor_salidas',
+  kexistencia_fis_f: 'kexistencia_fis_f',
+  kcosto_ult: 'kcosto_ult',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type InventoryFisKardexScalarFieldEnum = (typeof InventoryFisKardexScalarFieldEnum)[keyof typeof InventoryFisKardexScalarFieldEnum]
+
+
+export const InventoryFisKardexLoteScalarFieldEnum = {
+  id: 'id',
+  cklgrupo: 'cklgrupo',
+  cklcodigo: 'cklcodigo',
+  ckldescripcion: 'ckldescripcion',
+  cklpaisorigen: 'cklpaisorigen',
+  cklpaisorigenn: 'cklpaisorigenn',
+  ckllote: 'ckllote',
+  cklexistencia_fis_i: 'cklexistencia_fis_i',
+  cklentradas: 'cklentradas',
+  cklvalor_entradas: 'cklvalor_entradas',
+  cklsalidas: 'cklsalidas',
+  cklvalor_salidas: 'cklvalor_salidas',
+  cklexistencia_fis_f: 'cklexistencia_fis_f',
+  cklcosto_ult: 'cklcosto_ult',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type InventoryFisKardexLoteScalarFieldEnum = (typeof InventoryFisKardexLoteScalarFieldEnum)[keyof typeof InventoryFisKardexLoteScalarFieldEnum]
+
+
+export const InventoryFisMovkarScalarFieldEnum = {
+  id: 'id',
+  mvseq: 'mvseq',
+  mvgrupo: 'mvgrupo',
+  mvcodigo: 'mvcodigo',
+  cdescripcion: 'cdescripcion',
+  mvfecha: 'mvfecha',
+  mvpedido_fac: 'mvpedido_fac',
+  mvtipo: 'mvtipo',
+  mvclase: 'mvclase',
+  mvdesctm: 'mvdesctm',
+  mvnro_doc: 'mvnro_doc',
+  mvpaisorigen: 'mvpaisorigen',
+  mvpaisorigenn: 'mvpaisorigenn',
+  mvprov_cliente: 'mvprov_cliente',
+  mvdescprov: 'mvdescprov',
+  mvcantidad: 'mvcantidad',
+  mvcosto: 'mvcosto',
+  mvprecio: 'mvprecio',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type InventoryFisMovkarScalarFieldEnum = (typeof InventoryFisMovkarScalarFieldEnum)[keyof typeof InventoryFisMovkarScalarFieldEnum]
+
+
+export const InventoryRotacionScalarFieldEnum = {
+  id: 'id',
+  purchase_date: 'purchase_date',
+  product: 'product',
+  country_of_origin: 'country_of_origin',
+  stock_ini: 'stock_ini',
+  ending_stocks: 'ending_stocks',
+  days_of_period: 'days_of_period',
+  cost_mont: 'cost_mont',
+  inv_prom: 'inv_prom',
+  rotacion: 'rotacion',
+  year: 'year',
+  month: 'month',
+  year_mont: 'year_mont',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type InventoryRotacionScalarFieldEnum = (typeof InventoryRotacionScalarFieldEnum)[keyof typeof InventoryRotacionScalarFieldEnum]
+
+
+export const LiquidacionesEncabezadoScalarFieldEnum = {
+  id: 'id',
+  nro_lote: 'nro_lote',
+  date: 'date',
+  stock: 'stock',
+  supplier: 'supplier',
+  origen: 'origen',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type LiquidacionesEncabezadoScalarFieldEnum = (typeof LiquidacionesEncabezadoScalarFieldEnum)[keyof typeof LiquidacionesEncabezadoScalarFieldEnum]
+
+
+export const LiquidacionesGastosScalarFieldEnum = {
+  id: 'id',
+  nro_lote: 'nro_lote',
+  transaction_gto: 'transaction_gto',
+  cod_concep_gto: 'cod_concep_gto',
+  description_gto: 'description_gto',
+  nro_dcto_gto: 'nro_dcto_gto',
+  amount_gtos: 'amount_gtos',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type LiquidacionesGastosScalarFieldEnum = (typeof LiquidacionesGastosScalarFieldEnum)[keyof typeof LiquidacionesGastosScalarFieldEnum]
+
+
+export const LiquidacionesCostosScalarFieldEnum = {
+  id: 'id',
+  nro_lote: 'nro_lote',
+  transaction_cto: 'transaction_cto',
+  cod_concep_cto: 'cod_concep_cto',
+  description_cto: 'description_cto',
+  nro_dcto_cto: 'nro_dcto_cto',
+  amount_ctos: 'amount_ctos',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type LiquidacionesCostosScalarFieldEnum = (typeof LiquidacionesCostosScalarFieldEnum)[keyof typeof LiquidacionesCostosScalarFieldEnum]
+
+
+export const LiquidacionesVentasScalarFieldEnum = {
+  id: 'id',
+  nro_lote: 'nro_lote',
+  transaction_vta: 'transaction_vta',
+  cod_concep_vta: 'cod_concep_vta',
+  description_vta: 'description_vta',
+  nro_dcto_vta: 'nro_dcto_vta',
+  amount_vtas: 'amount_vtas',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type LiquidacionesVentasScalarFieldEnum = (typeof LiquidacionesVentasScalarFieldEnum)[keyof typeof LiquidacionesVentasScalarFieldEnum]
+
+
+export const LiquidacionesResumenScalarFieldEnum = {
+  id: 'id',
+  nro_lote: 'nro_lote',
+  t_amount_gtos: 't_amount_gtos',
+  t_amount_ctos: 't_amount_ctos',
+  t_sum_gtos_ctos: 't_sum_gtos_ctos',
+  t_amount_vtas: 't_amount_vtas',
+  t_amount_rta: 't_amount_rta',
+  t_amount_rta_pct: 't_amount_rta_pct',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type LiquidacionesResumenScalarFieldEnum = (typeof LiquidacionesResumenScalarFieldEnum)[keyof typeof LiquidacionesResumenScalarFieldEnum]
+
+
+export const SalesAcScalarFieldEnum = {
+  id: 'id',
+  date: 'date',
+  customer: 'customer',
+  invoice_number: 'invoice_number',
+  product: 'product',
+  region: 'region',
+  seller: 'seller',
+  units_sold: 'units_sold',
+  unit_price_usd: 'unit_price_usd',
+  total_sales_usd: 'total_sales_usd',
+  year: 'year',
+  month: 'month',
+  year_month: 'year_month',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SalesAcScalarFieldEnum = (typeof SalesAcScalarFieldEnum)[keyof typeof SalesAcScalarFieldEnum]
+
+
+export const PeriodoCierreScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  mes: 'mes',
+  ano: 'ano',
+  cerradoEn: 'cerradoEn',
+  cerradoPor: 'cerradoPor'
+} as const
+
+export type PeriodoCierreScalarFieldEnum = (typeof PeriodoCierreScalarFieldEnum)[keyof typeof PeriodoCierreScalarFieldEnum]
+
+
+export const PeriodoActivoScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  organizationId: 'organizationId',
+  mes: 'mes',
+  ano: 'ano',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PeriodoActivoScalarFieldEnum = (typeof PeriodoActivoScalarFieldEnum)[keyof typeof PeriodoActivoScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
 } as const
 
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
+
+
+export const NullableJsonNullValueInput = {
+  DbNull: DbNull,
+  JsonNull: JsonNull
+} as const
+
+export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
 
 
 export const QueryMode = {
@@ -194,4 +1452,13 @@ export const NullsOrder = {
 } as const
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const JsonNullValueFilter = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull
+} as const
+
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 

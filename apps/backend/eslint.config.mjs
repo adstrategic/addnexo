@@ -8,4 +8,13 @@ export default defineConfig(...backendConfig, {
       tsconfigRootDir: import.meta.dirname,
     },
   },
+  rules: {
+    "@typescript-eslint/no-empty-object-type": "off",
+    "perfectionist/sort-modules": "off",
+    "perfectionist/sort-objects": "off",
+
+    "@typescript-eslint/restrict-template-expressions": {
+      allow: ["number"],
+    },
+  },
 });

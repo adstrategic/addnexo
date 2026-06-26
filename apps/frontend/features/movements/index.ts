@@ -3,9 +3,15 @@
 // Components
 export { MovementActions } from "./components/MovementActions";
 export { MovementTable } from "./components/MovementTable";
-export { MovementFilters } from "./components/MovementFilters";
+export { MovementListToolbar } from "./components/MovementListToolbar";
 export { MovementContent } from "./components/MovementContent";
 export { ActualizarCostoModal } from "./components/ActualizarCostoModal";
+export { MovementPageHeader } from "./components/layout/MovementPageHeader";
+
+// Selectors
+export { ProductFilterSelector } from "./selectors/ProductFilterSelector";
+export { SupplierFilterSelector } from "./selectors/SupplierFilterSelector";
+export { CustomerFilterSelector } from "./selectors/CustomerFilterSelector";
 
 // Forms
 export { MovementForm } from "./forms/MovementForm";
@@ -20,6 +26,7 @@ export {
 } from "./hooks/useMovements";
 export { useMovementActions } from "./hooks/useMovementActions";
 export { useMovementManager } from "./hooks/useMovementManager";
+export { useMovementListParams } from "./hooks/useMovementListParams";
 export { useCostoPromedio } from "./hooks/useCostoPromedio";
 export { useLotesDisponibles } from "./hooks/useLotesDisponibles";
 export { useActualizarCosto } from "./hooks/useActualizarCosto";

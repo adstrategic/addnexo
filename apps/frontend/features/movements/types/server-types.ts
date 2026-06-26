@@ -78,6 +78,7 @@ export interface FiltrosMovimientos {
   fechaInicio?: string;
   fechaFin?: string;
   kardexLoteId?: number;
+  invcaruniId?: number;
   proveedorId?: number;
   clienteId?: number;
   nroDocumento?: string;

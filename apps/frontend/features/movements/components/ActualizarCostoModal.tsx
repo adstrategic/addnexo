@@ -95,7 +95,7 @@ export function ActualizarCostoModal({
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <DollarSign className="h-5 w-5 text-blue-600" />
+            <DollarSign className="size-5 text-primary" aria-hidden />
             Update Temporary Cost
           </DialogTitle>
           <DialogDescription>
@@ -106,25 +106,25 @@ export function ActualizarCostoModal({
 
         {/* Información del movimiento */}
         <div className="space-y-3 py-4">
-          <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+          <div className="space-y-2 rounded-lg bg-muted/50 p-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Sequence:</span>
+              <span className="text-sm text-muted-foreground">Sequence:</span>
               <span className="font-semibold">
                 #{movimiento.MVOrgSecuencia}
               </span>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600 flex items-center gap-1">
-                <Package className="h-3 w-3" />
+            <div className="flex items-center justify-between gap-4">
+              <span className="flex items-center gap-1 text-sm text-muted-foreground">
+                <Package className="size-3" aria-hidden />
                 Product:
               </span>
-              <span className="font-medium text-sm text-right max-w-[250px] truncate">
+              <span className="max-w-[250px] truncate text-right text-sm font-medium">
                 {movimiento.invcaruni.CKDescripcion}
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600 flex items-center gap-1">
-                <Calendar className="h-3 w-3" />
+              <span className="flex items-center gap-1 text-sm text-muted-foreground">
+                <Calendar className="size-3" aria-hidden />
                 Date:
               </span>
               <span className="text-sm">
@@ -132,13 +132,13 @@ export function ActualizarCostoModal({
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Quantity:</span>
+              <span className="text-sm text-muted-foreground">Quantity:</span>
               <span className="font-mono text-sm">
                 {movementsUtils.formatearCantidad(movimiento.MVCantidad)}
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Lot:</span>
+              <span className="text-sm text-muted-foreground">Lot:</span>
               <span className="font-mono font-semibold">
                 {movimiento.MVLote}
               </span>
@@ -166,7 +166,7 @@ export function ActualizarCostoModal({
                 <FieldLabel>New Cost *</FieldLabel>
                 <FieldContent>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">
+                    <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground">
                       $
                     </span>
                     <Input

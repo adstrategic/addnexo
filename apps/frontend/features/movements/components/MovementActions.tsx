@@ -13,30 +13,14 @@ export function MovementActions({
   disabled = false,
 }: MovementActionsProps) {
   return (
-    <div className="flex items-center gap-2">
-      {/* Exportar (futuro) */}
-      {/* TODO: hacer exportaciones */}
-      {/* <Button variant="outline" size="sm" disabled>
-        <Download className="h-4 w-4 mr-2" />
-        Exportar
-      </Button> */}
-
-      {/* Reportes (futuro) */}
-      {/* <Button variant="outline" size="sm" disabled>
-        <FileText className="h-4 w-4 mr-2" />
-        Reportes
-      </Button> */}
-
-      {/* Crear movimiento */}
-      <Button
-        onClick={onOpenCreateModal}
-        size="sm"
-        disabled={disabled}
-        title={disabled ? "This period is closed" : undefined}
-      >
-        <Plus className="h-4 w-4 mr-2" />
-        New Movement
-      </Button>
-    </div>
+    <Button
+      onClick={onOpenCreateModal}
+      disabled={disabled}
+      title={disabled ? "This period is closed" : undefined}
+      className="w-full cursor-pointer sm:w-auto"
+    >
+      <Plus className="mr-2 size-4" aria-hidden />
+      <span className="sm:inline">New Movement</span>
+    </Button>
   );
 }

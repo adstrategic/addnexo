@@ -13,6 +13,7 @@ import { handleMutationError } from "@/lib/errors/handle-error";
 export type ListSuppliersParams = {
   page?: number;
   search?: string;
+  countryId?: number;
   limit?: number;
   enabled?: boolean;
   initialData?: SupplierResponseList;

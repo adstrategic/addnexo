@@ -6,13 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
 import {
   Pagination,
   PaginationContent,
@@ -22,175 +16,223 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
-import { Eye, MoreHorizontal } from "lucide-react";
 import { getPageNumbers } from "@/lib/utils";
-import { SupplierResponse } from "../schemas/SupplierSchemas";
+import { cn } from "@/lib/utils";
+import type { SupplierResponse } from "../schemas/SupplierSchemas";
+import { supplierListPadding } from "./layout/supplier-list-layout";
+import { SupplierEmptyState } from "./SupplierEmptyState";
+import { SupplierMobileCard } from "./SupplierMobileCard";
+import { SupplierRowActions } from "./SupplierRowActions";
+import { SupplierTableSkeleton } from "./SupplierTableSkeleton";
 
 interface SupplierTableProps {
   proveedores: SupplierResponse[];
   isLoading: boolean;
+  isFetching?: boolean;
   onEdit: (sequence: number) => void;
   onDelete: (supplier: SupplierResponse) => void;
-  // Pagination props
   currentPage: number;
   totalPages: number;
   totalItems: number;
   onPageChange: (page: number) => void;
+  hasActiveFilters: boolean;
+  onClearFilters: () => void;
+  onCreate?: () => void;
 }
 
-export const SupplierTable = ({
+function SupplierPagination({
+  currentPage,
+  totalPages,
+  totalItems,
+  onPageChange,
+}: Pick<
+  SupplierTableProps,
+  "currentPage" | "totalPages" | "totalItems" | "onPageChange"
+>) {
+  if (totalItems === 0) return null;
+
+  return (
+    <div
+      className={cn(
+        "flex flex-col-reverse items-center justify-between gap-4 border-t border-border py-4 sm:flex-row",
+        supplierListPadding.x,
+      )}
+    >
+      <p className="text-sm text-muted-foreground">
+        Page {currentPage} of {totalPages} · {totalItems}{" "}
+        {totalItems === 1 ? "supplier" : "suppliers"}
+      </p>
+
+      <Pagination className="mx-0 w-auto justify-end">
+        <PaginationContent>
+          <PaginationItem>
+            <PaginationPrevious
+              onClick={() => onPageChange(currentPage - 1)}
+              className={cn(
+                "cursor-pointer",
+                (currentPage <= 1 || totalPages <= 1) &&
+                  "pointer-events-none opacity-50",
+              )}
+            />
+          </PaginationItem>
+
+          {getPageNumbers(totalPages, currentPage).map((page, index) => (
+            <PaginationItem key={index} className="hidden sm:list-item">
+              {page === "ellipsis" ? (
+                <PaginationEllipsis />
+              ) : (
+                <PaginationLink
+                  onClick={() => onPageChange(page as number)}
+                  isActive={currentPage === page}
+                  className="cursor-pointer"
+                >
+                  {page}
+                </PaginationLink>
+              )}
+            </PaginationItem>
+          ))}
+
+          <PaginationItem>
+            <PaginationNext
+              onClick={() => onPageChange(currentPage + 1)}
+              className={cn(
+                "cursor-pointer",
+                (currentPage >= totalPages || totalPages <= 1) &&
+                  "pointer-events-none opacity-50",
+              )}
+            />
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
+    </div>
+  );
+}
+
+export function SupplierTable({
   proveedores,
   isLoading,
+  isFetching = false,
   onEdit,
   onDelete,
   currentPage,
   totalPages,
   totalItems,
   onPageChange,
-}: SupplierTableProps) => {
+  hasActiveFilters,
+  onClearFilters,
+  onCreate,
+}: SupplierTableProps) {
   if (isLoading) {
-    return (
-      <div className="space-y-4">
-        {[...Array(5)].map((_, i) => (
-          <div key={i} className="flex items-center space-x-4 p-4">
-            <Skeleton className="h-12 w-12 rounded-full" />
-            <div className="flex items-center space-x-4">
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-[250px]" />
-                <Skeleton className="h-4 w-[200px]" />
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
+    return <SupplierTableSkeleton />;
   }
 
   if (proveedores.length === 0) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
-        No suppliers found
-      </div>
+      <SupplierEmptyState
+        hasFilters={hasActiveFilters}
+        onClearFilters={onClearFilters}
+        onCreate={onCreate}
+      />
     );
   }
 
   return (
-    <div className="py-4">
-      <div className="overflow-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Responsible</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead>Country</TableHead>
-              <TableHead>Phone</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead className="w-[80px]"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {proveedores.map((proveedor) => (
-              <TableRow key={proveedor.MPId}>
-                <TableCell className="font-medium">
-                  {proveedor.MPResponsable}
-                </TableCell>
-                <TableCell>{proveedor.MPDescripcion}</TableCell>
-                <TableCell>{proveedor.ciudad.estado.pais.nombre}</TableCell>
-                <TableCell>{proveedor.MPTelefono1}</TableCell>
-                <TableCell>{proveedor.MPCorreo1}</TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <MoreHorizontal className="h-4 w-4" />
-                        <span className="sr-only">Open Menu</span>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem asChild>
-                        <Link
-                          className="text-green-800"
-                          href={`/suppliers/${proveedor.MPOrgSecuencia}`}
-                        >
-                          View details
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => onEdit(proveedor.MPOrgSecuencia)}
-                      >
-                        Edit
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="text-red-600"
-                        onClick={() => onDelete(proveedor)}
-                      >
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
+    <div className={cn("relative", isFetching && "opacity-70 transition-opacity")}>
+      <div className={cn("space-y-3 py-4 md:hidden", supplierListPadding.x)}>
+        {proveedores.map((proveedor) => (
+          <SupplierMobileCard
+            key={proveedor.MPId}
+            supplier={proveedor}
+            onEdit={onEdit}
+            onDelete={onDelete}
+          />
+        ))}
+      </div>
+
+      <div className={cn("hidden md:block", supplierListPadding.x)}>
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="pl-0">Supplier</TableHead>
+                <TableHead>Responsible</TableHead>
+                <TableHead>Location</TableHead>
+                <TableHead>Contact</TableHead>
+                <TableHead className="w-[72px] pr-0">
+                  <span className="sr-only">Actions</span>
+                </TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-
-      {/* Pagination Controls */}
-      <div className="flex flex-col-reverse gap-4 items-center justify-center px-4">
-        <div className="text-sm text-muted-foreground">
-          {totalItems === 0 ? (
-            "No suppliers found"
-          ) : (
-            <>
-              Showing page {currentPage} of {totalPages}
-            </>
-          )}
+            </TableHeader>
+            <TableBody>
+              {proveedores.map((proveedor) => (
+                <TableRow
+                  key={proveedor.MPId}
+                  className="transition-colors hover:bg-muted/40"
+                >
+                  <TableCell className="pl-0">
+                    <div className="space-y-1">
+                      <Link
+                        href={`/suppliers/${proveedor.MPOrgSecuencia}`}
+                        className="font-medium text-foreground transition-colors hover:text-primary"
+                      >
+                        {proveedor.MPDescripcion}
+                      </Link>
+                      <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                        <span>NIT {proveedor.MPNro}</span>
+                        {proveedor.MPRetencion === "SI" ? (
+                          <Badge variant="secondary">Withholding</Badge>
+                        ) : null}
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>{proveedor.MPResponsable}</TableCell>
+                  <TableCell>
+                    <div className="space-y-0.5 text-sm">
+                      <p>{proveedor.ciudad?.nombre}</p>
+                      <p className="text-muted-foreground">
+                        {proveedor.ciudad?.estado?.pais?.nombre}
+                      </p>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="space-y-0.5 text-sm">
+                      <a
+                        href={`tel:${proveedor.MPTelefono1}`}
+                        className="block text-primary transition-colors hover:text-primary/80"
+                      >
+                        {proveedor.MPTelefono1}
+                      </a>
+                      <a
+                        href={`mailto:${proveedor.MPCorreo1}`}
+                        className="block truncate text-muted-foreground transition-colors hover:text-primary"
+                      >
+                        {proveedor.MPCorreo1}
+                      </a>
+                    </div>
+                  </TableCell>
+                  <TableCell className="pr-0">
+                    <SupplierRowActions
+                      sequence={proveedor.MPOrgSecuencia}
+                      supplier={proveedor}
+                      supplierName={proveedor.MPDescripcion}
+                      onEdit={onEdit}
+                      onDelete={onDelete}
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
-
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                onClick={() => onPageChange(currentPage - 1)}
-                className={
-                  currentPage <= 1 || totalPages <= 1
-                    ? "pointer-events-none opacity-50"
-                    : "cursor-pointer"
-                }
-              />
-            </PaginationItem>
-
-            {getPageNumbers(totalPages, currentPage).map((page, index) => (
-              <PaginationItem key={index}>
-                {page === "ellipsis" ? (
-                  <PaginationEllipsis />
-                ) : (
-                  <PaginationLink
-                    onClick={() => onPageChange(page as number)}
-                    isActive={currentPage === page}
-                    className="cursor-pointer"
-                  >
-                    {page}
-                  </PaginationLink>
-                )}
-              </PaginationItem>
-            ))}
-
-            <PaginationItem>
-              <PaginationNext
-                onClick={() => onPageChange(currentPage + 1)}
-                className={
-                  currentPage >= totalPages || totalPages <= 1
-                    ? "pointer-events-none opacity-50"
-                    : "cursor-pointer"
-                }
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
       </div>
+
+      <SupplierPagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        onPageChange={onPageChange}
+      />
     </div>
   );
-};
+}

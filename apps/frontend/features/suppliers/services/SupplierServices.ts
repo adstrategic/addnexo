@@ -23,6 +23,7 @@ async function listSuppliers(
         page: params?.page ?? 1,
         limit: params?.limit ?? 10,
         search: params?.search,
+        countryId: params?.countryId,
       },
     });
     const validated = supplierResponseListSchema.parse(data);

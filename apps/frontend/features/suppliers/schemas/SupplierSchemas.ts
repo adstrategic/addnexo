@@ -7,6 +7,7 @@ export const listSuppliersSchema = z.object({
   page: z.coerce.number().int().optional(),
   limit: z.coerce.number().int().max(30).optional(),
   search: z.string().optional(),
+  countryId: z.coerce.number().int().positive().optional(),
 });
 
 // Supplier form validation schema (create)

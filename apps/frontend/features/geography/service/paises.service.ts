@@ -11,10 +11,17 @@ const paisSchema = z.object({
 export type PaisOption = z.infer<typeof paisSchema>;
 
 /** GET /geography/paises — matches backend searchPaisesHandler */
-export async function searchPaises(q?: string): Promise<PaisOption[]> {
+export async function searchPaises(
+  q?: string,
+  options?: { id?: number },
+): Promise<PaisOption[]> {
   try {
+    const params = options?.id
+      ? { id: options.id }
+      : { q: q ?? "" };
+
     const { data } = await apiClient.get<unknown[]>("/geography/paises", {
-      params: { q: q ?? "" },
+      params,
     });
     return z.array(paisSchema).parse(data);
   } catch (error) {

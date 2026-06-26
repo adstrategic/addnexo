@@ -1,25 +1,21 @@
 "use client";
 
 import { useSupplierBySequence } from "../hooks/useSuppliers";
-import {
-  EntityDetails,
-  EntitySection,
-  EntityField,
-  EntityAction,
-} from "@/components/shared/EntityDetails";
-import {
-  Building2,
-  User,
-  MapPin,
-  Phone,
-  Mail,
-  FileText,
-  ArrowLeft,
-} from "lucide-react";
 import { SupplierFormModal } from "../forms/SupplierFormModal";
 import { EntityDeleteModal } from "@/components/shared/EntityDeleteModal";
 import { useSupplierFormManager } from "../hooks/useSupplierFormManager";
 import { useSupplierDelete } from "../hooks/useSupplierDelete";
+import { ErrorBoundary } from "@/components/error-boundary";
+import {
+  SupplierDetailsView,
+  renderContactValue,
+  renderRetentionBadge,
+  supplierDetailIcons,
+} from "./SupplierDetailsView";
+import { Building2, FileText, MapPin } from "lucide-react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 
 interface SupplierDetailsProps {
   supplierSequence: number;
@@ -32,142 +28,152 @@ export function SupplierDetails({ supplierSequence }: SupplierDetailsProps) {
     error,
   } = useSupplierBySequence(supplierSequence, true);
 
-  // Supplier modal hook - handles all modal logic
   const supplierModal = useSupplierFormManager();
   const supplierDelete = useSupplierDelete();
 
-  // Open edit modal when supplier is loaded
   const handleEdit = () => {
     if (supplier) {
       supplierModal.openEdit(supplier.MPOrgSecuencia);
     }
   };
 
-  // Open delete modal
   const handleDelete = () => {
     if (supplier) {
       supplierDelete.openDeleteModal(supplier);
     }
   };
 
-  const handleViewInvoices = () => {
-    // TODO: Implement navigation to supplier invoices
-    console.log("View supplier invoices:", supplier?.MPId);
-  };
+  if (error) {
+    return (
+      <div className="p-4 md:p-8">
+        <ErrorBoundary error={error} entityName="Supplier" />
+      </div>
+    );
+  }
 
-  const handleViewProducts = () => {
-    // TODO: Implement navigation to supplier products
-    console.log("View supplier products:", supplier?.MPId);
-  };
+  if (!isLoading && !supplier) {
+    return (
+      <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 p-4 text-center md:p-8">
+        <Building2 className="size-12 text-muted-foreground" aria-hidden />
+        <div className="space-y-1">
+          <h2 className="text-lg font-semibold">Supplier not found</h2>
+          <p className="text-sm text-muted-foreground">
+            The supplier you are looking for does not exist or has been deleted.
+          </p>
+        </div>
+        <Button asChild variant="outline" className="cursor-pointer">
+          <Link href="/suppliers">
+            <ArrowLeft className="mr-2 size-4" aria-hidden />
+            Back to suppliers
+          </Link>
+        </Button>
+      </div>
+    );
+  }
 
-  const handleViewAddresses = () => {
-    // TODO: Implement navigation to supplier addresses
-    console.log("View supplier addresses:", supplier?.MPId);
-  };
-
-  // Prepare information sections
-  const sections: EntitySection[] = supplier
+  const sections = supplier
     ? [
         {
           title: "General Information",
-          icon: <Building2 className="h-5 w-5" />,
+          icon: supplierDetailIcons.building,
           fields: [
             {
               label: "Responsible",
               value: supplier.MPResponsable,
-              icon: <User className="h-4 w-4 text-muted-foreground" />,
+              icon: supplierDetailIcons.user,
             },
             {
               label: "Address",
               value: supplier.MPDireccion,
-              icon: <MapPin className="h-4 w-4 text-muted-foreground" />,
+              icon: supplierDetailIcons.mapPin,
             },
             {
               label: "Main Phone",
-              value: supplier.MPTelefono1,
-              icon: <Phone className="h-4 w-4 text-muted-foreground" />,
+              value: renderContactValue(supplier.MPTelefono1, "phone"),
+              icon: supplierDetailIcons.phone,
             },
             {
               label: "Main Email",
-              value: supplier.MPCorreo1,
-              icon: <Mail className="h-4 w-4 text-muted-foreground" />,
+              value: renderContactValue(supplier.MPCorreo1, "email"),
+              icon: supplierDetailIcons.mail,
             },
             {
               label: "Phone 2",
-              value: supplier.MPTelefono2,
-              icon: <Phone className="h-4 w-4 text-muted-foreground" />,
+              value: renderContactValue(supplier.MPTelefono2, "phone"),
+              icon: supplierDetailIcons.phone,
             },
             {
               label: "Email 2",
-              value: supplier.MPCorreo2,
-              icon: <Mail className="h-4 w-4 text-muted-foreground" />,
+              value: renderContactValue(supplier.MPCorreo2, "email"),
+              icon: supplierDetailIcons.mail,
             },
             {
               label: "Withholding",
-              value: supplier.MPRetencion,
-              icon: <FileText className="h-4 w-4 text-muted-foreground" />,
+              value: renderRetentionBadge(supplier.MPRetencion),
+              icon: supplierDetailIcons.file,
             },
           ],
         },
         {
           title: "Location",
-          icon: <MapPin className="h-5 w-5" />,
+          icon: supplierDetailIcons.mapPin,
           fields: [
             {
               label: "City",
               value: supplier.ciudad?.nombre,
-              icon: <MapPin className="h-4 w-4 text-muted-foreground" />,
+              icon: supplierDetailIcons.mapPin,
             },
             {
               label: "State/Province",
               value: supplier.ciudad?.estado?.nombre,
-              icon: <MapPin className="h-4 w-4 text-muted-foreground" />,
+              icon: supplierDetailIcons.mapPin,
             },
             {
               label: "Country",
               value: supplier.ciudad?.estado?.pais?.nombre,
-              icon: <MapPin className="h-4 w-4 text-muted-foreground" />,
+              icon: supplierDetailIcons.mapPin,
             },
           ],
         },
       ]
     : [];
 
-  // Prepare quick actions
-  const quickActions: EntityAction[] = [
+  const quickActions = [
     {
       label: "View Invoices",
-      icon: <FileText className="h-6 w-6" />,
-      onClick: handleViewInvoices,
+      icon: <FileText className="size-5" aria-hidden />,
+      onClick: () => {
+        // TODO: Navigate to supplier invoices
+      },
     },
     {
       label: "View Products",
-      icon: <Building2 className="h-6 w-6" />,
-      onClick: handleViewProducts,
+      icon: <Building2 className="size-5" aria-hidden />,
+      onClick: () => {
+        // TODO: Navigate to supplier products
+      },
     },
     {
       label: "View Addresses",
-      icon: <MapPin className="h-6 w-6" />,
-      onClick: handleViewAddresses,
+      icon: <MapPin className="size-5" aria-hidden />,
+      onClick: () => {
+        // TODO: Navigate to supplier addresses
+      },
     },
   ];
 
   return (
     <>
-      <EntityDetails
-        title={supplier?.MPDescripcion || ""}
-        subtitle={supplier ? `NIT: ${supplier.MPNro}` : ""}
+      <SupplierDetailsView
+        title={supplier?.MPDescripcion ?? ""}
+        subtitle={supplier ? `NIT: ${supplier.MPNro}` : undefined}
         sections={sections}
         isLoading={isLoading}
-        error={error}
         onEdit={handleEdit}
         onDelete={handleDelete}
         quickActions={quickActions}
-        notFoundMessage="The supplier you are looking for does not exist or has been deleted."
-        notFoundIcon={<Building2 className="h-12 w-12 text-muted-foreground" />}
       />
 
-      {/* Supplier Form Modal - handles edit */}
       <SupplierFormModal
         isOpen={supplierModal.isOpen}
         onClose={supplierModal.close}
@@ -180,7 +186,6 @@ export function SupplierDetails({ supplierSequence }: SupplierDetailsProps) {
         supplierError={supplierModal.supplierError}
       />
 
-      {/* Delete Confirmation Modal */}
       <EntityDeleteModal
         isOpen={supplierDelete.isDeleteModalOpen}
         onClose={supplierDelete.closeDeleteModal}

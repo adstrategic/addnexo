@@ -9,6 +9,7 @@ import {
 export const paisKeys = {
   all: ["paises"] as const,
   search: (q: string) => [...paisKeys.all, "search", q] as const,
+  byId: (id: number) => [...paisKeys.all, "byId", id] as const,
 };
 
 type UsePaisesSearchOptions = {
@@ -26,6 +27,18 @@ export function usePaisesSearch({
     queryFn: () => searchPaises(query),
     enabled,
     staleTime: 60 * 1000,
+  });
+}
+
+export function usePaisById(id: number | undefined, enabled = true) {
+  return useQuery({
+    queryKey: paisKeys.byId(id ?? 0),
+    queryFn: async () => {
+      const results = await searchPaises(undefined, { id: id! });
+      return results[0] ?? null;
+    },
+    enabled: enabled && id != null,
+    staleTime: 5 * 60 * 1000,
   });
 }
 

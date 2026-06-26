@@ -1,27 +1,31 @@
 "use client";
 
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent } from "@/components/ui/card";
 import { useSuppliers } from "../hooks/useSuppliers";
 import { useSupplierFormManager } from "../hooks/useSupplierFormManager";
 import { useSupplierDelete } from "../hooks/useSupplierDelete";
+import { useSupplierListParams } from "../hooks/useSupplierListParams";
 import { SupplierTable } from "./SuppliersTable";
-import { SupplierFilters } from "./SuppliersFilters";
+import { SupplierListToolbar } from "./SupplierListToolbar";
 import { SupplierActions } from "./SupplierActions";
+import { SupplierPageHeader } from "./layout/SupplierPageHeader";
+import { supplierListPadding } from "./layout/supplier-list-layout";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { EntityDeleteModal } from "@/components/shared/EntityDeleteModal";
 import { SupplierFormModal } from "../forms/SupplierFormModal";
-import { useDebouncedTableParams } from "@/hooks/useDebouncedTableParams";
-import { useTabState } from "@/hooks/useTabState";
 
 export function SuppliersContent() {
-  const { currentPage, setPage, debouncedSearch, searchTerm, setSearch } =
-    useDebouncedTableParams();
-
-  const { setTab } = useTabState({
-    defaultValue: "todos",
-    resetPaginationOnChange: true,
-  });
+  const {
+    currentPage,
+    setPage,
+    debouncedSearch,
+    searchTerm,
+    setSearch,
+    countryId,
+    setCountryId,
+    clearFilters,
+    hasActiveFilters,
+  } = useSupplierListParams();
 
   const supplierManager = useSupplierFormManager();
   const supplierDelete = useSupplierDelete();
@@ -29,10 +33,12 @@ export function SuppliersContent() {
   const {
     data: suppliersData,
     isLoading,
+    isFetching,
     error,
   } = useSuppliers({
     page: currentPage,
-    search: debouncedSearch || undefined,
+    search: debouncedSearch,
+    countryId,
   });
 
   if (error) {
@@ -40,56 +46,49 @@ export function SuppliersContent() {
   }
 
   return (
-    <div className="flex flex-col gap-4 p-4 md:p-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Suppliers</h1>
-          <p className="text-sm text-muted-foreground">
-            Manage your fruit and service suppliers
-          </p>
-        </div>
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 p-4 md:p-8">
+      <SupplierPageHeader
+        title="Suppliers"
+        description="Manage your fruit and service suppliers"
+        actions={
+          <SupplierActions onOpenCreateModal={supplierManager.openCreate} />
+        }
+      />
 
-        <SupplierActions onOpenCreateModal={supplierManager.openCreate} />
-      </div>
+      <Card className="overflow-hidden border-border shadow-sm">
+        <CardContent className="space-y-0 p-0">
+          <div
+            className={`border-b border-border ${supplierListPadding.toolbar}`}
+          >
+            <SupplierListToolbar
+              searchTerm={searchTerm}
+              onSearchChange={setSearch}
+              countryId={countryId}
+              onCountryChange={setCountryId}
+              onClearFilters={clearFilters}
+              hasActiveFilters={hasActiveFilters}
+              isFetching={isFetching && !isLoading}
+              totalItems={suppliersData?.pagination.totalItems}
+            />
+          </div>
 
-      {/* Main Content */}
-      <Card>
-        <CardHeader className="p-4">
-          <SupplierFilters searchTerm={searchTerm} onSearchChange={setSearch} />
-        </CardHeader>
-
-        <CardContent className="p-0">
-          <Tabs defaultValue="todos" className="w-full" onValueChange={setTab}>
-            <div className="border-b px-4">
-              <TabsList className="bg-transparent">
-                <TabsTrigger
-                  value="todos"
-                  className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-green-600 data-[state=active]:shadow-none rounded-none"
-                >
-                  All
-                </TabsTrigger>
-                {/* Futuras pestañas para filtros por estado */}
-              </TabsList>
-            </div>
-
-            <TabsContent value="todos" className="p-0">
-              <SupplierTable
-                proveedores={suppliersData?.data || []}
-                isLoading={isLoading}
-                onDelete={supplierDelete.openDeleteModal}
-                onEdit={(sequence) => supplierManager.openEdit(sequence)}
-                currentPage={currentPage}
-                totalPages={suppliersData?.pagination.totalPages || 1}
-                totalItems={suppliersData?.pagination.totalItems || 0}
-                onPageChange={setPage}
-              />
-            </TabsContent>
-          </Tabs>
+          <SupplierTable
+            proveedores={suppliersData?.data ?? []}
+            isLoading={isLoading}
+            isFetching={isFetching && !isLoading}
+            onDelete={supplierDelete.openDeleteModal}
+            onEdit={(sequence) => supplierManager.openEdit(sequence)}
+            currentPage={currentPage}
+            totalPages={suppliersData?.pagination.totalPages ?? 1}
+            totalItems={suppliersData?.pagination.totalItems ?? 0}
+            onPageChange={setPage}
+            hasActiveFilters={hasActiveFilters}
+            onClearFilters={clearFilters}
+            onCreate={supplierManager.openCreate}
+          />
         </CardContent>
       </Card>
 
-      {/* Supplier Form Modal - handles both create and edit */}
       <SupplierFormModal
         isOpen={supplierManager.isOpen}
         onClose={supplierManager.close}
@@ -102,7 +101,6 @@ export function SuppliersContent() {
         supplierError={supplierManager.supplierError}
       />
 
-      {/* Delete Confirmation Modal */}
       <EntityDeleteModal
         isOpen={supplierDelete.isDeleteModalOpen}
         onClose={supplierDelete.closeDeleteModal}

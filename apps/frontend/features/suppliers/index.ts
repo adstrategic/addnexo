@@ -20,8 +20,12 @@ export { SupplierDetails } from "./components/SupplierDetails";
 
 // Action Components
 export { SupplierActions } from "./components/SupplierActions";
-export { SupplierFilters } from "./components/SuppliersFilters";
+export { SupplierListToolbar } from "./components/SupplierListToolbar";
 export { SupplierTable } from "./components/SuppliersTable";
+export { SupplierPageHeader } from "./components/layout/SupplierPageHeader";
+export { SupplierEmptyState } from "./components/SupplierEmptyState";
+export { SupplierDetailsView } from "./components/SupplierDetailsView";
+export { SupplierRowActions } from "./components/SupplierRowActions";
 
 // ============================================================================
 // FORMS
@@ -67,4 +71,5 @@ export {
 } from "./hooks/useSuppliers";
 export { useSupplierActions } from "./hooks/useSupplierActions";
 export { useSupplierFormManager } from "./hooks/useSupplierFormManager";
+export { useSupplierListParams } from "./hooks/useSupplierListParams";
 export { useSupplierDelete } from "./hooks/useSupplierDelete";

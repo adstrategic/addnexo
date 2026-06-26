@@ -10,16 +10,22 @@ import {
 export const listProveedoresHandler = async (req: Request, res: Response) => {
   const { organizationId } = getContext(req);
 
-  const { page = 1, search } = req.query as {
+  const { page = 1, search, countryId } = req.query as {
     page?: string;
     search?: string;
+    countryId?: string;
   };
   const limit = 10;
+  const parsedCountryId = countryId ? Number(countryId) : undefined;
 
   const { proveedores, total } = await service.listProveedores({
     page: Number(page),
     limit,
     search,
+    countryId:
+      parsedCountryId && !Number.isNaN(parsedCountryId)
+        ? parsedCountryId
+        : undefined,
     organizationId,
   });
 

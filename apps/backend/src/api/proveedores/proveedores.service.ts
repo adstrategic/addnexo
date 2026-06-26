@@ -15,24 +15,88 @@ import {
  * Obtiene una lista paginada y filtrada de proveedores.
  * Lógica extraída de tu endpoint GET /.
  */
+function buildProveedoresSearchWhere(
+  organizationId: string,
+  search?: string,
+  countryId?: number,
+): Prisma.MprovedWhereInput {
+  const trimmedSearch = search?.trim();
+  const andConditions: Prisma.MprovedWhereInput[] = [
+    { MPOrganizationId: organizationId },
+  ];
+
+  if (countryId) {
+    andConditions.push({
+      ciudad: {
+        estado: {
+          paisId: countryId,
+        },
+      },
+    });
+  }
+
+  if (trimmedSearch) {
+    andConditions.push({
+      OR: [
+        {
+          MPDescripcion: { contains: trimmedSearch, mode: "insensitive" },
+        },
+        {
+          MPResponsable: { contains: trimmedSearch, mode: "insensitive" },
+        },
+        { MPNro: { contains: trimmedSearch, mode: "insensitive" } },
+        { MPDireccion: { contains: trimmedSearch, mode: "insensitive" } },
+        { MPTelefono1: { contains: trimmedSearch, mode: "insensitive" } },
+        {
+          MPTelefono2: { contains: trimmedSearch, mode: "insensitive" },
+        },
+        { MPCorreo1: { contains: trimmedSearch, mode: "insensitive" } },
+        { MPCorreo2: { contains: trimmedSearch, mode: "insensitive" } },
+        {
+          ciudad: {
+            nombre: { contains: trimmedSearch, mode: "insensitive" },
+          },
+        },
+        {
+          ciudad: {
+            estado: {
+              nombre: { contains: trimmedSearch, mode: "insensitive" },
+            },
+          },
+        },
+        {
+          ciudad: {
+            estado: {
+              pais: {
+                nombre: { contains: trimmedSearch, mode: "insensitive" },
+              },
+            },
+          },
+        },
+      ],
+    });
+  }
+
+  return andConditions.length === 1
+    ? andConditions[0]!
+    : { AND: andConditions };
+}
+
 export const listProveedores = async (options: {
   limit: number;
   organizationId: string;
   page: number;
   search?: string;
+  countryId?: number;
 }) => {
-  const { page, limit, organizationId, search } = options;
+  const { page, limit, organizationId, search, countryId } = options;
 
   const skip = (page - 1) * limit;
-  const where: Prisma.MprovedWhereInput = search
-    ? {
-        MPOrganizationId: organizationId,
-        OR: [
-          { MPDescripcion: { contains: search, mode: "insensitive" as const } },
-          { MPResponsable: { contains: search, mode: "insensitive" as const } },
-        ],
-      }
-    : { MPOrganizationId: organizationId };
+  const where = buildProveedoresSearchWhere(
+    organizationId,
+    search,
+    countryId,
+  );
 
   const [proveedores, total] = await prisma.$transaction([
     prisma.mproved.findMany({

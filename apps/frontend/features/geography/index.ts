@@ -28,4 +28,4 @@ export {
 
 export { searchPaises } from "./service/paises.service";
 export type { PaisOption } from "./service/paises.service";
-export { paisKeys, usePaisesSearch } from "./hooks/usePaisesSearch";
+export { paisKeys, usePaisesSearch, usePaisById } from "./hooks/usePaisesSearch";

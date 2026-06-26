@@ -118,6 +118,15 @@ export const searchEstados = (query: string, organizationId: string) => {
   });
 };
 
+export const getPaisById = (id: number, organizationId: string) => {
+  return prisma.pais.findFirst({
+    where: {
+      id,
+      OR: [{ organizationId }, { organizationId: null }],
+    },
+  });
+};
+
 export const searchPaises = (query: string, organizationId: string) => {
   const where: Prisma.PaisWhereInput = {
     OR: [

@@ -90,7 +90,14 @@ export const searchCiudadesHandler = async (req: Request, res: Response) => {
 // --- Handler de Búsqueda de Estados ---
 export const searchPaisesHandler = async (req: Request, res: Response) => {
   const { organizationId } = getContext(req);
-  const { q } = req.query;
+  const { q, id } = req.query as { q?: string; id?: string };
+
+  if (id) {
+    const pais = await service.getPaisById(Number(id), organizationId);
+    res.json(pais ? [pais] : []);
+    return;
+  }
+
   const query = q ? String(q) : "";
 
   const paises = await service.searchPaises(query, organizationId);

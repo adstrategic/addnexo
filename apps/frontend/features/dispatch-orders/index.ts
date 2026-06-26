@@ -54,6 +54,7 @@ export { useDispatchOrderDelete } from "./hooks/useDispatchOrderDelete";
 export { useDispatchOrderToInvoice } from "./hooks/useDispatchOrderToInvoice";
 export { useDispatchOrderAnnulment } from "./hooks/useDispatchOrderAnnulment";
 export { useDispatchClienteAutofill } from "./hooks/useDispatchClienteAutofill";
+export { useDispatchOrderListParams } from "./hooks/useDispatchOrderListParams";
 
 export { dispatchOrdersService } from "./service/dispatch-orders.service";
 export { dispatchOrderDocumentsService } from "./service/dispatch-order-documents.service";
@@ -64,5 +65,5 @@ export { DispatchOrdersContent } from "./components/DispatchOrdersContent";
 export { DispatchOrdersTable } from "./components/DispatchOrdersTable";
 export { DispatchOrderDetails } from "./components/DispatchOrderDetails";
 export { DispatchOrderActions } from "./components/DispatchOrderActions";
-export { DispatchOrderFilter } from "./components/DispatchOrderFilter";
+export { DispatchOrderListToolbar } from "./components/DispatchOrderListToolbar";
 export { DispatchOrderForm } from "./forms/DispatchOrderForm";

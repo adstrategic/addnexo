@@ -4,14 +4,11 @@ import Link from "next/link";
 
 export function DispatchOrderActions() {
   return (
-    <div className="flex gap-2">
-      {/* Primary Action - Create Dispatch Order */}
-      <Button asChild className="gap-2">
-        <Link href="/dispatch-orders/create">
-          <Plus className="h-4 w-4" />
-          Create Dispatch Order
-        </Link>
-      </Button>
-    </div>
+    <Button asChild className="w-full cursor-pointer sm:w-auto">
+      <Link href="/dispatch-orders/create">
+        <Plus className="mr-2 size-4" aria-hidden />
+        <span className="sm:inline">New Dispatch Order</span>
+      </Link>
+    </Button>
   );
 }

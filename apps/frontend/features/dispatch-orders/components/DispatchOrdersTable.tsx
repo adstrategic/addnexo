@@ -8,71 +8,131 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import Link from "next/link";
-import {
-  Eye,
-  MoreHorizontal,
-  Edit,
-  Trash2,
-  Send,
-  Truck,
-  RotateCcw,
-  FileText,
-  XCircle,
-  RefreshCw,
-} from "lucide-react";
-import { dispatchOrdersService } from "../service/dispatch-orders.service";
-import { dispatchOrderUtils, INVOICE_CONVERSION_ENABLED } from "../lib/utils";
-import { TablePagination } from "@/components/shared/TablePagination";
+import { useState } from "react";
+import { toast } from "sonner";
+import { formatearFecha, formatearMoneda, getPageNumbers } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { hasClientPermissions } from "@/lib/permissions";
 import type { DispatchOrderResponse } from "../schemas/dispatch-order-response.schema";
+import { useDispatchOrderToInvoice } from "../hooks/useDispatchOrderToInvoice";
+import { useDispatchOrderAnnulment } from "../hooks/useDispatchOrderAnnulment";
+import { useRegenerateEmittedDispatchPdf } from "../hooks/useDispatchOrders";
 import { DispatchOrderDialog } from "./DispatchOrderDialog";
 import { DispatchOrderReturnDialog } from "./DispatchOrderReturnDialog";
 import { DispatchOrderToInvoiceModal } from "./DispatchOrderToInvoiceModal";
 import { DispatchOrderAnnulModal } from "./DispatchOrderAnnulModal";
-import { useState } from "react";
-import { formatearFecha, formatearMoneda } from "@/lib/utils";
-import { useDispatchOrderToInvoice } from "../hooks/useDispatchOrderToInvoice";
-import { useDispatchOrderAnnulment } from "../hooks/useDispatchOrderAnnulment";
-import { useRegenerateEmittedDispatchPdf } from "../hooks/useDispatchOrders";
-import { hasClientPermissions } from "@/lib/permissions";
-import { toast } from "sonner";
+import { DispatchOrderEmptyState } from "./DispatchOrderEmptyState";
+import { DispatchOrderMobileCard } from "./DispatchOrderMobileCard";
+import { DispatchOrderRowActions } from "./DispatchOrderRowActions";
+import { DispatchOrderStatusBadge } from "./DispatchOrderStatusBadge";
+import { DispatchOrderTableSkeleton } from "./DispatchOrderTableSkeleton";
+import { dispatchOrderListPadding } from "./layout/dispatch-order-list-layout";
 
 interface DispatchOrdersTableProps {
   dispatchOrders: DispatchOrderResponse[];
   isLoading: boolean;
-  onDelete?: ({
-    sequence,
-    number,
-  }: {
-    sequence: number;
-    number: number;
-  }) => void;
+  isFetching?: boolean;
+  onDelete?: (payload: { sequence: number; number: number }) => void;
   onDispatch?: () => void;
   currentPage: number;
   totalPages: number;
   totalItems: number;
   onPageChange: (page: number) => void;
+  hasActiveFilters: boolean;
+  onClearFilters: () => void;
 }
 
-export const DispatchOrdersTable = ({
+function DispatchOrderPagination({
+  currentPage,
+  totalPages,
+  totalItems,
+  onPageChange,
+}: Pick<
+  DispatchOrdersTableProps,
+  "currentPage" | "totalPages" | "totalItems" | "onPageChange"
+>) {
+  if (totalItems === 0) return null;
+
+  return (
+    <div
+      className={cn(
+        "flex flex-col-reverse items-center justify-between gap-4 border-t border-border py-4 sm:flex-row",
+        dispatchOrderListPadding.x,
+      )}
+    >
+      <p className="text-sm text-muted-foreground">
+        Page {currentPage} of {totalPages} · {totalItems}{" "}
+        {totalItems === 1 ? "dispatch order" : "dispatch orders"}
+      </p>
+
+      <Pagination className="mx-0 w-auto justify-end">
+        <PaginationContent>
+          <PaginationItem>
+            <PaginationPrevious
+              onClick={() => onPageChange(currentPage - 1)}
+              className={cn(
+                "cursor-pointer",
+                (currentPage <= 1 || totalPages <= 1) &&
+                  "pointer-events-none opacity-50",
+              )}
+            />
+          </PaginationItem>
+
+          {getPageNumbers(totalPages, currentPage).map((page, index) => (
+            <PaginationItem key={index} className="hidden sm:list-item">
+              {page === "ellipsis" ? (
+                <PaginationEllipsis />
+              ) : (
+                <PaginationLink
+                  onClick={() => onPageChange(page as number)}
+                  isActive={currentPage === page}
+                  className="cursor-pointer"
+                >
+                  {page}
+                </PaginationLink>
+              )}
+            </PaginationItem>
+          ))}
+
+          <PaginationItem>
+            <PaginationNext
+              onClick={() => onPageChange(currentPage + 1)}
+              className={cn(
+                "cursor-pointer",
+                (currentPage >= totalPages || totalPages <= 1) &&
+                  "pointer-events-none opacity-50",
+              )}
+            />
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
+    </div>
+  );
+}
+
+export function DispatchOrdersTable({
   dispatchOrders,
   isLoading,
+  isFetching = false,
   onDelete,
   onDispatch,
   currentPage,
   totalPages,
   totalItems,
   onPageChange,
-}: DispatchOrdersTableProps) => {
+  hasActiveFilters,
+  onClearFilters,
+}: DispatchOrdersTableProps) {
   const [dispatchDialogOpen, setDispatchDialogOpen] = useState(false);
   const [selectedDispatchOrderSequence, setSelectedDispatchOrderSequence] =
     useState<number | null>(null);
@@ -86,84 +146,121 @@ export const DispatchOrdersTable = ({
   const invoiceConversion = useDispatchOrderToInvoice();
   const annulment = useDispatchOrderAnnulment();
   const regenerateEmittedPdf = useRegenerateEmittedDispatchPdf();
-  const canViewPrices =
-    hasClientPermissions("admin", "organization", ["read"]) ||
-    hasClientPermissions("admin", "organization", ["read"]);
+  const canViewPrices = hasClientPermissions("admin", "organization", [
+    "read",
+  ]);
+
+  const handleDispatch = (sequence: number) => {
+    setSelectedDispatchOrderSequence(sequence);
+    setDispatchDialogOpen(true);
+  };
+
+  const handleReturn = (dispatchOrder: DispatchOrderResponse) => {
+    setSelectedDispatchOrderForReturn(dispatchOrder);
+    setReturnDialogOpen(true);
+  };
+
+  const handleRegeneratePdf = (sequence: number) => {
+    setRegeneratingPdfSecuencia(sequence);
+    regenerateEmittedPdf.mutate(sequence, {
+      onSuccess: () => {
+        toast.success("PDF updated", {
+          description:
+            "The warehouse has been sent the updated dispatch PDF.",
+        });
+      },
+      onError: (err: unknown) => {
+        toast.error("Regeneration failed", {
+          description:
+            err instanceof Error
+              ? err.message
+              : "Could not regenerate the dispatch PDF.",
+        });
+      },
+      onSettled: () => {
+        setRegeneratingPdfSecuencia(null);
+      },
+    });
+  };
 
   if (isLoading) {
-    return (
-      <div className="space-y-4">
-        {[...Array(5)].map((_, i) => (
-          <div key={i} className="flex items-center space-x-4 p-4">
-            <Skeleton className="h-12 w-12 rounded-full" />
-            <div className="flex items-center space-x-4">
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-[250px]" />
-                <Skeleton className="h-4 w-[200px]" />
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
+    return <DispatchOrderTableSkeleton />;
   }
 
   if (dispatchOrders.length === 0) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
-        No dispatch orders found
-      </div>
+      <DispatchOrderEmptyState
+        hasFilters={hasActiveFilters}
+        onClearFilters={onClearFilters}
+      />
     );
   }
 
   return (
-    <div className="py-4">
-      <div className="overflow-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Dispatch Order Number</TableHead>
-              <TableHead>Purchase Order</TableHead>
-              <TableHead>Client</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead>Vendor</TableHead>
-              {canViewPrices && <TableHead>Total Amount</TableHead>}
+    <div
+      className={cn("relative", isFetching && "opacity-70 transition-opacity")}
+    >
+      <div className={cn("space-y-3 py-4 md:hidden", dispatchOrderListPadding.x)}>
+        {dispatchOrders.map((dispatchOrder) => (
+          <DispatchOrderMobileCard
+            key={dispatchOrder.DOGId}
+            dispatchOrder={dispatchOrder}
+            canViewPrices={canViewPrices}
+            onDelete={onDelete}
+            onDispatch={handleDispatch}
+            onReturn={handleReturn}
+            onConvertToInvoice={invoiceConversion.openModal}
+            onAnnul={annulment.openModal}
+            onRegeneratePdf={handleRegeneratePdf}
+            isRegeneratingPdf={
+              regenerateEmittedPdf.isPending &&
+              regeneratingPdfSecuencia === dispatchOrder.DOGOrgSecuencia
+            }
+          />
+        ))}
+      </div>
 
-              <TableHead>Status</TableHead>
-              <TableHead className="w-[80px]"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {dispatchOrders.map((dispatchOrder) => {
-              const isDraft = dispatchOrder.DOGEstado === "DRAFT";
-              const isEmitted = dispatchOrder.DOGEstado === "EMITTED";
-              const isDispatched = dispatchOrder.DOGEstado === "DISPATCHED";
-              const isAnulated = dispatchOrder.DOGEstado === "ANULATED";
-
-              const getStatusBadgeVariant = () => {
-                if (isDraft) return "outline";
-                if (isDispatched) return "default";
-                return "default";
-              };
-
-              const getStatusBadgeClassName = () => {
-                if (isDraft) return "border-yellow-500 text-yellow-700";
-                if (isDispatched) return "bg-blue-600 text-white";
-                if (isAnulated) return "bg-gray-600 text-white";
-                if (isEmitted) return "bg-purple-600 text-white";
-                return "bg-green-600 text-white";
-              };
-
-              return (
-                <TableRow key={dispatchOrder.DOGId}>
-                  <TableCell className="font-medium">
-                    #{dispatchOrder.DOGNro}
+      <div className={cn("hidden md:block", dispatchOrderListPadding.x)}>
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="pl-0">Order</TableHead>
+                <TableHead>Client</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>Vendor</TableHead>
+                {canViewPrices ? <TableHead>Total</TableHead> : null}
+                <TableHead>Status</TableHead>
+                <TableHead className="w-[72px] pr-0">
+                  <span className="sr-only">Actions</span>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {dispatchOrders.map((dispatchOrder) => (
+                <TableRow
+                  key={dispatchOrder.DOGId}
+                  className="transition-colors hover:bg-muted/40"
+                >
+                  <TableCell className="pl-0">
+                    <div className="space-y-1">
+                      <Link
+                        href={`/dispatch-orders/${dispatchOrder.DOGOrgSecuencia}`}
+                        className="font-medium text-foreground transition-colors hover:text-primary"
+                      >
+                        #{dispatchOrder.DOGNro}
+                      </Link>
+                      {dispatchOrder.DOGPurchaseOrder ? (
+                        <p className="text-xs text-muted-foreground">
+                          PO {dispatchOrder.DOGPurchaseOrder}
+                        </p>
+                      ) : null}
+                    </div>
                   </TableCell>
                   <TableCell>
-                    {dispatchOrder.DOGPurchaseOrder || "N/A"}
-                  </TableCell>
-                  <TableCell>
-                    {dispatchOrder.cltemae.CRazonSocial || "N/A"}
+                    <span className="line-clamp-2">
+                      {dispatchOrder.cltemae?.CRazonSocial || "N/A"}
+                    </span>
                   </TableCell>
                   <TableCell>
                     {formatearFecha(dispatchOrder.DOGFechaCreado, {
@@ -173,241 +270,70 @@ export const DispatchOrdersTable = ({
                   <TableCell>
                     {dispatchOrder.vendedor?.VNombre || "N/A"}
                   </TableCell>
-                  {canViewPrices && (
+                  {canViewPrices ? (
                     <TableCell>
-                      <span className="text-muted-foreground">
-                        {formatearMoneda(
-                          Number(dispatchOrder.DOGValorTotalNeto ?? 0),
-                        )}
-                      </span>
-                    </TableCell>
-                  )}
-                  <TableCell>
-                    <Badge
-                      variant={getStatusBadgeVariant()}
-                      className={getStatusBadgeClassName()}
-                    >
-                      {dispatchOrderUtils.obtenerEstadoLabel(
-                        dispatchOrder.DOGEstado,
+                      {formatearMoneda(
+                        Number(dispatchOrder.DOGValorTotalNeto ?? 0),
                       )}
-                    </Badge>
-                  </TableCell>
+                    </TableCell>
+                  ) : null}
                   <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Open Menu</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem asChild>
-                          <Link
-                            className="text-green-800"
-                            href={`/dispatch-orders/${dispatchOrder.DOGOrgSecuencia}`}
-                          >
-                            <Eye className="h-4 w-4 mr-2" />
-                            View details
-                          </Link>
-                        </DropdownMenuItem>
-                        {!isAnulated && (
-                          <>
-                            {isDraft && (
-                              <DropdownMenuItem asChild>
-                                <Link
-                                  href={`/dispatch-orders/${dispatchOrder.DOGOrgSecuencia}/edit`}
-                                >
-                                  <Edit className="h-4 w-4 mr-2" />
-                                  Edit
-                                </Link>
-                              </DropdownMenuItem>
-                            )}
-                            {isDraft && (
-                              <DropdownMenuItem
-                                asChild
-                                className="text-blue-600"
-                              >
-                                <Link
-                                  href={`/dispatch-orders/${dispatchOrder.DOGOrgSecuencia}/emit`}
-                                >
-                                  <Send className="h-4 w-4 mr-2" />
-                                  Emit
-                                </Link>
-                              </DropdownMenuItem>
-                            )}
-                            {isEmitted && (
-                              <DropdownMenuItem
-                                className="text-purple-600"
-                                disabled={
-                                  dispatchOrder.DOGEmittedPdfNeedsWarehouseRefresh
-                                }
-                                title={
-                                  dispatchOrder.DOGEmittedPdfNeedsWarehouseRefresh
-                                    ? "Regenerate the dispatch PDF and notify the warehouse before dispatching."
-                                    : undefined
-                                }
-                                onClick={() => {
-                                  if (
-                                    dispatchOrder.DOGEmittedPdfNeedsWarehouseRefresh
-                                  ) {
-                                    return;
-                                  }
-                                  setSelectedDispatchOrderSequence(
-                                    dispatchOrder.DOGOrgSecuencia,
-                                  );
-                                  setDispatchDialogOpen(true);
-                                }}
-                              >
-                                <Truck className="h-4 w-4 mr-2" />
-                                Dispatch
-                              </DropdownMenuItem>
-                            )}
-                            {isEmitted &&
-                              dispatchOrder.DOGEmittedPdfNeedsWarehouseRefresh && (
-                                <DropdownMenuItem
-                                  className="text-amber-700"
-                                  disabled={
-                                    regenerateEmittedPdf.isPending &&
-                                    regeneratingPdfSecuencia ===
-                                      dispatchOrder.DOGOrgSecuencia
-                                  }
-                                  onClick={() => {
-                                    setRegeneratingPdfSecuencia(
-                                      dispatchOrder.DOGOrgSecuencia,
-                                    );
-                                    regenerateEmittedPdf.mutate(
-                                      dispatchOrder.DOGOrgSecuencia,
-                                      {
-                                        onSuccess: () => {
-                                          toast.success("PDF updated", {
-                                            description:
-                                              "The warehouse has been sent the updated dispatch PDF.",
-                                          });
-                                        },
-                                        onError: (err: unknown) => {
-                                          toast.error("Regeneration failed", {
-                                            description:
-                                              err instanceof Error
-                                                ? err.message
-                                                : "Could not regenerate the dispatch PDF.",
-                                          });
-                                        },
-                                        onSettled: () => {
-                                          setRegeneratingPdfSecuencia(null);
-                                        },
-                                      },
-                                    );
-                                  }}
-                                >
-                                  <RefreshCw className="h-4 w-4 mr-2" />
-                                  Regenerate PDF & notify warehouse
-                                </DropdownMenuItem>
-                              )}
-                            {INVOICE_CONVERSION_ENABLED && isDispatched && (
-                              <DropdownMenuItem
-                                className="text-blue-600"
-                                onClick={() => {
-                                  invoiceConversion.openModal(dispatchOrder);
-                                }}
-                              >
-                                <FileText className="h-4 w-4 mr-2" />
-                                Convert to Invoice
-                              </DropdownMenuItem>
-                            )}
-                            {(isDispatched || isEmitted) && (
-                              <DropdownMenuItem
-                                className="text-orange-600"
-                                onClick={() => {
-                                  setSelectedDispatchOrderForReturn(
-                                    dispatchOrder,
-                                  );
-                                  setReturnDialogOpen(true);
-                                }}
-                              >
-                                <RotateCcw className="h-4 w-4 mr-2" />
-                                Return Inventory
-                              </DropdownMenuItem>
-                            )}
-                            {(isEmitted || isDispatched) && (
-                              <DropdownMenuItem
-                                className="text-red-600"
-                                onClick={() => {
-                                  annulment.openModal(dispatchOrder);
-                                }}
-                              >
-                                <XCircle className="h-4 w-4 mr-2" />
-                                Annul
-                              </DropdownMenuItem>
-                            )}
-                            {isDraft && onDelete && (
-                              <DropdownMenuItem
-                                className="text-red-600"
-                                onClick={() =>
-                                  onDelete({
-                                    sequence: dispatchOrder.DOGOrgSecuencia,
-                                    number: dispatchOrder.DOGNro,
-                                  })
-                                }
-                              >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Delete
-                              </DropdownMenuItem>
-                            )}
-                          </>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <DispatchOrderStatusBadge status={dispatchOrder.DOGEstado} />
+                  </TableCell>
+                  <TableCell className="pr-0">
+                    <DispatchOrderRowActions
+                      dispatchOrder={dispatchOrder}
+                      onDelete={onDelete}
+                      onDispatch={handleDispatch}
+                      onReturn={handleReturn}
+                      onConvertToInvoice={invoiceConversion.openModal}
+                      onAnnul={annulment.openModal}
+                      onRegeneratePdf={handleRegeneratePdf}
+                      isRegeneratingPdf={
+                        regenerateEmittedPdf.isPending &&
+                        regeneratingPdfSecuencia ===
+                          dispatchOrder.DOGOrgSecuencia
+                      }
+                    />
                   </TableCell>
                 </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </div>
 
-      {/* Pagination Controls */}
-      <TablePagination
+      <DispatchOrderPagination
         currentPage={currentPage}
         totalPages={totalPages}
         totalItems={totalItems}
         onPageChange={onPageChange}
-        emptyMessage="No dispatch orders found"
-        itemLabel="dispatch orders"
       />
 
-      {/* Dispatch Dialog */}
-      {selectedDispatchOrderSequence !== null && (
+      {selectedDispatchOrderSequence !== null ? (
         <DispatchOrderDialog
           open={dispatchDialogOpen}
           onOpenChange={(open) => {
             setDispatchDialogOpen(open);
-            if (!open) {
-              setSelectedDispatchOrderSequence(null);
-            }
+            if (!open) setSelectedDispatchOrderSequence(null);
           }}
           dispatchOrderSequence={selectedDispatchOrderSequence}
-          onSuccess={() => {
-            onDispatch?.();
-          }}
+          onSuccess={() => onDispatch?.()}
         />
-      )}
+      ) : null}
 
-      {/* Return Inventory Dialog */}
-      {selectedDispatchOrderForReturn && (
+      {selectedDispatchOrderForReturn ? (
         <DispatchOrderReturnDialog
           open={returnDialogOpen}
           onOpenChange={(open) => {
             setReturnDialogOpen(open);
-            if (!open) {
-              setSelectedDispatchOrderForReturn(null);
-            }
+            if (!open) setSelectedDispatchOrderForReturn(null);
           }}
           dispatchOrder={selectedDispatchOrderForReturn}
         />
-      )}
+      ) : null}
 
-      {/* Convert to Invoice Modal */}
-      {invoiceConversion.selectedDispatchOrder && (
+      {invoiceConversion.selectedDispatchOrder ? (
         <DispatchOrderToInvoiceModal
           isOpen={invoiceConversion.isModalOpen}
           onClose={invoiceConversion.closeModal}
@@ -415,10 +341,9 @@ export const DispatchOrdersTable = ({
           dispatchOrder={invoiceConversion.selectedDispatchOrder}
           isCreating={invoiceConversion.isCreating}
         />
-      )}
+      ) : null}
 
-      {/* Annul Modal */}
-      {annulment.selectedDispatchOrder && (
+      {annulment.selectedDispatchOrder ? (
         <DispatchOrderAnnulModal
           isOpen={annulment.isModalOpen}
           onClose={annulment.closeModal}
@@ -426,7 +351,7 @@ export const DispatchOrdersTable = ({
           dispatchOrder={annulment.selectedDispatchOrder}
           isAnulling={annulment.isAnulling}
         />
-      )}
+      ) : null}
     </div>
   );
-};
+}

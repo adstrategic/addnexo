@@ -21,7 +21,7 @@ export default function DispatchOrdersPage() {
   return (
     <Suspense
       fallback={
-        <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <div className="mx-auto w-full max-w-7xl p-4 md:p-8">
           <LoadingComponent variant="dashboard" rows={8} />
         </div>
       }

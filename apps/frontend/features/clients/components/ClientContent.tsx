@@ -1,38 +1,36 @@
 "use client";
 
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent } from "@/components/ui/card";
 import { useClients } from "../hooks/useClients";
 import { useClientManager } from "../hooks/useClientFormManager";
-import { useClientDelete } from "../hooks/useClientDelete"; // Nuevo hook separado
+import { useClientDelete } from "../hooks/useClientDelete";
+import { useClientListParams } from "../hooks/useClientListParams";
 import { ClientTable } from "./ClientTable";
-import { ClientFilters } from "./ClientFilter";
+import { ClientListToolbar } from "./ClientListToolbar";
 import { ClientActions } from "./ClientAction";
-import { ErrorBoundary } from "../../../components/error-boundary";
+import { ClientPageHeader } from "./layout/ClientPageHeader";
+import { clientListPadding } from "./layout/client-list-layout";
+import { ErrorBoundary } from "@/components/error-boundary";
 import { EntityDeleteModal } from "@/components/shared/EntityDeleteModal";
 import { ClientFormModal } from "../forms/ClientFormModal";
-import { useDebouncedTableParams } from "@/hooks/useDebouncedTableParams";
-import { useTabState } from "@/hooks/useTabState";
 
 export function ClientsContent() {
-  const { currentPage, setPage, debouncedSearch, searchTerm, setSearch } =
-    useDebouncedTableParams();
+  const {
+    currentPage,
+    setPage,
+    debouncedSearch,
+    searchTerm,
+    setSearch,
+    clearFilters,
+    hasActiveFilters,
+  } = useClientListParams();
 
-  const { setTab } = useTabState({
-    defaultValue: "todos",
-    resetPaginationOnChange: true,
-  });
-
-  // Hook para manejo del Formulario (Create/Edit)
   const clientManager = useClientManager();
-
-  // Hook para manejo de Eliminación
   const clientDelete = useClientDelete();
 
-  // Query para obtener clientes
-  const { data, isLoading, error } = useClients({
+  const { data, isLoading, isFetching, error } = useClients({
     page: currentPage,
-    search: debouncedSearch || undefined,
+    search: debouncedSearch,
   });
 
   if (error) {
@@ -40,55 +38,39 @@ export function ClientsContent() {
   }
 
   return (
-    <div className="flex flex-col gap-4 p-4 md:p-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Clients</h1>
-          <p className="text-sm text-muted-foreground">
-            Manage your customers and their information
-          </p>
-        </div>
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 p-4 md:p-8">
+      <ClientPageHeader
+        title="Clients"
+        description="Manage your customers and their information"
+        actions={<ClientActions onOpenCreateModal={clientManager.openCreate} />}
+      />
 
-        <ClientActions onOpenCreateModal={clientManager.openCreate} />
-      </div>
+      <Card className="overflow-hidden border-border shadow-sm">
+        <CardContent className="space-y-0 p-0">
+          <div className={`border-b border-border ${clientListPadding.toolbar}`}>
+            <ClientListToolbar
+              searchTerm={searchTerm}
+              onSearchChange={setSearch}
+            />
+          </div>
 
-      {/* Main Content */}
-      <Card>
-        <CardHeader className="p-4">
-          <ClientFilters searchTerm={searchTerm} onSearchChange={setSearch} />
-        </CardHeader>
-
-        <CardContent className="p-0">
-          <Tabs defaultValue="todos" className="w-full" onValueChange={setTab}>
-            <div className="border-b px-4">
-              <TabsList className="bg-transparent">
-                <TabsTrigger
-                  value="todos"
-                  className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-green-600 data-[state=active]:shadow-none rounded-none"
-                >
-                  All
-                </TabsTrigger>
-              </TabsList>
-            </div>
-
-            <TabsContent value="todos" className="p-0">
-              <ClientTable
-                clientes={data?.data || []}
-                isLoading={isLoading}
-                onDelete={clientDelete.openDeleteModal}
-                onEdit={clientManager.openEdit}
-                currentPage={currentPage}
-                totalPages={data?.pagination.totalPages || 1}
-                totalItems={data?.pagination.totalItems || 0}
-                onPageChange={setPage}
-              />
-            </TabsContent>
-          </Tabs>
+          <ClientTable
+            clientes={data?.data ?? []}
+            isLoading={isLoading}
+            isFetching={isFetching && !isLoading}
+            onDelete={clientDelete.openDeleteModal}
+            onEdit={(sequence) => clientManager.openEdit(sequence)}
+            currentPage={currentPage}
+            totalPages={data?.pagination.totalPages ?? 1}
+            totalItems={data?.pagination.totalItems ?? 0}
+            onPageChange={setPage}
+            hasActiveFilters={hasActiveFilters}
+            onClearFilters={clearFilters}
+            onCreate={clientManager.openCreate}
+          />
         </CardContent>
       </Card>
 
-      {/* Client Form Modal - handles both create and edit */}
       <ClientFormModal
         isOpen={clientManager.isOpen}
         onClose={clientManager.close}
@@ -101,13 +83,12 @@ export function ClientsContent() {
         clientError={clientManager.clientError}
       />
 
-      {/* Delete Confirmation Modal - Separate logic */}
       <EntityDeleteModal
         isOpen={clientDelete.isDeleteModalOpen}
         onClose={clientDelete.closeDeleteModal}
         onConfirm={clientDelete.handleDeleteConfirm}
         entity="client"
-        entityName={clientDelete.clienteAEliminar?.descripcion || ""}
+        entityName={clientDelete.clienteAEliminar?.descripcion ?? ""}
         isDeleting={clientDelete.isDeleting}
       />
     </div>

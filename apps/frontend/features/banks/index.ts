@@ -28,15 +28,17 @@ export {
 export { useBankActions } from "./hooks/useBankActions";
 export { useBankManager } from "./hooks/useBankManager";
 export { useBankDelete } from "./hooks/useBankDelete";
+export { useBankListParams } from "./hooks/useBankListParams";
 
 // Services
 export { banksService } from "./services/BanksServices";
 
 // Components
-export { BankContent } from "./components/BankContent";
+export { BanksContent } from "./components/BanksContent";
 export { BankTable } from "./components/BankTable";
 export { BankActions } from "./components/BankActions";
-export { BankFilter } from "./components/BankFilter";
+export { BankListToolbar } from "./components/BankListToolbar";
+export { BankPageHeader } from "./components/layout/BankPageHeader";
 
 // Forms
 export { BankForm } from "./forms/BankForm";

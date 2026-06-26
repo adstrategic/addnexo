@@ -11,6 +11,7 @@ import { LoadingComponent } from "@/components/loading-component";
 import type { UseFormReturn } from "react-hook-form";
 import type { CreateBankDto } from "../schemas/BankSchema";
 import { ErrorBoundary } from "@/components/error-boundary";
+import { cn } from "@/lib/utils";
 
 interface BankFormModalProps {
   isOpen: boolean;
@@ -23,31 +24,48 @@ interface BankFormModalProps {
   bankError?: Error | null;
 }
 
-export function BankFormModal(props: BankFormModalProps) {
-  const {
-    isOpen,
-    onClose,
-    mode,
-    form,
-    onSubmit,
-    isLoading = false,
-    isLoadingBank = false,
-    bankError = null,
-  } = props;
+const dialogContentClassName = cn(
+  "flex max-h-[90vh] w-[calc(100%-2rem)] flex-col gap-0 overflow-hidden p-0",
+  "sm:max-w-lg",
+);
+
+function BankFormModalBody({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 py-4">
+      {children}
+    </div>
+  );
+}
+
+export function BankFormModal({
+  isOpen,
+  onClose,
+  mode,
+  form,
+  onSubmit,
+  isLoading = false,
+  isLoadingBank = false,
+  bankError = null,
+}: BankFormModalProps) {
   const modalTitle = mode === "create" ? "Create New Bank" : "Edit Bank";
 
   if (bankError && mode === "edit") {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-md p-0">
-          <DialogHeader className="px-6 py-4 border-b">
+        <DialogContent
+          onInteractOutside={(e) => e.preventDefault()}
+          className={dialogContentClassName}
+        >
+          <DialogHeader className="shrink-0 border-b px-6 py-4">
             <DialogTitle>{modalTitle}</DialogTitle>
           </DialogHeader>
-          <ErrorBoundary
-            error={bankError}
-            entityName="Bank"
-            url={{ path: "/banks", displayText: "Back to Banks" }}
-          />
+          <BankFormModalBody>
+            <ErrorBoundary
+              error={bankError}
+              entityName="Bank"
+              url={{ path: "/banks", displayText: "Back to Banks" }}
+            />
+          </BankFormModalBody>
         </DialogContent>
       </Dialog>
     );
@@ -56,13 +74,16 @@ export function BankFormModal(props: BankFormModalProps) {
   if (isLoadingBank && mode === "edit") {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-md p-0">
-          <DialogHeader className="px-6 py-4 border-b">
+        <DialogContent
+          onInteractOutside={(e) => e.preventDefault()}
+          className={dialogContentClassName}
+        >
+          <DialogHeader className="shrink-0 border-b px-6 py-4">
             <DialogTitle>{modalTitle}</DialogTitle>
           </DialogHeader>
-          <div className="px-6 py-4">
+          <BankFormModalBody>
             <LoadingComponent variant="form" rows={3} />
-          </div>
+          </BankFormModalBody>
         </DialogContent>
       </Dialog>
     );
@@ -70,11 +91,15 @@ export function BankFormModal(props: BankFormModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md p-0">
-        <DialogHeader className="px-6 py-4 border-b">
+      <DialogContent
+        onInteractOutside={(e) => e.preventDefault()}
+        className={dialogContentClassName}
+      >
+        <DialogHeader className="shrink-0 border-b px-6 py-4">
           <DialogTitle>{modalTitle}</DialogTitle>
         </DialogHeader>
-        <div className="px-6 py-4">
+
+        <BankFormModalBody>
           <BankForm
             form={form}
             mode={mode}
@@ -82,7 +107,7 @@ export function BankFormModal(props: BankFormModalProps) {
             onCancel={onClose}
             isLoading={isLoading}
           />
-        </div>
+        </BankFormModalBody>
       </DialogContent>
     </Dialog>
   );

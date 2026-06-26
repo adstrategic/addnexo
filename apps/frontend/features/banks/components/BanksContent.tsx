@@ -1,27 +1,36 @@
 "use client";
 
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { useBanks } from "../hooks/useBanks";
 import { useBankManager } from "../hooks/useBankManager";
 import { useBankDelete } from "../hooks/useBankDelete";
+import { useBankListParams } from "../hooks/useBankListParams";
 import { BankTable } from "./BankTable";
-import { BankFilter } from "./BankFilter";
+import { BankListToolbar } from "./BankListToolbar";
 import { BankActions } from "./BankActions";
+import { BankPageHeader } from "./layout/BankPageHeader";
+import { bankListPadding } from "./layout/bank-list-layout";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { EntityDeleteModal } from "@/components/shared/EntityDeleteModal";
 import { BankFormModal } from "../forms/BankFormModal";
-import { useDebouncedTableParams } from "@/hooks/useDebouncedTableParams";
 
-export function BankContent() {
-  const { currentPage, setPage, debouncedSearch, searchTerm, setSearch } =
-    useDebouncedTableParams();
+export function BanksContent() {
+  const {
+    currentPage,
+    setPage,
+    debouncedSearch,
+    searchTerm,
+    setSearch,
+    clearFilters,
+    hasActiveFilters,
+  } = useBankListParams();
 
   const bankManager = useBankManager();
   const bankDelete = useBankDelete();
 
-  const { data, isLoading, error } = useBanks({
+  const { data, isLoading, isFetching, error } = useBanks({
     page: currentPage,
-    search: debouncedSearch || undefined,
+    search: debouncedSearch,
   });
 
   if (error) {
@@ -29,32 +38,35 @@ export function BankContent() {
   }
 
   return (
-    <div className="flex flex-col gap-4 p-4 md:p-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Banks</h1>
-          <p className="text-sm text-muted-foreground">
-            Manage banks for payment methods (transfer, check, wallet, credit
-            card)
-          </p>
-        </div>
-        <BankActions onOpenCreateModal={bankManager.openCreate} />
-      </div>
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 p-4 md:p-8">
+      <BankPageHeader
+        title="Banks"
+        description="Manage banks for payment methods (transfer, check, wallet, credit card)"
+        actions={<BankActions onOpenCreateModal={bankManager.openCreate} />}
+      />
 
-      <Card>
-        <CardHeader className="p-4">
-          <BankFilter searchTerm={searchTerm} onSearchChange={setSearch} />
-        </CardHeader>
-        <CardContent className="p-0">
+      <Card className="overflow-hidden border-border shadow-sm">
+        <CardContent className="space-y-0 p-0">
+          <div className={`border-b border-border ${bankListPadding.toolbar}`}>
+            <BankListToolbar
+              searchTerm={searchTerm}
+              onSearchChange={setSearch}
+            />
+          </div>
+
           <BankTable
             banks={data?.data ?? []}
             isLoading={isLoading}
+            isFetching={isFetching && !isLoading}
             onEdit={bankManager.openEdit}
             onDelete={bankDelete.openDeleteModal}
             currentPage={currentPage}
             totalPages={data?.pagination?.totalPages ?? 1}
             totalItems={data?.pagination?.totalItems ?? 0}
             onPageChange={setPage}
+            hasActiveFilters={hasActiveFilters}
+            onClearFilters={clearFilters}
+            onCreate={bankManager.openCreate}
           />
         </CardContent>
       </Card>

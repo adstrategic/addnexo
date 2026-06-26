@@ -1,4 +1,3 @@
-// Icons
 import { Plus } from "lucide-react";
 
 // UI Components
@@ -10,31 +9,12 @@ interface VendedorActionsProps {
 
 export function VendedorActions({ onOpenCreateModal }: VendedorActionsProps) {
   return (
-    <div className="flex gap-2">
-      {/* Primary Action - Create Vendedor */}
-      <Button onClick={onOpenCreateModal} className="gap-2">
-        <Plus className="h-4 w-4" />
-        Add Vendor
-      </Button>
-
-      {/* Secondary Actions */}
-      {/* <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="icon">
-            <Download className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={handleExport}>
-            <Download className="h-4 w-4 mr-2" />
-            Export Vendors
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleImport}>
-            <Upload className="h-4 w-4 mr-2" />
-            Import Vendors
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu> */}
-    </div>
+    <Button
+      onClick={onOpenCreateModal}
+      className="w-full cursor-pointer sm:w-auto"
+    >
+      <Plus className="mr-2 size-4" aria-hidden />
+      <span className="sm:inline">New Vendor</span>
+    </Button>
   );
 }

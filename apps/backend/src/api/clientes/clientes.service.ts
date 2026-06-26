@@ -29,6 +29,13 @@ export const listClientes = async (options: ListClientesOptions) => {
       { CNitCedula: { contains: search, mode: "insensitive" } },
       { CRazonSocial: { contains: search, mode: "insensitive" } },
       { CNombreCliente: { contains: search, mode: "insensitive" } },
+      { CTelefono1: { contains: search, mode: "insensitive" } },
+      { CCorreo1: { contains: search, mode: "insensitive" } },
+      {
+        ciudad: {
+          nombre: { contains: search, mode: "insensitive" },
+        },
+      },
     ];
   }
 

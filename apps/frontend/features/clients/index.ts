@@ -2,8 +2,9 @@
 export { ClientActions } from "./components/ClientAction";
 export { ClientTable } from "./components/ClientTable";
 export { ClientDetails } from "./components/ClientDetail";
-export { ClientFilters } from "./components/ClientFilter";
 export { ClientsContent } from "./components/ClientContent";
+export { ClientListToolbar } from "./components/ClientListToolbar";
+export { ClientPageHeader } from "./components/layout/ClientPageHeader";
 
 // Forms
 export { ClientForm } from "./forms/ClientForm";
@@ -21,6 +22,7 @@ export {
 export { useClientActions } from "./hooks/useClientActions";
 export { useClientManager } from "./hooks/useClientFormManager";
 export { useClientDelete } from "./hooks/useClientDelete";
+export { useClientListParams } from "./hooks/useClientListParams";
 
 // Services
 export { clientsService } from "./services/ClientsServices";

@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense } from "react";
-import { BankContent } from "@/features/banks";
+import { BanksContent } from "@/features/banks";
 import LoadingComponent from "@/components/loading-component";
 import { hasClientPermissions } from "@/lib/permissions";
 import { redirect } from "next/navigation";
@@ -26,7 +26,7 @@ export default function BanksPage() {
         </div>
       }
     >
-      <BankContent />
+      <BanksContent />
     </Suspense>
   );
 }

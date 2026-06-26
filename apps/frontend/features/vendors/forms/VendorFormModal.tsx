@@ -1,22 +1,17 @@
 "use client";
 
-// Types
 import type { UseFormReturn } from "react-hook-form";
-import type { CreateVendorDto } from "../schemas/VendorSchema";
-
-// UI Components
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { LoadingComponent } from "@/components/loading-component";
-import { ErrorBoundary } from "@/components/error-boundary";
-
-// Components
 import { VendedorForm } from "./VendorForm";
+import type { CreateVendorDto } from "../schemas/VendorSchema";
+import { ErrorBoundary } from "@/components/error-boundary";
+import { LoadingComponent } from "@/components/loading-component";
+import { cn } from "@/lib/utils";
 
 interface VendedorFormModalProps {
   isOpen: boolean;
@@ -27,6 +22,19 @@ interface VendedorFormModalProps {
   isLoading?: boolean;
   isLoadingVendor?: boolean;
   vendorError?: Error | null;
+}
+
+const dialogContentClassName = cn(
+  "flex max-h-[90vh] w-[calc(100%-2rem)] flex-col gap-0 overflow-hidden p-0",
+  "sm:max-w-lg",
+);
+
+function VendorFormModalBody({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 py-4">
+      {children}
+    </div>
+  );
 }
 
 export function VendedorFormModal({
@@ -46,38 +54,36 @@ export function VendedorFormModal({
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent
           onInteractOutside={(e) => e.preventDefault()}
-          className="max-w-4xl max-h-[90vh] p-0"
+          className={dialogContentClassName}
         >
-          <DialogHeader className="px-6 py-4 border-b">
+          <DialogHeader className="shrink-0 border-b px-6 py-4">
             <DialogTitle>{modalTitle}</DialogTitle>
           </DialogHeader>
-          <ErrorBoundary
-            error={vendorError}
-            entityName="Vendor"
-            url={{ path: "/vendors", displayText: "Back to Vendors" }}
-          />
+          <VendorFormModalBody>
+            <ErrorBoundary
+              error={vendorError}
+              entityName="Vendor"
+              url={{ path: "/vendors", displayText: "Back to Vendors" }}
+            />
+          </VendorFormModalBody>
         </DialogContent>
       </Dialog>
     );
   }
 
-  // Handle loading state
   if (isLoadingVendor && mode === "edit") {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent
           onInteractOutside={(e) => e.preventDefault()}
-          className="max-w-4xl max-h-[90vh] p-0"
+          className={dialogContentClassName}
         >
-          <DialogHeader className="px-6 py-4 border-b">
+          <DialogHeader className="shrink-0 border-b px-6 py-4">
             <DialogTitle>{modalTitle}</DialogTitle>
           </DialogHeader>
-
-          <ScrollArea className="max-h-[calc(90vh-80px)]">
-            <div className="px-6 py-4">
-              <LoadingComponent variant="form" rows={8} />
-            </div>
-          </ScrollArea>
+          <VendorFormModalBody>
+            <LoadingComponent variant="form" rows={4} />
+          </VendorFormModalBody>
         </DialogContent>
       </Dialog>
     );
@@ -87,23 +93,21 @@ export function VendedorFormModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
         onInteractOutside={(e) => e.preventDefault()}
-        className="max-w-4xl max-h-[90vh] p-0"
+        className={dialogContentClassName}
       >
-        <DialogHeader className="px-6 py-4 border-b">
+        <DialogHeader className="shrink-0 border-b px-6 py-4">
           <DialogTitle>{modalTitle}</DialogTitle>
         </DialogHeader>
 
-        <ScrollArea className="max-h-[calc(90vh-80px)]">
-          <div className="px-6 py-4">
-            <VendedorForm
-              form={form}
-              mode={mode}
-              onSubmit={onSubmit}
-              onCancel={onClose}
-              isLoading={isLoading}
-            />
-          </div>
-        </ScrollArea>
+        <VendorFormModalBody>
+          <VendedorForm
+            form={form}
+            mode={mode}
+            onSubmit={onSubmit}
+            onCancel={onClose}
+            isLoading={isLoading}
+          />
+        </VendorFormModalBody>
       </DialogContent>
     </Dialog>
   );

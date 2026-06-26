@@ -1,15 +1,3 @@
-// Next.js
-import Link from "next/link";
-
-// Icons
-import { Edit, Eye, MoreHorizontal, Trash2 } from "lucide-react";
-
-// Types
-import type { VendorResponse } from "../schemas/VendorSchema";
-
-// UI Components
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -19,130 +7,222 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { TablePagination } from "@/components/shared/TablePagination";
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import Link from "next/link";
+import { getPageNumbers, cn } from "@/lib/utils";
+import type { VendorResponse } from "../schemas/VendorSchema";
+import { vendorListPadding } from "./layout/vendor-list-layout";
+import { VendorEmptyState } from "./VendorEmptyState";
+import { VendorMobileCard } from "./VendorMobileCard";
+import { VendorRowActions } from "./VendorRowActions";
+import { VendorTableSkeleton } from "./VendorTableSkeleton";
 
-interface VendedorTableProps {
+interface VendorTableProps {
   vendors: VendorResponse[];
   isLoading: boolean;
-  onEdit: (vendor: VendorResponse) => void;
+  isFetching?: boolean;
+  onEdit: (sequence: number) => void;
   onDelete: (id: number, description: string) => void;
-  // Pagination props
   currentPage: number;
   totalPages: number;
   totalItems: number;
   onPageChange: (page: number) => void;
+  hasActiveFilters: boolean;
+  onClearFilters: () => void;
+  onCreate?: () => void;
 }
 
-export const VendedorTable = ({
+function VendorPagination({
+  currentPage,
+  totalPages,
+  totalItems,
+  onPageChange,
+}: Pick<
+  VendorTableProps,
+  "currentPage" | "totalPages" | "totalItems" | "onPageChange"
+>) {
+  if (totalItems === 0) return null;
+
+  return (
+    <div
+      className={cn(
+        "flex flex-col-reverse items-center justify-between gap-4 border-t border-border py-4 sm:flex-row",
+        vendorListPadding.x,
+      )}
+    >
+      <p className="text-sm text-muted-foreground">
+        Page {currentPage} of {totalPages} · {totalItems}{" "}
+        {totalItems === 1 ? "vendor" : "vendors"}
+      </p>
+
+      <Pagination className="mx-0 w-auto justify-end">
+        <PaginationContent>
+          <PaginationItem>
+            <PaginationPrevious
+              onClick={() => onPageChange(currentPage - 1)}
+              className={cn(
+                "cursor-pointer",
+                (currentPage <= 1 || totalPages <= 1) &&
+                  "pointer-events-none opacity-50",
+              )}
+            />
+          </PaginationItem>
+
+          {getPageNumbers(totalPages, currentPage).map((page, index) => (
+            <PaginationItem key={index} className="hidden sm:list-item">
+              {page === "ellipsis" ? (
+                <PaginationEllipsis />
+              ) : (
+                <PaginationLink
+                  onClick={() => onPageChange(page as number)}
+                  isActive={currentPage === page}
+                  className="cursor-pointer"
+                >
+                  {page}
+                </PaginationLink>
+              )}
+            </PaginationItem>
+          ))}
+
+          <PaginationItem>
+            <PaginationNext
+              onClick={() => onPageChange(currentPage + 1)}
+              className={cn(
+                "cursor-pointer",
+                (currentPage >= totalPages || totalPages <= 1) &&
+                  "pointer-events-none opacity-50",
+              )}
+            />
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
+    </div>
+  );
+}
+
+export function VendorTable({
   vendors,
   isLoading,
+  isFetching = false,
   onEdit,
   onDelete,
   currentPage,
   totalPages,
   totalItems,
   onPageChange,
-}: VendedorTableProps) => {
+  hasActiveFilters,
+  onClearFilters,
+  onCreate,
+}: VendorTableProps) {
   if (isLoading) {
-    return (
-      <div className="space-y-4">
-        {[...Array(5)].map((_, i) => (
-          <div key={i} className="flex items-center space-x-4 p-4">
-            <Skeleton className="h-12 w-12 rounded-full" />
-            <div className="flex items-center space-x-4">
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-[250px]" />
-                <Skeleton className="h-4 w-[200px]" />
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
+    return <VendorTableSkeleton />;
   }
 
   if (vendors.length === 0) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
-        No vendors found
-      </div>
+      <VendorEmptyState
+        hasFilters={hasActiveFilters}
+        onClearFilters={onClearFilters}
+        onCreate={onCreate}
+      />
     );
   }
 
   return (
-    <div className="py-4">
-      <div className="overflow-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>NIT/Cedula</TableHead>
-              <TableHead>Phone</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead className="w-[80px]"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {vendors.map((vendor) => (
-              <TableRow key={vendor.VId}>
-                <TableCell className="font-medium">
-                  {vendor.VNombre}
-                </TableCell>
-                <TableCell>{vendor.VNitCedula}</TableCell>
-                <TableCell>{vendor.VTelefono}</TableCell>
-                <TableCell>{vendor.VCorreo}</TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <MoreHorizontal className="h-4 w-4" />
-                        <span className="sr-only">Open Menu</span>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem asChild>
-                        <Link
-                          className="text-green-800"
-                          href={`/vendors/${vendor.VOrgSecuencia}`}
-                        >
-                          <Eye className="h-4 w-4 mr-2" />
-                          View details
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onEdit(vendor)}>
-                        <Edit className="h-4 w-4 mr-2" />
-                        Edit
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="text-red-600"
-                        onClick={() => onDelete(vendor.VId, vendor.VNombre)}
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+    <div
+      className={cn("relative", isFetching && "opacity-70 transition-opacity")}
+    >
+      <div className={cn("space-y-3 py-4 md:hidden", vendorListPadding.x)}>
+        {vendors.map((vendor) => (
+          <VendorMobileCard
+            key={vendor.VId}
+            vendor={vendor}
+            onEdit={onEdit}
+            onDelete={onDelete}
+          />
+        ))}
       </div>
 
-      {/* Pagination Controls */}
-      <TablePagination
+      <div className={cn("hidden md:block", vendorListPadding.x)}>
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="pl-0">Vendor</TableHead>
+                <TableHead>NIT/ID</TableHead>
+                <TableHead>Phone</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead className="w-[72px] pr-0">
+                  <span className="sr-only">Actions</span>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {vendors.map((vendor) => (
+                <TableRow
+                  key={vendor.VId}
+                  className="transition-colors hover:bg-muted/40"
+                >
+                  <TableCell className="pl-0">
+                    <Link
+                      href={`/vendors/${vendor.VOrgSecuencia}`}
+                      className="font-medium text-foreground transition-colors hover:text-primary"
+                    >
+                      {vendor.VNombre}
+                    </Link>
+                  </TableCell>
+                  <TableCell>{vendor.VNitCedula}</TableCell>
+                  <TableCell>
+                    {vendor.VTelefono ? (
+                      <a
+                        href={`tel:${vendor.VTelefono}`}
+                        className="text-sm text-primary transition-colors hover:text-primary/80"
+                      >
+                        {vendor.VTelefono}
+                      </a>
+                    ) : (
+                      "—"
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {vendor.VCorreo ? (
+                      <a
+                        href={`mailto:${vendor.VCorreo}`}
+                        className="block max-w-[200px] truncate text-sm text-primary transition-colors hover:text-primary/80"
+                      >
+                        {vendor.VCorreo}
+                      </a>
+                    ) : (
+                      "—"
+                    )}
+                  </TableCell>
+                  <TableCell className="pr-0">
+                    <VendorRowActions
+                      vendor={vendor}
+                      onEdit={onEdit}
+                      onDelete={onDelete}
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
+
+      <VendorPagination
         currentPage={currentPage}
         totalPages={totalPages}
         totalItems={totalItems}
         onPageChange={onPageChange}
-        emptyMessage="No vendors found"
-        itemLabel="vendors"
       />
     </div>
   );
-};
+}

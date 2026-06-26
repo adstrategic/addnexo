@@ -6,13 +6,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { ClientForm } from "./ClientForm";
 import { LoadingComponent } from "@/components/loading-component";
 import type { ClienteResponse } from "../schemas/ClientSchema";
 import type { UseFormReturn } from "react-hook-form";
 import type { ClientFormData } from "../schemas/ClientSchema";
 import { ErrorBoundary } from "@/components/error-boundary";
+import { cn } from "@/lib/utils";
 
 interface ClientFormModalProps {
   isOpen: boolean;
@@ -24,6 +24,19 @@ interface ClientFormModalProps {
   isLoading?: boolean;
   isLoadingClient?: boolean;
   clientError?: Error | null;
+}
+
+const dialogContentClassName = cn(
+  "flex max-h-[90vh] w-[calc(100%-2rem)] flex-col gap-0 overflow-hidden p-0",
+  "sm:max-w-4xl",
+);
+
+function ClientFormModalBody({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 py-4">
+      {children}
+    </div>
+  );
 }
 
 export function ClientFormModal({
@@ -39,38 +52,41 @@ export function ClientFormModal({
 }: ClientFormModalProps) {
   const modalTitle = mode === "create" ? "Create New Client" : "Edit Client";
 
-  // Handle error state - if client was not found, show error and close modal
   if (clientError && mode === "edit") {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-4xl max-h-[90vh] p-0">
-          <DialogHeader className="px-6 py-4 border-b">
+        <DialogContent
+          onInteractOutside={(e) => e.preventDefault()}
+          className={dialogContentClassName}
+        >
+          <DialogHeader className="shrink-0 border-b px-6 py-4">
             <DialogTitle>{modalTitle}</DialogTitle>
           </DialogHeader>
-          <ErrorBoundary
-            error={clientError}
-            entityName="Client"
-            url={{ path: "/clients", displayText: "Back to Clients" }}
-          />
+          <ClientFormModalBody>
+            <ErrorBoundary
+              error={clientError}
+              entityName="Client"
+              url={{ path: "/clients", displayText: "Back to Clients" }}
+            />
+          </ClientFormModalBody>
         </DialogContent>
       </Dialog>
     );
   }
 
-  // Handle loading state
   if (isLoadingClient && mode === "edit") {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-4xl max-h-[90vh] p-0">
-          <DialogHeader className="px-6 py-4 border-b">
+        <DialogContent
+          onInteractOutside={(e) => e.preventDefault()}
+          className={dialogContentClassName}
+        >
+          <DialogHeader className="shrink-0 border-b px-6 py-4">
             <DialogTitle>{modalTitle}</DialogTitle>
           </DialogHeader>
-
-          <ScrollArea className="max-h-[calc(90vh-80px)]">
-            <div className="px-6 py-4">
-              <LoadingComponent variant="form" rows={8} />
-            </div>
-          </ScrollArea>
+          <ClientFormModalBody>
+            <LoadingComponent variant="form" rows={8} />
+          </ClientFormModalBody>
         </DialogContent>
       </Dialog>
     );
@@ -78,23 +94,24 @@ export function ClientFormModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] p-0">
-        <DialogHeader className="px-6 py-4 border-b">
+      <DialogContent
+        onInteractOutside={(e) => e.preventDefault()}
+        className={dialogContentClassName}
+      >
+        <DialogHeader className="shrink-0 border-b px-6 py-4">
           <DialogTitle>{modalTitle}</DialogTitle>
         </DialogHeader>
 
-        <ScrollArea className="max-h-[calc(90vh-80px)]">
-          <div className="px-6 py-4">
-            <ClientForm
-              form={form}
-              mode={mode}
-              initialData={initialData}
-              onSubmit={onSubmit}
-              onCancel={onClose}
-              isLoading={isLoading}
-            />
-          </div>
-        </ScrollArea>
+        <ClientFormModalBody>
+          <ClientForm
+            form={form}
+            mode={mode}
+            initialData={initialData}
+            onSubmit={onSubmit}
+            onCancel={onClose}
+            isLoading={isLoading}
+          />
+        </ClientFormModalBody>
       </DialogContent>
     </Dialog>
   );

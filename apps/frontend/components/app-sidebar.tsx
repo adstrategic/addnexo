@@ -156,8 +156,8 @@ const sidebarConfig: SidebarGroupConfig[] = [
       { path: "/clients", label: "Clients", icon: BookUser },
       { path: "/banks", label: "Banks", icon: Building2 },
       { path: "/geographic-zones", label: "Geographic Zones", icon: Earth },
-      { path: "/credit-note", label: "Credit Note", icon: NotebookPen },
-      { path: "/debit-note", label: "Debit Note", icon: NotebookText },
+      { path: "/credit-notes", label: "Credit Notes", icon: NotebookPen },
+      { path: "/debit-notes", label: "Debit Notes", icon: NotebookText },
       { path: "/dispatch-orders", label: "Dispatch Orders", icon: PackageOpen },
       { path: "/invoices", label: "Invoices", icon: ReceiptIcon },
       {

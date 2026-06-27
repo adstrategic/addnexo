@@ -929,8 +929,8 @@ model Cltemae {
   CTelefono2               String?
   CCorreo1                 String
   CCorreo2                 String?
-  CDiasParaVencerFactura   Decimal  @db.Decimal(2, 0)
-  CRecordatorioPostVencido Decimal  @db.Decimal(2, 0)
+  CDiasParaVencerFactura   Int
+  CRecordatorioPostVencido Int
   CCupoAutorizado          Int      @default(0)
   CAbonos                  Int      @default(0)
   CFechaIngreso            DateTime @db.Date

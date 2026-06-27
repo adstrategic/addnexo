@@ -25,6 +25,7 @@ import {
 import { contextMiddleware } from "../middleware/context.middleware.js";
 import kardexRoutes from "../api/kardex/kardex.routes.js";
 import reminderConfigRoutes from "../api/reminder-config/reminder-config.routes.js";
+import movCxcRoutes from "../api/mov-cxc/mov-cxc.routes.js";
 
 export const apiRouter: Router = Router();
 
@@ -100,6 +101,7 @@ apiRouter.use(
   requireRole(["owner", "admin", "warehouse_manager"]),
   banksRoutes,
 );
+apiRouter.use("/mov-cxc", requireRole(["owner", "admin"]), movCxcRoutes);
 apiRouter.use("/kardex", requireRole(["owner", "admin"]), kardexRoutes);
 // TODO: Add other feature routes, e.g.:
 // apiRouter.use("/invoices", requireRole(["owner", "admin", "warehouse_manager"]), invoicesRoutes);

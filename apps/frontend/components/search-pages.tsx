@@ -71,8 +71,8 @@ const searchOptions = [
   },
 
   // Notes
-  { title: "Credit Notes", href: "/credit-note", category: "Pages" },
-  { title: "Debit Notes", href: "/debit-note", category: "Pages" },
+  { title: "Credit Notes", href: "/credit-notes", category: "Pages" },
+  { title: "Debit Notes", href: "/debit-notes", category: "Pages" },
 
   // Sales
   { title: "Sales", href: "/sales", category: "Pages" },

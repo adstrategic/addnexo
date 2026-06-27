@@ -38,4 +38,6 @@ export { VendedorForm as VendorForm } from "./forms/VendorForm";
 export { VendedorFormModal as VendorFormModal } from "./forms/VendorFormModal";
 export { BasicInfoFields as VendorBasicInfoFields } from "./forms/form-fields/BasicInfoFields";
 
+export { VendorFilterSelector } from "./selectors/VendorFilterSelector";
+
 export { transformFromApiFormat } from "./lib/utils";

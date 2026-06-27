@@ -86,7 +86,7 @@ const sortMonthKeys = (keys: string[]): string[] =>
 const buildBillingWhere = (
   params: BillingDashboardParams,
 ): Prisma.FacturagWhereInput => {
-  const { organizationId, search, status, client, vendor, dateFrom, dateTo } =
+  const { organizationId, search, status, clientId, vendorId, dateFrom, dateTo } =
     params;
   const where: Prisma.FacturagWhereInput = {
     FGOrganizationId: organizationId,
@@ -105,25 +105,12 @@ const buildBillingWhere = (
     where.AND = [{ FGEstado: EstadoFactura.ACTIVE }, { FGSaldo: { gt: 0 } }];
   }
 
-  if (client !== "All") {
-    where.AND = [
-      ...getAndConditions(),
-      {
-        cltemae: {
-          OR: [
-            { CRazonSocial: { equals: client, mode: "insensitive" } },
-            { CNombreCliente: { equals: client, mode: "insensitive" } },
-          ],
-        },
-      },
-    ];
+  if (clientId) {
+    where.AND = [...getAndConditions(), { FGClienteId: clientId }];
   }
 
-  if (vendor !== "All") {
-    where.AND = [
-      ...getAndConditions(),
-      { vendedor: { VNombre: { equals: vendor, mode: "insensitive" } } },
-    ];
+  if (vendorId) {
+    where.AND = [...getAndConditions(), { FGVendedorId: vendorId }];
   }
 
   if (search) {
@@ -233,7 +220,7 @@ export const getBillingDashboard = async (
 
     return {
       id: String(invoice.FGId),
-      invoice_number: `INV-${String(invoice.FGNro)}`,
+      invoice_number: `#${String(invoice.FGNro)}`,
       client: toClientName(invoice),
       issue_date: toDateOnly(invoice.FGFechaCreado),
       due_date: toDateOnly(invoice.FGFechaVencimiento),

@@ -31,8 +31,8 @@ export const billingDashboardQuerySchema = z.object({
     .enum(["All", "paid", "pending", "overdue"])
     .optional()
     .default("All"),
-  client: z.string().optional().default("All"),
-  vendor: z.string().optional().default("All"),
+  clientId: z.coerce.number().int().positive().optional(),
+  vendorId: z.coerce.number().int().positive().optional(),
   dateFrom: z.coerce.date().optional(),
   dateTo: z.coerce.date().optional(),
 });

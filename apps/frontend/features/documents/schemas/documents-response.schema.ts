@@ -82,3 +82,12 @@ export type DocumentDownloadResponse = z.infer<
 export type UploadDocumentResponse = z.infer<
   typeof uploadDocumentResponseSchema
 >;
+
+export const listDocumentsParamsSchema = z.object({
+  type: documentTypeSchema,
+  page: z.coerce.number().int().positive().optional(),
+  limit: z.coerce.number().int().positive().optional(),
+  search: z.string().optional(),
+});
+
+export type ListDocumentsParams = z.infer<typeof listDocumentsParamsSchema>;

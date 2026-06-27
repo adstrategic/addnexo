@@ -1,38 +1,35 @@
-// features/documents/hooks/useDocuments.ts
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
-import documentsApi from "../services/documents.api";
-import type { DocumentType } from "../types/documents-types";
+import { documentsApi } from "../services/documents.api";
+import type {
+  DocumentType,
+  ListDocumentsParams,
+} from "../schemas/documents-response.schema";
 
 /** Query-key factory for the documents feature. */
 export const documentKeys = {
   all: ["documents"] as const,
-  byType: (type: DocumentType, page?: number, limit?: number) =>
-    [...documentKeys.all, type, page, limit] as const,
+  lists: () => [...documentKeys.all, "list"] as const,
+  list: (params: ListDocumentsParams) =>
+    [...documentKeys.lists(), params] as const,
   forDocument: (type: DocumentType, sequence: number) =>
     [...documentKeys.all, type, sequence] as const,
 };
 
-/**
- * Hook to fetch documents grouped by parent document (for main listing page)
- */
 export function useDocumentsByType(
-  type: DocumentType,
-  page: number = 1,
-  limit: number = 50,
-  enabled: boolean = true,
+  params: ListDocumentsParams & { enabled?: boolean },
 ) {
+  const { enabled = true, ...queryParams } = params;
+
   return useQuery({
-    queryKey: documentKeys.byType(type, page, limit),
-    queryFn: () => documentsApi.listDocumentsByType(type, page, limit),
+    queryKey: documentKeys.list(queryParams),
+    queryFn: () => documentsApi.listDocumentsByType(queryParams),
     enabled,
+    staleTime: 30 * 1000,
     placeholderData: (previousData) => previousData,
   });
 }
 
-/**
- * Hook to fetch all documents for a specific document
- */
 export function useDocumentsForDocument(
   type: DocumentType,
   sequence: number,
@@ -45,9 +42,6 @@ export function useDocumentsForDocument(
   });
 }
 
-/**
- * Hook to upload documents
- */
 export function useUploadDocument() {
   const queryClient = useQueryClient();
 
@@ -62,35 +56,25 @@ export function useUploadDocument() {
       files: File[];
     }) => documentsApi.uploadDocument(type, sequence, files),
     onSuccess: (_, variables) => {
-      // Invalidate queries for this document type and sequence
       queryClient.invalidateQueries({
         queryKey: documentKeys.forDocument(variables.type, variables.sequence),
       });
-      queryClient.invalidateQueries({
-        queryKey: [...documentKeys.all, variables.type],
-      });
+      queryClient.invalidateQueries({ queryKey: documentKeys.lists() });
     },
   });
 }
 
-/**
- * Hook to delete a document
- */
 export function useDeleteDocument() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (documentId: number) => documentsApi.deleteDocument(documentId),
     onSuccess: () => {
-      // Invalidate all document queries
       queryClient.invalidateQueries({ queryKey: documentKeys.all });
     },
   });
 }
 
-/**
- * Hook to get document download URL
- */
 export function useDocumentDownloadUrl() {
   return useMutation({
     mutationFn: ({

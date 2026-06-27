@@ -81,7 +81,7 @@ export const listDocumentsByTypeHandler = async (
 ) => {
   const { organizationId } = getContext(req);
   const { type } = req.params;
-  const { page, limit } = req.query;
+  const { page, limit, search } = req.query;
 
   const documentType = mapApiDocumentTypeToPrisma(
     type as "dispatch-order" | "invoice" | "purchase-order",
@@ -91,6 +91,7 @@ export const listDocumentsByTypeHandler = async (
     organizationId,
     Number(page),
     Number(limit),
+    search?.trim() || undefined,
   );
 
   res.status(200).json(result);

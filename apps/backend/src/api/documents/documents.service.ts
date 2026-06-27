@@ -462,6 +462,7 @@ export const listDocumentsGroupedByParent = async (
   organizationId: string,
   page = 1,
   limit = 50,
+  search?: string,
 ) => {
   const skip = (page - 1) * limit;
 
@@ -504,64 +505,76 @@ export const listDocumentsGroupedByParent = async (
     (a, b) => b.latestUpload.getTime() - a.latestUpload.getTime(),
   );
 
-  // Paginate
-  const total = groupedArray.length;
-  const paginated = groupedArray.slice(skip, skip + limit);
+  // Fetch parent document details for all groups before filtering/pagination
+  const parentDocuments = (
+    await Promise.all(
+      groupedArray.map(async (group) => {
+        switch (documentType) {
+          case "DISPATCH_ORDER": {
+            const dispatchOrder = await prisma.dispatchOrderG.findUnique({
+              where: { DOGId: group.documentId },
+              include: { cltemae: true },
+            });
+            if (!dispatchOrder) return null;
+            return {
+              sequence: dispatchOrder.DOGOrgSecuencia,
+              number: dispatchOrder.DOGNro,
+              clientName: dispatchOrder.cltemae.CRazonSocial,
+              date: dispatchOrder.DOGFechaCreado,
+              documentCount: group.count,
+            };
+          }
+          case "INVOICE": {
+            const invoice = await prisma.facturag.findUnique({
+              where: { FGId: group.documentId },
+              include: { cltemae: true },
+            });
+            if (!invoice) return null;
+            return {
+              sequence: invoice.FGOrgSecuencia,
+              number: invoice.FGNro,
+              clientName: invoice.cltemae.CRazonSocial,
+              date: invoice.FGFechaCreado,
+              documentCount: group.count,
+            };
+          }
+          case "PURCHASE_ORDER": {
+            const purchaseOrder = await prisma.paprovee.findUnique({
+              where: { PPId: group.documentId },
+              include: { mproved: true },
+            });
+            if (!purchaseOrder) return null;
+            return {
+              sequence: purchaseOrder.PPOrgSecuencia,
+              number: purchaseOrder.PPNro,
+              supplierName: purchaseOrder.mproved.MPDescripcion,
+              date: purchaseOrder.PPFechaPedido,
+              documentCount: group.count,
+            };
+          }
+          default:
+            return null;
+        }
+      }),
+    )
+  ).filter((document) => document !== null);
 
-  // Fetch parent document details
-  const parentDocuments = await Promise.all(
-    paginated.map(async (group) => {
-      switch (documentType) {
-        case "DISPATCH_ORDER": {
-          const dispatchOrder = await prisma.dispatchOrderG.findUnique({
-            where: { DOGId: group.documentId },
-            include: { cltemae: true },
-          });
-          if (!dispatchOrder) return null;
-          return {
-            sequence: dispatchOrder.DOGOrgSecuencia,
-            number: dispatchOrder.DOGNro,
-            clientName: dispatchOrder.cltemae.CRazonSocial,
-            date: dispatchOrder.DOGFechaCreado,
-            documentCount: group.count,
-          };
-        }
-        case "INVOICE": {
-          const invoice = await prisma.facturag.findUnique({
-            where: { FGId: group.documentId },
-            include: { cltemae: true },
-          });
-          if (!invoice) return null;
-          return {
-            sequence: invoice.FGOrgSecuencia,
-            number: invoice.FGNro,
-            clientName: invoice.cltemae.CRazonSocial,
-            date: invoice.FGFechaCreado,
-            documentCount: group.count,
-          };
-        }
-        case "PURCHASE_ORDER": {
-          const purchaseOrder = await prisma.paprovee.findUnique({
-            where: { PPId: group.documentId },
-            include: { mproved: true },
-          });
-          if (!purchaseOrder) return null;
-          return {
-            sequence: purchaseOrder.PPOrgSecuencia,
-            number: purchaseOrder.PPNro,
-            supplierName: purchaseOrder.mproved.MPDescripcion,
-            date: purchaseOrder.PPFechaPedido,
-            documentCount: group.count,
-          };
-        }
-        default:
-          return null;
-      }
-    }),
-  );
+  const filteredDocuments = search
+    ? parentDocuments.filter((document) => {
+        const query = search.toLowerCase();
+        return (
+          String(document.number).includes(query) ||
+          document.clientName?.toLowerCase().includes(query) ||
+          document.supplierName?.toLowerCase().includes(query)
+        );
+      })
+    : parentDocuments;
+
+  const total = filteredDocuments.length;
+  const paginated = filteredDocuments.slice(skip, skip + limit);
 
   return {
-    documents: parentDocuments.filter((d) => d !== null),
+    documents: paginated,
     total,
     page,
     limit,

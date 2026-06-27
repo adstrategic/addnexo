@@ -15,6 +15,7 @@ export const listDocumentsByTypeParamsSchema = z.object({
 export const listDocumentsByTypeQuerySchema = z.object({
   page: z.coerce.number().int().positive().optional().default(1),
   limit: z.coerce.number().int().positive().max(100).optional().default(50),
+  search: z.string().optional(),
 });
 
 // Schema for getting documents for a specific document

@@ -1,161 +1,146 @@
 "use client";
 
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DocumentsTable } from "./DocumentsTable";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { ErrorBoundary } from "@/components/error-boundary";
-import { useTabState } from "@/hooks/useTabState";
-import { useDebouncedTableParams } from "@/hooks/useDebouncedTableParams";
-import {
-  useDocumentsByType,
-} from "../hooks/useDocuments";
-import type { DocumentType } from "../types/documents-types";
+
+import { useDocumentsByType } from "../hooks/useDocuments";
+import { useDocumentListParams } from "../hooks/useDocumentListParams";
+import { DocumentsTable } from "./DocumentsTable";
+import { DocumentListToolbar } from "./DocumentListToolbar";
+import { DocumentTypeTabs } from "./DocumentTypeTabs";
+import { DocumentPageHeader } from "./layout/DocumentPageHeader";
+import { documentListPadding } from "./layout/document-list-layout";
+
+const PAGE_SIZE = 10;
 
 export function DocumentsContent() {
-  // URL parameter management hooks
-  const { currentPage, setPage } = useDebouncedTableParams();
+  const {
+    currentPage,
+    setPage,
+    debouncedSearch,
+    searchTerm,
+    setSearch,
+    selectedTab,
+    setTab,
+    clearFilters,
+    hasActiveFilters,
+  } = useDocumentListParams();
 
-  const { selectedTab, setTab } = useTabState({
-    defaultValue: "dispatch-order",
-    resetPaginationOnChange: true,
-  });
-
-  // Lazy loading: Only execute query for the active tab
   const isDispatchOrderTab = selectedTab === "dispatch-order";
   const isPurchaseOrderTab = selectedTab === "purchase-order";
   const isInvoiceTab = selectedTab === "invoice";
 
+  const listParams = {
+    page: currentPage,
+    limit: PAGE_SIZE,
+    search: debouncedSearch,
+  };
+
   const {
     data: dispatchOrderData,
     error: dispatchOrderError,
+    isLoading: isLoadingDispatchOrder,
     isFetching: isFetchingDispatchOrder,
-  } = useDocumentsByType(
-    "dispatch-order",
-    currentPage,
-    50,
-    isDispatchOrderTab
-  );
+  } = useDocumentsByType({
+    type: "dispatch-order",
+    ...listParams,
+    enabled: isDispatchOrderTab,
+  });
 
   const {
     data: purchaseOrderData,
     error: purchaseOrderError,
+    isLoading: isLoadingPurchaseOrder,
     isFetching: isFetchingPurchaseOrder,
-  } = useDocumentsByType(
-    "purchase-order",
-    currentPage,
-    50,
-    isPurchaseOrderTab
-  );
+  } = useDocumentsByType({
+    type: "purchase-order",
+    ...listParams,
+    enabled: isPurchaseOrderTab,
+  });
 
   const {
     data: invoiceData,
     error: invoiceError,
+    isLoading: isLoadingInvoice,
     isFetching: isFetchingInvoice,
-  } = useDocumentsByType("invoice", currentPage, 50, isInvoiceTab);
+  } = useDocumentsByType({
+    type: "invoice",
+    ...listParams,
+    enabled: isInvoiceTab,
+  });
 
-  // Select active tab data
-  const activeData =
-    isDispatchOrderTab
-      ? dispatchOrderData
-      : isPurchaseOrderTab
+  const activeData = isDispatchOrderTab
+    ? dispatchOrderData
+    : isPurchaseOrderTab
       ? purchaseOrderData
       : invoiceData;
-  const activeIsFetching =
-    isDispatchOrderTab
-      ? isFetchingDispatchOrder
-      : isPurchaseOrderTab
+
+  const activeIsLoading = isDispatchOrderTab
+    ? isLoadingDispatchOrder
+    : isPurchaseOrderTab
+      ? isLoadingPurchaseOrder
+      : isLoadingInvoice;
+
+  const activeIsFetching = isDispatchOrderTab
+    ? isFetchingDispatchOrder
+    : isPurchaseOrderTab
       ? isFetchingPurchaseOrder
       : isFetchingInvoice;
-  const activeError =
-    isDispatchOrderTab
-      ? dispatchOrderError
-      : isPurchaseOrderTab
+
+  const activeError = isDispatchOrderTab
+    ? dispatchOrderError
+    : isPurchaseOrderTab
       ? purchaseOrderError
       : invoiceError;
 
-  // Error handling
   if (activeError) {
-    return (
-      <ErrorBoundary error={activeError} entityName="Documents" />
-    );
+    return <ErrorBoundary error={activeError} entityName="Documents" />;
   }
 
   const totalPages = activeData
-    ? Math.ceil(activeData.total / 50)
+    ? Math.max(1, Math.ceil(activeData.total / PAGE_SIZE))
     : 1;
 
   return (
-    <div className="flex flex-col gap-4 p-4 md:p-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Documents</h1>
-          <p className="text-sm text-muted-foreground">
-            Manage documents for dispatch orders, purchase orders, and invoices
-          </p>
-        </div>
-      </div>
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 p-4 md:p-8">
+      <DocumentPageHeader
+        title="Documents"
+        description="Browse uploaded files for dispatch orders, purchase orders, and invoices"
+      />
 
-      {/* Main Content */}
-      <Card>
-        <CardContent className="p-0">
+      <Card className="overflow-hidden border-border shadow-sm">
+        <CardContent className="space-y-0 p-0">
+          <div
+            className={`border-b border-border ${documentListPadding.toolbar}`}
+          >
+            <DocumentListToolbar
+              searchTerm={searchTerm}
+              onSearchChange={setSearch}
+              onClearFilters={clearFilters}
+              hasActiveFilters={hasActiveFilters}
+            />
+          </div>
+
           <Tabs className="w-full" value={selectedTab} onValueChange={setTab}>
-            <div className="border-b px-4">
-              <TabsList className="bg-transparent">
-                <TabsTrigger
-                  value="dispatch-order"
-                  className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:shadow-none rounded-none"
-                >
-                  Dispatch Orders
-                </TabsTrigger>
-                <TabsTrigger
-                  value="purchase-order"
-                  className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-green-600 data-[state=active]:shadow-none rounded-none"
-                >
-                  Purchase Orders
-                </TabsTrigger>
-                <TabsTrigger
-                  value="invoice"
-                  className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-purple-600 data-[state=active]:shadow-none rounded-none"
-                >
-                  Invoices
-                </TabsTrigger>
-              </TabsList>
+            <div
+              className={`overflow-x-auto border-b border-border ${documentListPadding.toolbar}`}
+            >
+              <DocumentTypeTabs />
             </div>
 
-            <TabsContent value="dispatch-order" className="p-0">
+            <TabsContent value={selectedTab} className="mt-0 p-0">
               <DocumentsTable
-                documents={activeData?.documents || []}
-                isLoading={activeIsFetching}
-                documentType="dispatch-order"
+                documents={activeData?.documents ?? []}
+                isLoading={activeIsLoading}
+                isFetching={activeIsFetching && !activeIsLoading}
+                documentType={selectedTab}
                 currentPage={currentPage}
                 totalPages={totalPages}
-                totalItems={activeData?.total || 0}
+                totalItems={activeData?.total ?? 0}
                 onPageChange={setPage}
-              />
-            </TabsContent>
-
-            <TabsContent value="purchase-order" className="p-0">
-              <DocumentsTable
-                documents={activeData?.documents || []}
-                isLoading={activeIsFetching}
-                documentType="purchase-order"
-                currentPage={currentPage}
-                totalPages={totalPages}
-                totalItems={activeData?.total || 0}
-                onPageChange={setPage}
-              />
-            </TabsContent>
-
-            <TabsContent value="invoice" className="p-0">
-              <DocumentsTable
-                documents={activeData?.documents || []}
-                isLoading={activeIsFetching}
-                documentType="invoice"
-                currentPage={currentPage}
-                totalPages={totalPages}
-                totalItems={activeData?.total || 0}
-                onPageChange={setPage}
+                hasActiveFilters={hasActiveFilters}
+                onClearFilters={clearFilters}
               />
             </TabsContent>
           </Tabs>
@@ -164,29 +149,3 @@ export function DocumentsContent() {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

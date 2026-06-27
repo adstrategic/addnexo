@@ -13,20 +13,23 @@ import type {
   DocumentsForDocumentResponse,
   DocumentDownloadResponse,
   UploadDocumentResponse,
+  ListDocumentsParams,
 } from "../schemas/documents-response.schema";
 
 const BASE_URL = "/documents";
 
 export const documentsApi = {
-  // List documents grouped by parent document (for main listing page)
   async listDocumentsByType(
-    type: DocumentType,
-    page: number = 1,
-    limit: number = 50,
+    params: ListDocumentsParams,
   ): Promise<DocumentsGroupedResponse> {
     try {
+      const { type, page = 1, limit = 10, search } = params;
       const { data } = await apiClient.get(`${BASE_URL}/${type}`, {
-        params: { page, limit },
+        params: {
+          page,
+          limit,
+          search: search?.trim() || undefined,
+        },
       });
       return documentsGroupedResponseSchema.parse(data);
     } catch (error) {
@@ -34,7 +37,6 @@ export const documentsApi = {
     }
   },
 
-  // List all documents for a specific document
   async listDocumentsForDocument(
     type: DocumentType,
     sequence: number,
@@ -47,7 +49,6 @@ export const documentsApi = {
     }
   },
 
-  // Upload documents for a specific document
   async uploadDocument(
     type: DocumentType,
     sequence: number,
@@ -70,7 +71,6 @@ export const documentsApi = {
     }
   },
 
-  // Get presigned URL for downloading a document
   async getDocumentDownloadUrl(
     documentId: number,
     download: boolean = false,
@@ -86,7 +86,6 @@ export const documentsApi = {
     }
   },
 
-  // Delete a document
   async deleteDocument(documentId: number): Promise<void> {
     try {
       await apiClient.delete(`${BASE_URL}/${documentId}`);

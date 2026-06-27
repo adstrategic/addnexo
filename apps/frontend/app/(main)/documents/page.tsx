@@ -2,7 +2,7 @@
 
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
-import { DocumentsContent } from "@/features/documents/components/DocumentsContent";
+import { DocumentsContent } from "@/features/documents";
 import LoadingComponent from "@/components/loading-component";
 import { hasClientPermissions } from "@/lib/permissions";
 
@@ -21,7 +21,7 @@ export default function DocumentsPage() {
   return (
     <Suspense
       fallback={
-        <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 p-4 md:p-8">
           <LoadingComponent variant="dashboard" rows={8} />
         </div>
       }

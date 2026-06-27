@@ -143,21 +143,6 @@ export const crearMovimientoSchema = z
       message: "Cost/price must be 0 when marked as temporary zero cost.",
       path: ["MVCostoPrecio"],
     },
-  )
-  .refine(
-    (data) => {
-      // Validación: Si MVEsCostoTemporalCero = false y el costo es 0, debe fallar
-      // (solo para entradas, ya que las salidas pueden tener costo 0)
-      if (!data.MVEsCostoTemporalCero && data.MVCostoPrecio === 0) {
-        return false;
-      }
-      return true;
-    },
-    {
-      message:
-        "Cost/price must be greater than 0 or you must check the temporary zero cost option.",
-      path: ["MVCostoPrecio"],
-    },
   );
 export const buscarMovimientosSchema = z.object({
   page: z.coerce.number().int().min(1).optional().default(1),

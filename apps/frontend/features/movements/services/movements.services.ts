@@ -115,6 +115,7 @@ export const movementsApi = {
       }>(`${BASE_URL}/bulk`, payload);
       return response.data;
     } catch (error) {
+      console.error(error);
       handleApiError(error);
     }
   },

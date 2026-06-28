@@ -1,7 +1,5 @@
 import { LoadingComponent } from "@/components/loading-component";
 import { SupplierDetails } from "@/features/suppliers";
-import { hasClientPermissions } from "@/lib/permissions";
-import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 interface SupplierPageProps {
@@ -13,17 +11,6 @@ interface SupplierPageProps {
 export default async function SupplierPage({ params }: SupplierPageProps) {
   const { secuencia } = await params;
   const sequenceParsed = Number(secuencia);
-
-  const hasPermission = hasClientPermissions("admin", "organization", [
-    "read",
-    "create",
-    "update",
-    "delete",
-  ]);
-
-  if (!hasPermission) {
-    redirect("/");
-  }
 
   return (
     <Suspense

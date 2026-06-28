@@ -2,6 +2,7 @@
 
 import type React from "react";
 import { RequireAuth } from "@/components/RequireAuth";
+import { RoleRouteGuard } from "@/components/RoleRouteGuard";
 import { LayoutWrapper } from "@/components/layout-wrapper";
 import { PeriodProvider } from "@/lib/context/period-context";
 
@@ -12,9 +13,11 @@ export function MainLayoutGuard({
 }) {
   return (
     <RequireAuth requireOrg>
-      <PeriodProvider>
-        <LayoutWrapper>{children}</LayoutWrapper>
-      </PeriodProvider>
+      <RoleRouteGuard>
+        <PeriodProvider>
+          <LayoutWrapper>{children}</LayoutWrapper>
+        </PeriodProvider>
+      </RoleRouteGuard>
     </RequireAuth>
   );
 }

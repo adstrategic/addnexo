@@ -1,7 +1,5 @@
 import LoadingComponent from "@/components/loading-component";
 import { VendorDetails } from "@/features/vendors";
-import { hasClientPermissions } from "@/lib/permissions";
-import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 interface VendedorPageProps {
@@ -13,17 +11,6 @@ interface VendedorPageProps {
 export default async function VendedorPage({ params }: VendedorPageProps) {
   const { secuencia } = await params;
   const sequenceParsed = Number(secuencia);
-
-  const hasPermission = hasClientPermissions("admin", "organization", [
-    "read",
-    "create",
-    "update",
-    "delete",
-  ]);
-
-  if (!hasPermission) {
-    redirect("/");
-  }
 
   return (
     <Suspense

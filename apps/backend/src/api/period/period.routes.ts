@@ -18,7 +18,7 @@ router.get("/status", controller.getClosingStatusHandler);
 router.get("/close/validate", controller.validatePreCloseHandler);
 router.post(
   "/close",
-  requireRole(["owner", "admin"]),
+  requireRole(["admin"]),
   validateRequest(closePeriodSchema),
   controller.closePeriodHandler,
 );

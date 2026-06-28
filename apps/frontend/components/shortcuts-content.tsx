@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { SettingsModal } from "@/components/settings-modal";
+import { useRole } from "@/hooks/useRole";
 
 import { SearchPages } from "./search-pages";
 import Image from "next/image";
@@ -45,6 +46,7 @@ import Image from "next/image";
 
 export function ShortcutsContent() {
   const router = useRouter();
+  const { canAccessPath, isLoading: isRoleLoading } = useRole();
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
@@ -115,6 +117,11 @@ export function ShortcutsContent() {
     },
   ];
 
+  // Single source of truth: the same role policy that drives the sidebar and
+  // route guard (lib/access-policy.ts). To grant a role a new module, edit only
+  // that policy — this page, the sidebar and the guard all update automatically.
+  const visibleAccess = access.filter((item) => canAccessPath(item.href));
+
   return (
     <div className="min-h-screen bg-linear-to-b from-[#F8FAFC] via-[#E6FAFB] to-[#B8F0F3]">
       {/* Header con funcionalidades */}
@@ -122,28 +129,13 @@ export function ShortcutsContent() {
         <div className="flex items-center gap-4">
           <div className="flex items-center justify-center">
             <Image
-              src="/addstrategic-icon.png"
+              src="/addnexo-negro.png"
               alt="Logo"
-              className="h-10 w-auto"
-              width={180}
+              className="h-14 w-auto"
+              width={420}
               height={180}
             />
           </div>
-          <div className="font-semibold text-lg text-gray-800">
-            ADDSTRATEGIC
-          </div>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <SearchPages />
-
-          <SettingsModal />
-
-          <Link href="/account-settings">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#16A5AD] text-white cursor-pointer hover:bg-[#1ECAD3] transition-colors">
-              <span className="text-xs font-bold">C</span>
-            </div>
-          </Link>
         </div>
       </header>
 
@@ -159,7 +151,7 @@ export function ShortcutsContent() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {access.map((item, index) => (
+          {(isRoleLoading ? [] : visibleAccess).map((item, index) => (
             <div key={index} className="block">
               <div onClick={() => handleShortcutClick(item.href, item.group)}>
                 <Card className="h-full hover:shadow-xl transition-all duration-300 border-2 hover:border-[#1ECAD3] overflow-hidden group cursor-pointer transform hover:scale-105">

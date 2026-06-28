@@ -1,20 +1,8 @@
 import { LoadingComponent } from "@/components/loading-component";
 import { VendorsContent } from "@/features/vendors";
-import { hasClientPermissions } from "@/lib/permissions";
-import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 export default function VendorsPage() {
-  const hasPermission = hasClientPermissions("admin", "organization", [
-    "read",
-    "create",
-    "update",
-    "delete",
-  ]);
-
-  if (!hasPermission) {
-    redirect("/");
-  }
 
   return (
     <Suspense

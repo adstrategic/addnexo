@@ -38,73 +38,42 @@ apiRouter.use(requireActiveOrganization());
 // Layer 3: Resolve active period per request
 apiRouter.use(contextMiddleware);
 
-// Feature routes with role-based access:
-// - Unidades: owner + admin only (warehouse_manager cannot access)
-// - Almacenes (warehouses): owner + admin only
-// - When you add invoices (and "other"): use requireRole(["owner", "admin", "warehouse_manager"])
-//   or requirePermission({ project: ["read"] }) so warehouse_manager can access those two only
-apiRouter.use(
-  "/measurement-types",
-  requireRole(["owner", "admin"]),
-  unidadesRoutes,
-);
-apiRouter.use("/warehouses", requireRole(["owner", "admin"]), almacenesRoutes);
-apiRouter.use(
-  "/inventory-groups",
-  requireRole(["owner", "admin"]),
-  gruposRoutes,
-);
-apiRouter.use("/catalog", requireRole(["owner", "admin"]), catalogoRoutes);
-apiRouter.use("/suppliers", requireRole(["owner", "admin"]), suppliersRoutes);
-apiRouter.use("/clients", requireRole(["owner", "admin"]), clientsRoutes);
-apiRouter.use("/vendors", requireRole(["owner", "admin"]), vendorsRoutes);
-apiRouter.use("/geography", requireRole(["owner", "admin"]), geographyRoutes);
-apiRouter.use(
-  "/movement-types",
-  requireRole(["owner", "admin"]),
-  movementTypesRoutes,
-);
-apiRouter.use("/movements", requireRole(["owner", "admin"]), movkarRoutes);
-apiRouter.use("/dashboard", requireRole(["owner", "admin"]), dashboardRoutes);
+// Feature routes with role-based access (requireRole is the common rule):
+// - Admin-only features use requireRole(["admin"]).
+// - warehouse_manager is limited to /dispatch-orders (its actions are gated per-verb
+//   with requirePermission inside the router) plus /period (read) for the closing guard.
+apiRouter.use("/measurement-types", requireRole(["admin"]), unidadesRoutes);
+apiRouter.use("/warehouses", requireRole(["admin"]), almacenesRoutes);
+apiRouter.use("/inventory-groups", requireRole(["admin"]), gruposRoutes);
+apiRouter.use("/catalog", requireRole(["admin"]), catalogoRoutes);
+apiRouter.use("/suppliers", requireRole(["admin"]), suppliersRoutes);
+apiRouter.use("/clients", requireRole(["admin"]), clientsRoutes);
+apiRouter.use("/vendors", requireRole(["admin"]), vendorsRoutes);
+apiRouter.use("/geography", requireRole(["admin"]), geographyRoutes);
+apiRouter.use("/movement-types", requireRole(["admin"]), movementTypesRoutes);
+apiRouter.use("/movements", requireRole(["admin"]), movkarRoutes);
+apiRouter.use("/dashboard", requireRole(["admin"]), dashboardRoutes);
 apiRouter.use(
   "/period",
-  requireRole(["owner", "admin", "warehouse_manager"]),
+  requireRole(["admin", "warehouse_manager"]),
   periodRoutes,
 );
 apiRouter.use(
   "/dispatch-orders",
-  requireRole(["owner", "admin", "warehouse_manager"]),
+  requireRole(["admin", "warehouse_manager"]),
   dispatchOrderRoutes,
 );
-apiRouter.use(
-  "/reminder-config",
-  requireRole(["owner", "admin"]),
-  reminderConfigRoutes,
-);
-apiRouter.use(
-  "/invoices",
-  requireRole(["owner", "admin", "warehouse_manager"]),
-  invoicesRoutes,
-);
+apiRouter.use("/reminder-config", requireRole(["admin"]), reminderConfigRoutes);
+apiRouter.use("/invoices", requireRole(["admin"]), invoicesRoutes);
 apiRouter.use(
   "/balance-invoices",
-  requireRole(["owner", "admin"]),
+  requireRole(["admin"]),
   balanceInvoicesRoutes,
 );
-apiRouter.use(
-  "/documents",
-  requireRole(["owner", "admin", "warehouse_manager"]),
-  documentsRoutes,
-);
-apiRouter.use(
-  "/banks",
-  requireRole(["owner", "admin", "warehouse_manager"]),
-  banksRoutes,
-);
-apiRouter.use("/mov-cxc", requireRole(["owner", "admin"]), movCxcRoutes);
-apiRouter.use("/kardex", requireRole(["owner", "admin"]), kardexRoutes);
-// TODO: Add other feature routes, e.g.:
-// apiRouter.use("/invoices", requireRole(["owner", "admin", "warehouse_manager"]), invoicesRoutes);
+apiRouter.use("/documents", requireRole(["admin"]), documentsRoutes);
+apiRouter.use("/banks", requireRole(["admin"]), banksRoutes);
+apiRouter.use("/mov-cxc", requireRole(["admin"]), movCxcRoutes);
+apiRouter.use("/kardex", requireRole(["admin"]), kardexRoutes);
 
 apiRouter.get("/", (req, res) => {
   res.json({ message: "API v1 is running" });

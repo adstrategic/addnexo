@@ -3,20 +3,8 @@
 import { Suspense } from "react";
 import { MeasurementUnitsContent } from "@/features/measurement-types";
 import LoadingComponent from "@/components/loading-component";
-import { hasClientPermissions } from "@/lib/permissions";
-import { redirect } from "next/navigation";
 
 export default function MeasurementTypesPage() {
-  const hasPermission = hasClientPermissions("admin", "organization", [
-    "read",
-    "create",
-    "update",
-    "delete",
-  ]);
-
-  if (!hasPermission) {
-    redirect("/");
-  }
 
   return (
     <Suspense

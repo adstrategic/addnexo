@@ -1,22 +1,10 @@
 "use client";
 
 import { Suspense } from "react";
-import { redirect } from "next/navigation";
 import { DispatchOrdersContent } from "@/features/dispatch-orders";
 import LoadingComponent from "@/components/loading-component";
-import { hasClientPermissions } from "@/lib/permissions";
 
 export default function DispatchOrdersPage() {
-  const hasPermission = hasClientPermissions("admin", "organization", [
-    "read",
-    "create",
-    "update",
-    "delete",
-  ]);
-
-  if (!hasPermission) {
-    redirect("/");
-  }
 
   return (
     <Suspense

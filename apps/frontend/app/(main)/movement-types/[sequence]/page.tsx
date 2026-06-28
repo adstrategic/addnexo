@@ -1,6 +1,4 @@
 import { MovementTypeDetail } from "@/features/movement-types";
-import { hasClientPermissions } from "@/lib/permissions";
-import { redirect } from "next/navigation";
 
 interface Props {
   params: {
@@ -10,17 +8,6 @@ interface Props {
 
 export default async function MovementTypeDetailsPage({ params }: Props) {
   const sequence = parseInt(params.sequence);
-
-  const hasPermission = hasClientPermissions("admin", "organization", [
-    "read",
-    "create",
-    "update",
-    "delete",
-  ]);
-
-  if (!hasPermission) {
-    redirect("/");
-  }
 
   if (isNaN(sequence)) {
     return (

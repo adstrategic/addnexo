@@ -1,20 +1,8 @@
 import { MovementTypesContent } from "@/features/movement-types";
 import { LoadingComponent } from "@/components/loading-component";
 import { Suspense } from "react";
-import { redirect } from "next/navigation";
-import { hasClientPermissions } from "@/lib/permissions";
 
 export default async function MovementTypesPage() {
-  const hasPermission = hasClientPermissions("admin", "organization", [
-    "read",
-    "create",
-    "update",
-    "delete",
-  ]);
-
-  if (!hasPermission) {
-    redirect("/");
-  }
 
   return (
     <Suspense

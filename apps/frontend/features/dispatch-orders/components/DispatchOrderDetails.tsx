@@ -55,7 +55,7 @@ import {
 import { formatearFecha, formatearMoneda } from "@/lib/utils";
 import { TipoPropositoMovkar } from "@/features/movement-types";
 import { toast } from "sonner";
-import { hasClientPermissions } from "@/lib/permissions";
+import { useRole } from "@/hooks/useRole";
 import { INVOICE_CONVERSION_ENABLED } from "../lib/utils";
 
 interface DispatchOrderDetailsProps {
@@ -75,9 +75,12 @@ export function DispatchOrderDetails({
   const dispatchOrderDelete = useDispatchOrderDelete({
     onAfterDelete: () => router.push("/dispatch-orders"),
   });
-  const canViewPrices =
-    hasClientPermissions("admin", "organization", ["read"]) ||
-    hasClientPermissions("admin", "organization", ["read"]);
+  const { can } = useRole();
+  // Action-level gating: warehouse_manager lacks emit/void/delete.
+  const canEmit = can({ dispatchOrder: ["emit"] });
+  const canVoid = can({ dispatchOrder: ["void"] });
+  const canDelete = can({ dispatchOrder: ["delete"] });
+  const canViewPrices = can({ dispatchOrder: ["read"] });
   const isDraft = dispatchOrder?.DOGEstado === "DRAFT";
   const isEmitted = dispatchOrder?.DOGEstado === "EMITTED";
   const isDispatched = dispatchOrder?.DOGEstado === "DISPATCHED";
@@ -549,24 +552,34 @@ export function DispatchOrderDetails({
                   router.push(`/dispatch-orders/${dispatchOrderSequence}/edit`);
                 },
               },
-              {
-                label: "Emit Dispatch Order",
-                icon: <Send className="h-6 w-6" />,
-                onClick: () => {
-                  router.push(`/dispatch-orders/${dispatchOrderSequence}/emit`);
-                },
-              },
-              {
-                label: "Delete Dispatch Order",
-                icon: <Trash2 className="h-6 w-6" />,
-                onClick: () => {
-                  dispatchOrder &&
-                    dispatchOrderDelete.openDeleteModal(
-                      dispatchOrder.DOGOrgSecuencia,
-                      dispatchOrder.DOGNro,
-                    );
-                },
-              },
+              ...(canEmit
+                ? [
+                    {
+                      label: "Emit Dispatch Order",
+                      icon: <Send className="h-6 w-6" />,
+                      onClick: () => {
+                        router.push(
+                          `/dispatch-orders/${dispatchOrderSequence}/emit`,
+                        );
+                      },
+                    },
+                  ]
+                : []),
+              ...(canDelete
+                ? [
+                    {
+                      label: "Delete Dispatch Order",
+                      icon: <Trash2 className="h-6 w-6" />,
+                      onClick: () => {
+                        dispatchOrder &&
+                          dispatchOrderDelete.openDeleteModal(
+                            dispatchOrder.DOGOrgSecuencia,
+                            dispatchOrder.DOGNro,
+                          );
+                      },
+                    },
+                  ]
+                : []),
             ]
           : []),
         ...(isEmitted && dispatchOrder
@@ -637,14 +650,18 @@ export function DispatchOrderDetails({
                   setIsReturnDialogOpen(true);
                 },
               },
-              {
-                label: "Annul",
-                icon: <XCircle className="h-6 w-6" />,
-                onClick: () => {
-                  dispatchOrder && annulment.openModal(dispatchOrder);
-                },
-                variant: "destructive" as const,
-              },
+              ...(canVoid
+                ? [
+                    {
+                      label: "Annul",
+                      icon: <XCircle className="h-6 w-6" />,
+                      onClick: () => {
+                        dispatchOrder && annulment.openModal(dispatchOrder);
+                      },
+                      variant: "destructive" as const,
+                    },
+                  ]
+                : []),
             ]
           : []),
       ]),

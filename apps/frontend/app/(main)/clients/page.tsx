@@ -1,20 +1,8 @@
 import LoadingComponent from "@/components/loading-component";
 import { ClientsContent } from "@/features/clients";
-import { hasClientPermissions } from "@/lib/permissions";
-import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 export default function ClientsPage() {
-  const hasPermission = hasClientPermissions("admin", "organization", [
-    "read",
-    "create",
-    "update",
-    "delete",
-  ]);
-
-  if (!hasPermission) {
-    redirect("/");
-  }
 
   return (
     <Suspense

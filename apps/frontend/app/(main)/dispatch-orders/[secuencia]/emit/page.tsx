@@ -1,8 +1,6 @@
 import { Suspense } from "react";
-import { redirect } from "next/navigation";
 import { DispatchOrderForm } from "@/features/dispatch-orders";
 import LoadingComponent from "@/components/loading-component";
-import { hasClientPermissions } from "@/lib/permissions";
 
 interface EmitDispatchOrderPageProps {
   params: Promise<{
@@ -14,17 +12,6 @@ export default async function EmitDispatchOrderPage({
   params,
 }: EmitDispatchOrderPageProps) {
   const { secuencia } = await params;
-
-  const hasPermission = hasClientPermissions("admin", "organization", [
-    "read",
-    "create",
-    "update",
-    "delete",
-  ]);
-
-  if (!hasPermission) {
-    redirect("/");
-  }
 
   return (
     <Suspense

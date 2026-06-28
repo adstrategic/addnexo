@@ -22,7 +22,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { formatearFecha, formatearMoneda, getPageNumbers } from "@/lib/utils";
 import { cn } from "@/lib/utils";
-import { hasClientPermissions } from "@/lib/permissions";
+import { useRole } from "@/hooks/useRole";
 import type { DispatchOrderResponse } from "../schemas/dispatch-order-response.schema";
 import { useDispatchOrderToInvoice } from "../hooks/useDispatchOrderToInvoice";
 import { useDispatchOrderAnnulment } from "../hooks/useDispatchOrderAnnulment";
@@ -146,9 +146,8 @@ export function DispatchOrdersTable({
   const invoiceConversion = useDispatchOrderToInvoice();
   const annulment = useDispatchOrderAnnulment();
   const regenerateEmittedPdf = useRegenerateEmittedDispatchPdf();
-  const canViewPrices = hasClientPermissions("admin", "organization", [
-    "read",
-  ]);
+  const { can } = useRole();
+  const canViewPrices = can({ dispatchOrder: ["read"] });
 
   const handleDispatch = (sequence: number) => {
     setSelectedDispatchOrderSequence(sequence);

@@ -2,21 +2,9 @@
 
 import { LoadingComponent } from "@/components/loading-component";
 import { ProductContent } from "@/features/catalog";
-import { hasClientPermissions } from "@/lib/permissions";
-import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 export default function CatalogPage() {
-  const hasPermission = hasClientPermissions("admin", "organization", [
-    "read",
-    "create",
-    "update",
-    "delete",
-  ]);
-
-  if (!hasPermission) {
-    redirect("/");
-  }
 
   return (
     <Suspense

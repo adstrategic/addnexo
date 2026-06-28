@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-// import { useRole } from "@/hooks/useRole";
+import { useRole } from "@/hooks/useRole";
 import {
   Calculator,
   ChevronDown,
@@ -270,19 +270,17 @@ function SidebarGroupSection({
   isOpen,
   onToggle,
   currentPath,
-  // canAccessPath,
+  canAccessPath,
 }: {
   group: SidebarGroupConfig;
   isOpen: boolean;
   onToggle: () => void;
   currentPath: string;
-  // canAccessPath: (path: string) => boolean;
+  canAccessPath: (path: string) => boolean;
 }) {
-  // Filter items based on path access
-  const accessibleItems = group.items.filter(
-    (item) =>
-      // canAccessPath(item.path)
-      true,
+  // Filter items based on the current user's role
+  const accessibleItems = group.items.filter((item) =>
+    canAccessPath(item.path),
   );
 
   // Don't render group if no items are accessible
@@ -331,7 +329,7 @@ export function AppSidebar() {
     closeAllGroups,
     isGroupOpen,
   } = useSidebarState();
-  // const { canAccessGroup, canAccessPath, isLoading: isRoleLoading } = useRole();
+  const { canAccessPath, isLoading: isRoleLoading } = useRole();
 
   // // Filter sidebar config based on user roles
   // const filteredSidebarConfig = useMemo(() => {
@@ -430,15 +428,17 @@ export function AppSidebar() {
               <CollapsibleContent>
                 <SidebarGroupContent>
                   <SidebarMenu>
-                    {sidebarConfig.map((group) => (
-                      <SidebarGroupSection
-                        key={group.key}
-                        group={group}
-                        isOpen={isGroupOpen(group.key)}
-                        onToggle={() => toggleGroup(group.key)}
-                        currentPath={pathname}
-                      />
-                    ))}
+                    {!isRoleLoading &&
+                      sidebarConfig.map((group) => (
+                        <SidebarGroupSection
+                          key={group.key}
+                          group={group}
+                          isOpen={isGroupOpen(group.key)}
+                          onToggle={() => toggleGroup(group.key)}
+                          currentPath={pathname}
+                          canAccessPath={canAccessPath}
+                        />
+                      ))}
                   </SidebarMenu>
                 </SidebarGroupContent>
               </CollapsibleContent>

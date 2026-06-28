@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useRole } from "@/hooks/useRole";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -43,6 +46,12 @@ export function DispatchOrderRowActions({
   onRegeneratePdf,
   isRegeneratingPdf = false,
 }: DispatchOrderRowActionsProps) {
+  const { can } = useRole();
+  // Action-level gating: warehouse_manager lacks emit/void/delete.
+  const canEmit = can({ dispatchOrder: ["emit"] });
+  const canVoid = can({ dispatchOrder: ["void"] });
+  const canDelete = can({ dispatchOrder: ["delete"] });
+
   const isDraft = dispatchOrder.DOGEstado === "DRAFT";
   const isEmitted = dispatchOrder.DOGEstado === "EMITTED";
   const isDispatched = dispatchOrder.DOGEstado === "DISPATCHED";
@@ -101,21 +110,23 @@ export function DispatchOrderRowActions({
                     Edit
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  asChild
-                  className="cursor-pointer text-violet-600 focus:text-violet-600 dark:text-violet-400 dark:focus:text-violet-400"
-                >
-                  <Link
-                    href={`/dispatch-orders/${sequence}/emit`}
-                    className="flex items-center gap-2"
+                {canEmit ? (
+                  <DropdownMenuItem
+                    asChild
+                    className="cursor-pointer text-violet-600 focus:text-violet-600 dark:text-violet-400 dark:focus:text-violet-400"
                   >
-                    <Send
-                      className="size-4 text-violet-600 dark:text-violet-400"
-                      aria-hidden
-                    />
-                    Emit
-                  </Link>
-                </DropdownMenuItem>
+                    <Link
+                      href={`/dispatch-orders/${sequence}/emit`}
+                      className="flex items-center gap-2"
+                    >
+                      <Send
+                        className="size-4 text-violet-600 dark:text-violet-400"
+                        aria-hidden
+                      />
+                      Emit
+                    </Link>
+                  </DropdownMenuItem>
+                ) : null}
               </>
             ) : null}
 
@@ -172,7 +183,7 @@ export function DispatchOrderRowActions({
               </DropdownMenuItem>
             ) : null}
 
-            {isEmitted || isDispatched ? (
+            {(isEmitted || isDispatched) && canVoid ? (
               <>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
@@ -186,7 +197,7 @@ export function DispatchOrderRowActions({
               </>
             ) : null}
 
-            {isDraft && onDelete ? (
+            {isDraft && onDelete && canDelete ? (
               <>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem

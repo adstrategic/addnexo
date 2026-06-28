@@ -70,7 +70,7 @@ export const warehouse_manager = ac.newRole({
   organization: ["read"],
   member: ["read"],
   invitation: ["read"],
-  dispatchOrder: ["create", "read", "dispatch"],
+  dispatchOrder: ["create", "update", "read", "dispatch"],
   invoice: [],
 });
 

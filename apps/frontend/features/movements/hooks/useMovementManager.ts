@@ -62,10 +62,11 @@ export function useMovementManager(options?: UseMovementManagerOptions) {
     ],
   };
 
-  // Crear schema dinámicamente con validaciones condicionales
+  // Crear schema dinámicamente con validaciones condicionales.
+  // mes/ano scope MVFecha to the active period (see usePeriod above).
   const schema = tiposMovimiento?.data
-    ? createMovementFormSchema(tiposMovimiento.data)
-    : createMovementFormSchema([]);
+    ? createMovementFormSchema(tiposMovimiento.data, mes, ano)
+    : createMovementFormSchema([], mes, ano);
 
   const form = useForm<MovementFormData>({
     resolver: zodResolver(schema) as Resolver<MovementFormData>,

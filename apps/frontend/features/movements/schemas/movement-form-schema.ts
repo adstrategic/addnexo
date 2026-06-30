@@ -33,8 +33,14 @@ export const lineaSchema = z.object({
 
 export type LineaFormData = z.infer<typeof lineaSchema>;
 
-// Factory function para crear el schema con validaciones condicionales
-export const createMovementFormSchema = (tiposMovimiento: TipoMovimiento[]) => {
+// Factory function para crear el schema con validaciones condicionales.
+// periodMes/periodAno scope MVFecha to the active working period (not the
+// calendar month), matching the date picker in MovementForm.
+export const createMovementFormSchema = (
+  tiposMovimiento: TipoMovimiento[],
+  periodMes: number,
+  periodAno: number,
+) => {
   return z
     .object({
       grupoNro: z.coerce.number().int().positive().optional(),
@@ -52,12 +58,19 @@ export const createMovementFormSchema = (tiposMovimiento: TipoMovimiento[]) => {
       MVFecha: z.coerce.date({ error: "Select the movement date" }).refine(
         (fecha) => {
           const hoy = new Date();
-          const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
-          return fecha >= inicioMes && fecha <= hoy;
+          const periodYear = periodAno >= 100 ? periodAno : 2000 + periodAno;
+          const isCurrentMonth =
+            periodMes === hoy.getMonth() + 1 &&
+            periodYear === hoy.getFullYear();
+          const inicio = new Date(periodYear, periodMes - 1, 1);
+          // Current period is capped at today; a past period spans its full month.
+          const fin = isCurrentMonth
+            ? hoy
+            : new Date(periodYear, periodMes, 0);
+          return fecha >= inicio && fecha <= fin;
         },
         {
-          message:
-            "Date must be between the start of the current month and today",
+          message: "Date must be within the active period",
         },
       ),
       MVEsCostoTemporalCero: z.boolean().default(false),

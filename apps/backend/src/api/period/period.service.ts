@@ -227,7 +227,10 @@ export async function checkClosingStatus(organizationId: string): Promise<{
   const periodsNeedingClose: PeriodWithLabel[] = [];
   let cursor = { ...oldest };
 
-  while (comparePeriods(cursor, current) <= 0) {
+  // Strictly before the current calendar month: the in-progress month has not
+  // ended yet, so it is never asked to close (closing rolls balances into the
+  // next month). A past month is flagged once the calendar advances past it.
+  while (comparePeriods(cursor, current) < 0) {
     const key = `${cursor.mes}-${cursor.ano}`;
     if (periodsWithKardex.has(key) && !closedSet.has(key)) {
       periodsNeedingClose.push({

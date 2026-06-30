@@ -2,9 +2,9 @@
 
 import type React from "react";
 
-import { SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
-// import { TopNavbar } from "@/components/top-navbar";
+import { PeriodDropdown } from "@/components/shared/PeriodDropdown";
 import { useSidebar } from "@/components/ui/sidebar";
 
 interface LayoutWrapperProps {
@@ -27,7 +27,10 @@ function LayoutContent({ children }: LayoutWrapperProps) {
 
       <AppSidebar />
       <div className="flex flex-1 flex-col overflow-hidden relative z-10 bg-gradient-to-b from-[#F8FAFC] via-[#F8FAFC] to-[#B8F0F3]">
-        {/* <TopNavbar pageTitle={pageTitle} /> */}
+        <header className="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-white/40 bg-white/50 px-4 backdrop-blur-sm">
+          <SidebarTrigger />
+          <PeriodDropdown />
+        </header>
         <main className="flex-1 overflow-auto">{children}</main>
       </div>
     </div>

@@ -23,11 +23,21 @@ type ClosingModalProps = {
   period: PeriodWithLabel;
   open: boolean;
   onClosed: () => void;
+  /**
+   * When provided, renders a "Back to periods" button so the user can dismiss
+   * the modal (e.g. to register movements first). Omit it for the forced guard.
+   */
+  onDismiss?: () => void;
 };
 
 type Step = "idle" | "validating" | "invalid" | "closing" | "done";
 
-export function ClosingModal({ period, open, onClosed }: ClosingModalProps) {
+export function ClosingModal({
+  period,
+  open,
+  onClosed,
+  onDismiss,
+}: ClosingModalProps) {
   const { data: activeMember } = authClient.useActiveMember();
   const isAdmin = activeMember?.role === "admin";
 
@@ -110,6 +120,17 @@ export function ClosingModal({ period, open, onClosed }: ClosingModalProps) {
         )}
 
         <DialogFooter>
+          {onDismiss && step !== "done" && (
+            <Button
+              type="button"
+              variant="ghost"
+              className="text-muted-foreground"
+              disabled={step === "validating" || step === "closing"}
+              onClick={onDismiss}
+            >
+              Back to periods
+            </Button>
+          )}
           {!isAdmin ? (
             <p className="text-sm text-muted-foreground">
               Contact your administrator to close this period.

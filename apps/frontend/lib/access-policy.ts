@@ -32,7 +32,10 @@ function matchesPattern(path: string, pattern: string): boolean {
  * Whether the given role may access the given pathname.
  * Returns false when the role is not yet resolved.
  */
-export function canAccessPath(role: AppRole | undefined, path: string): boolean {
+export function canAccessPath(
+  role: AppRole | undefined,
+  path: string,
+): boolean {
   if (role === "admin") return true;
   if (role !== "warehouse_manager") return false;
 

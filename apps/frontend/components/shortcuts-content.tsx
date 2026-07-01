@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -47,9 +46,6 @@ import Image from "next/image";
 export function ShortcutsContent() {
   const router = useRouter();
   const { canAccessPath, isLoading: isRoleLoading } = useRole();
-
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [searchValue, setSearchValue] = useState("");
 
   // const filteredOptions = searchOptions.filter((option) =>
   //   option.title.toLowerCase().includes(searchValue.toLowerCase())

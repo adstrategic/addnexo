@@ -173,14 +173,9 @@ const sidebarConfig: SidebarGroupConfig[] = [
     icon: Calculator,
     color: "text-cyan-400",
     items: [
-      {
-        path: "/liquidations-stats",
-        label: "liquidation stats",
-        icon: ChartNoAxesCombined,
-      },
       { path: "/cost-types", label: "Costs Type", icon: SwatchBook },
       { path: "/cost-per-order", label: "Cost per Order", icon: TicketPercent },
-      { path: "/liquidations-content", label: "Liquidation", icon: Calculator },
+      { path: "/liquidations", label: "Liquidations", icon: Calculator },
     ],
   },
   {

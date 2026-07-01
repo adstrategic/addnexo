@@ -38,7 +38,7 @@ COPY --from=prepare /app/out/full/ .
 RUN pnpm turbo build
 
 # Production bundle for backend (and worker/cron use same image, different CMD)
-RUN pnpm --filter @repo/backend --prod deploy --legacy /app-prod
+RUN pnpm --filter @repo/backend --prod deploy /app-prod
 
 # ---
 FROM node:${NODE_VERSION}-slim AS runner

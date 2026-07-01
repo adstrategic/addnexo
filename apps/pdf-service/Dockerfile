@@ -59,7 +59,7 @@ COPY --from=prepare /app/out/full/ .
 
 RUN pnpm turbo build
 
-RUN pnpm --filter @repo/pdf-service --prod deploy --legacy /app-prod
+RUN pnpm --filter @repo/pdf-service --prod deploy /app-prod
 
 # ---
 FROM base-pdf AS runner

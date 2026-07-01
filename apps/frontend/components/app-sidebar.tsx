@@ -86,24 +86,24 @@ const sidebarConfig: SidebarGroupConfig[] = [
     color: "text-cyan-400",
     items: [
       { path: "/", label: "Shortcuts", icon: Grid },
-      { path: "/quick-info", label: "Quick Info", icon: TrendingUp },
+      // { path: "/quick-info", label: "Quick Info", icon: TrendingUp },
     ],
   },
-  {
-    key: "wallet",
-    label: "Wallet",
-    icon: Wallet,
-    color: "text-cyan-400",
-    items: [
-      { path: "/invoice-alerts", label: "Invoice Alerts", icon: FileWarning },
-      { path: "/sales", label: "Sales", icon: ShoppingBag },
-      {
-        path: "/accounts-receivable",
-        label: "Accounts Receivable",
-        icon: FileText,
-      },
-    ],
-  },
+  // {
+  //   key: "wallet",
+  //   label: "Wallet",
+  //   icon: Wallet,
+  //   color: "text-cyan-400",
+  //   items: [
+  //     { path: "/invoice-alerts", label: "Invoice Alerts", icon: FileWarning },
+  //     { path: "/sales", label: "Sales", icon: ShoppingBag },
+  //     {
+  //       path: "/accounts-receivable",
+  //       label: "Accounts Receivable",
+  //       icon: FileText,
+  //     },
+  //   ],
+  // },
   {
     key: "orders",
     label: "Orders",
@@ -155,7 +155,7 @@ const sidebarConfig: SidebarGroupConfig[] = [
       { path: "/vendors", label: "Vendors", icon: Users },
       { path: "/clients", label: "Clients", icon: BookUser },
       { path: "/banks", label: "Banks", icon: Building2 },
-      { path: "/geographic-zones", label: "Geographic Zones", icon: Earth },
+      // { path: "/geographic-zones", label: "Geographic Zones", icon: Earth },
       { path: "/credit-notes", label: "Credit Notes", icon: NotebookPen },
       { path: "/debit-notes", label: "Debit Notes", icon: NotebookText },
       { path: "/dispatch-orders", label: "Dispatch Orders", icon: PackageOpen },

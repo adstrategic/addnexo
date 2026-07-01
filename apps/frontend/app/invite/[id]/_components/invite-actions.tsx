@@ -14,11 +14,7 @@ type Invitation = {
   email?: string;
 };
 
-export function InviteInformation({
-  invitation,
-}: {
-  invitation: Invitation;
-}) {
+export function InviteActions({ invitation }: { invitation: Invitation }) {
   const router = useRouter();
   const [accepting, setAccepting] = useState(false);
   const [rejecting, setRejecting] = useState(false);
@@ -38,7 +34,6 @@ export function InviteInformation({
           const message =
             (ctx as { error?: { message?: string } })?.error?.message ?? "";
 
-          // Treat "already a member" as success — the user is in the org, go home
           if (
             message.toLowerCase().includes("already") ||
             message.toLowerCase().includes("member")
@@ -49,7 +44,6 @@ export function InviteInformation({
             return;
           }
 
-          // Email mismatch — provide a clear message
           if (
             message.toLowerCase().includes("email") ||
             message.toLowerCase().includes("different")
@@ -58,7 +52,9 @@ export function InviteInformation({
               "This invitation was sent to a different email address. Please sign in with the correct account.",
             );
           } else {
-            toast.error(message || "Failed to accept invitation. Please try again.");
+            toast.error(
+              message || "Failed to accept invitation. Please try again.",
+            );
           }
           setAccepting(false);
         },
@@ -87,11 +83,11 @@ export function InviteInformation({
   }
 
   return (
-    <div className="flex gap-2">
+    <div className="flex flex-col sm:flex-row gap-3">
       <Button
         onClick={acceptInvite}
         disabled={accepting || rejecting}
-        className="cursor-pointer"
+        className="flex-1 cursor-pointer transition-opacity duration-150"
       >
         {accepting ? "Accepting…" : "Accept invitation"}
       </Button>
@@ -99,7 +95,7 @@ export function InviteInformation({
         variant="outline"
         onClick={rejectInvite}
         disabled={accepting || rejecting}
-        className="cursor-pointer"
+        className="flex-1 cursor-pointer transition-colors duration-150"
       >
         {rejecting ? "Declining…" : "Decline"}
       </Button>

@@ -1,16 +1,60 @@
 import { prisma, Prisma } from "@repo/db";
 import { Request, Response, Router } from "express";
-// import publicClienteInviteRoutes from "../api/cliente-invite/public-cliente-invite.routes.js";
-// import publicSupplierInviteRoutes from "../api/supplier-invite/public-supplier-invite.routes.js";
-// import publicVendorInviteRoutes from "../api/vendor-invite/public-vendor-invite.routes.js";
 
 const router: Router = Router();
 
-// router.use("/client-invites", publicClienteInviteRoutes);
-// router.use("/supplier-invites", publicSupplierInviteRoutes);
-// router.use("/vendor-invites", publicVendorInviteRoutes);
+/**
+ * GET /api/v1/public/invitations/:id
+ * Returns minimal, non-sensitive info for a pending, unexpired invitation.
+ * Used by the frontend so unauthenticated invitees can see org/role/email
+ * before being redirected to sign-up with the correct email pre-filled.
+ */
+router.get(
+  "/invitations/:id",
+  async (req: Request<{ id: string }>, res: Response) => {
+    const { id } = req.params;
 
-// GET /api/inventario/proveedores/search/ciudades - Buscar ciudades para autocompletado
+    const invitation = await prisma.invitation.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        status: true,
+        expiresAt: true,
+        organization: {
+          select: { name: true },
+        },
+        user: {
+          select: { name: true },
+        },
+      },
+    });
+
+    if (!invitation) {
+      return res.status(404).json({ error: "Invitation not found or expired." });
+    }
+
+    if (invitation.status !== "pending") {
+      return res.status(404).json({ error: "Invitation not found or expired." });
+    }
+
+    if (new Date(invitation.expiresAt) < new Date()) {
+      return res.status(404).json({ error: "Invitation not found or expired." });
+    }
+
+    return res.json({
+      id: invitation.id,
+      email: invitation.email,
+      role: invitation.role,
+      organizationName: invitation.organization.name,
+      inviterName: invitation.user.name,
+      expiresAt: invitation.expiresAt,
+    });
+  },
+);
+
+// GET /api/v1/public/search/ciudades - Buscar ciudades para autocompletado
 router.get(
   "/search/ciudades",
   async (req: Request<{}, {}, {}, { search: string }>, res: Response) => {

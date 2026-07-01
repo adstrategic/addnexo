@@ -17,10 +17,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { authClient } from "@/lib/auth-client";
-import { getCallbackURL, getPostAuthRedirect } from "@/lib/shared";
+import { getCallbackURL, getPostAuthRedirect, resolvePostAuthTarget } from "@/lib/shared";
 import { cn } from "@/lib/utils";
 
-export default function SignIn() {
+interface SignInProps {
+  redirectTarget?: string;
+  defaultEmail?: string;
+}
+
+export default function SignIn({ redirectTarget, defaultEmail }: SignInProps) {
   const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
   const params = useSearchParams();
@@ -28,6 +33,8 @@ export default function SignIn() {
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  const postAuthTarget = redirectTarget ?? resolvePostAuthTarget(params);
 
   return (
     <Card className="w-full rounded-none max-h-[90vh] overflow-y-auto">
@@ -40,8 +47,9 @@ export default function SignIn() {
       <CardContent>
         <div className="grid gap-4">
           <SignInForm
-            onSuccess={() => router.push(getCallbackURL(params))}
-            callbackURL={getPostAuthRedirect("/")}
+            onSuccess={() => router.push(postAuthTarget)}
+            callbackURL={postAuthTarget}
+            defaultEmail={defaultEmail}
           />
 
           {/* OAuth Buttons - 2 per row */}
@@ -52,7 +60,7 @@ export default function SignIn() {
               onClick={async () => {
                 await authClient.signIn.social({
                   provider: "google",
-                  callbackURL: getPostAuthRedirect("/"),
+                  callbackURL: postAuthTarget,
                 });
               }}
               aria-label="Sign in with Google"
@@ -91,7 +99,7 @@ export default function SignIn() {
               onClick={async () => {
                 await authClient.signIn.social({
                   provider: "github",
-                  callbackURL: getPostAuthRedirect("/"),
+                  callbackURL: postAuthTarget,
                 });
               }}
               aria-label="Sign in with GitHub"
@@ -118,7 +126,7 @@ export default function SignIn() {
               onClick={async () => {
                 await authClient.signIn.social({
                   provider: "microsoft",
-                  callbackURL: getPostAuthRedirect("/"),
+                  callbackURL: postAuthTarget,
                 });
               }}
               aria-label="Sign in with Microsoft"
@@ -145,7 +153,7 @@ export default function SignIn() {
               onClick={async () => {
                 await authClient.signIn.social({
                   provider: "vercel",
-                  callbackURL: getPostAuthRedirect("/"),
+                  callbackURL: postAuthTarget,
                 });
               }}
               aria-label="Sign in with Vercel"

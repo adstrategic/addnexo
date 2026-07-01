@@ -32,12 +32,14 @@ interface SignInFormProps {
   onSuccess?: () => void;
   callbackURL?: string;
   showPasswordToggle?: boolean;
+  defaultEmail?: string;
 }
 
 export function SignInForm({
   onSuccess,
   callbackURL = "/",
   showPasswordToggle = false,
+  defaultEmail,
 }: SignInFormProps) {
   const [loading, startTransition] = useTransition();
   const [isMounted, setIsMounted] = useState(false);
@@ -49,7 +51,7 @@ export function SignInForm({
   const form = useForm<SignInFormValues>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
-      email: "",
+      email: defaultEmail ?? "",
       password: "",
       rememberMe: false,
     },

@@ -67,22 +67,22 @@ export function ShortcutsContent() {
   };
 
   const access = [
-    {
-      title: "General",
-      icon: Home,
-      href: "/quick-info",
-      color: "bg-[#1ECAD3]",
-      description: "Quick access to general information",
-      group: "general",
-    },
-    {
-      title: "Wallet",
-      icon: Wallet,
-      href: "/invoice-alerts",
-      color: "bg-[#1ECAD3]",
-      description: "Manage suppliers, clients and finances",
-      group: "wallet",
-    },
+    // {
+    //   title: "General",
+    //   icon: Home,
+    //   href: "/quick-info",
+    //   color: "bg-[#1ECAD3]",
+    //   description: "Quick access to general information",
+    //   group: "general",
+    // },
+    // {
+    //   title: "Wallet",
+    //   icon: Wallet,
+    //   href: "/invoice-alerts",
+    //   color: "bg-[#1ECAD3]",
+    //   description: "Manage suppliers, clients and finances",
+    //   group: "wallet",
+    // },
     {
       title: "Orders",
       icon: ShoppingCart,

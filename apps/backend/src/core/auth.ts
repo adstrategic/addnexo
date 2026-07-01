@@ -6,6 +6,13 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { organization } from "better-auth/plugins/organization";
 
 import { envVars } from "./envVars.js";
+import {
+  enqueueInvitationEmailJob,
+  enqueueResetPasswordEmailJob,
+} from "../queue/auth-email.jobs.js";
+
+const APP_NAME = "ADDNEXO";
+const isDevelopment = process.env.NODE_ENV === "development";
 
 /**
  * Better Auth instance – session-based auth on the backend.
@@ -14,6 +21,18 @@ import { envVars } from "./envVars.js";
  */
 export const auth = betterAuth({
   advanced: {
+    // In production the frontend and backend live on different origins, so
+    // cookies must carry the cross-site attributes required by browsers.
+    // In development we leave cookie attributes at Better Auth's defaults so
+    // the session cookie is sent correctly on cross-origin fetch requests
+    // between the frontend (port 3000) and backend (port 4000).
+    ...(!isDevelopment && {
+      defaultCookieAttributes: {
+        sameSite: "none",
+        secure: true,
+        partitioned: true,
+      },
+    }),
     crossSubDomainCookies: { enabled: false },
   },
 
@@ -49,6 +68,21 @@ export const auth = betterAuth({
     enabled: true,
     minPasswordLength: 8,
     requireEmailVerification: false,
+    async sendResetPassword({ token, user, url }) {
+      void enqueueResetPasswordEmailJob({
+        appName: APP_NAME,
+        resetUrl: url,
+        token,
+        to: user.email,
+        userName: user.name,
+      }).then((result) => {
+        if (!result) {
+          console.error("auth_reset_password_enqueue_failed", {
+            userId: user.id,
+          });
+        }
+      });
+    },
   },
 
   experimental: {
@@ -59,8 +93,6 @@ export const auth = betterAuth({
     organization({
       ac,
       allowUserToCreateOrganization: true,
-      // The organization creator is assigned this role. Must exist in `roles`
-      // below and carry `invitation: ["create"]` so the creator can invite.
       creatorRole: "admin",
       invitationExpiresIn: 60 * 60 * 48, // 48 hours
       organizationHooks: {
@@ -88,18 +120,21 @@ export const auth = betterAuth({
         warehouse_manager: roles.warehouse_manager,
       },
       async sendInvitationEmail(data) {
-        console.log("📧 Invitation email would be sent to:", data.email);
-        console.log(
-          "   Organization:",
-          data.organization.name,
-          "Role:",
-          data.role,
-        );
-        console.log(
-          "   Invite link:",
-          `${envVars.FRONTEND_URL}/invite/${data.id}`,
-        );
-        // TODO: wire your email service
+        void enqueueInvitationEmailJob({
+          appName: APP_NAME,
+          inviteId: data.id,
+          inviterName: data.inviter.user.name,
+          organizationName: data.organization.name,
+          role: data.role,
+          to: data.email,
+        }).then((result) => {
+          if (!result) {
+            console.error("auth_invitation_enqueue_failed", {
+              invitationId: data.id,
+              organizationId: data.organization.id,
+            });
+          }
+        });
       },
     }),
   ],

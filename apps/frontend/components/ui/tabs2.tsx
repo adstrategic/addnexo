@@ -12,19 +12,31 @@ type Tab = {
 
 export const Tabs = ({
   tabs: propTabs,
+  defaultValue,
   containerClassName,
   activeTabClassName,
   tabClassName,
   contentClassName,
 }: {
   tabs: Tab[];
+  defaultValue?: string;
   containerClassName?: string;
   activeTabClassName?: string;
   tabClassName?: string;
   contentClassName?: string;
 }) => {
-  const [active, setActive] = useState<Tab>(propTabs[0]!);
-  const [tabs, setTabs] = useState<Tab[]>(propTabs);
+  const initialTab =
+    (defaultValue && propTabs.find((t) => t.value === defaultValue)) ??
+    propTabs[0]!;
+  const [active, setActive] = useState<Tab>(initialTab);
+  const [tabs, setTabs] = useState<Tab[]>(
+    defaultValue
+      ? [
+          initialTab,
+          ...propTabs.filter((t) => t.value !== defaultValue),
+        ]
+      : propTabs,
+  );
 
   const moveSelectedTabToTop = (idx: number) => {
     const newTabs = [...propTabs];

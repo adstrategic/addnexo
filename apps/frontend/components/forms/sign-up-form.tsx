@@ -36,9 +36,17 @@ type SignUpFormValues = z.infer<typeof signUpSchema>;
 interface SignUpFormProps {
   onSuccess?: () => void;
   callbackURL?: string;
+  defaultEmail?: string;
+  /** When true the email field is read-only (invite flow). */
+  lockEmail?: boolean;
 }
 
-export function SignUpForm({ onSuccess, callbackURL = "/" }: SignUpFormProps) {
+export function SignUpForm({
+  onSuccess,
+  callbackURL = "/",
+  defaultEmail,
+  lockEmail = false,
+}: SignUpFormProps) {
   const [loading, startTransition] = useTransition();
   const { image, imagePreview, handleImageChange, clearImage } =
     useImagePreview();
@@ -48,7 +56,7 @@ export function SignUpForm({ onSuccess, callbackURL = "/" }: SignUpFormProps) {
     defaultValues: {
       firstName: "",
       lastName: "",
-      email: "",
+      email: defaultEmail ?? "",
       password: "",
       passwordConfirmation: "",
     },
@@ -123,7 +131,14 @@ export function SignUpForm({ onSuccess, callbackURL = "/" }: SignUpFormProps) {
           control={form.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="sign-up-email">Email</FieldLabel>
+              <FieldLabel htmlFor="sign-up-email">
+                Email
+                {lockEmail && (
+                  <span className="ml-2 text-xs text-muted-foreground font-normal">
+                    (set by invitation)
+                  </span>
+                )}
+              </FieldLabel>
               <Input
                 {...field}
                 id="sign-up-email"
@@ -131,6 +146,8 @@ export function SignUpForm({ onSuccess, callbackURL = "/" }: SignUpFormProps) {
                 placeholder="m@example.com"
                 aria-invalid={fieldState.invalid}
                 autoComplete="email"
+                readOnly={lockEmail}
+                className={lockEmail ? "bg-muted cursor-not-allowed" : ""}
               />
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>

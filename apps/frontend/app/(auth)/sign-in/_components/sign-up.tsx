@@ -11,11 +11,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getCallbackURL } from "@/lib/shared";
+import { resolvePostAuthTarget } from "@/lib/shared";
 
-export function SignUp() {
+interface SignUpProps {
+  redirectTarget?: string;
+  defaultEmail?: string;
+}
+
+export function SignUp({ redirectTarget, defaultEmail }: SignUpProps) {
   const router = useRouter();
   const params = useSearchParams();
+
+  const postAuthTarget = redirectTarget ?? resolvePostAuthTarget(params);
 
   return (
     <Card className="rounded-md rounded-t-none w-full">
@@ -27,8 +34,10 @@ export function SignUp() {
       </CardHeader>
       <CardContent>
         <SignUpForm
-          onSuccess={() => router.push(getCallbackURL(params))}
-          callbackURL={getCallbackURL(params)}
+          onSuccess={() => router.push(postAuthTarget)}
+          callbackURL={postAuthTarget}
+          defaultEmail={defaultEmail}
+          lockEmail={!!defaultEmail}
         />
       </CardContent>
       <CardFooter>

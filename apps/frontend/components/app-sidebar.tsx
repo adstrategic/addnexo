@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRole } from "@/hooks/useRole";
@@ -10,14 +10,12 @@ import {
   ChevronRight,
   CreditCard,
   Settings,
-  ShoppingBag,
   TrendingUp,
   Users,
   FileText,
   Grid,
   Package,
   Home,
-  Wallet,
   ShoppingCart,
   Store,
   LucideHandCoins,
@@ -31,15 +29,11 @@ import {
   NotebookText,
   PackageOpen,
   Boxes,
-  Earth,
   FileUser,
   BookUser,
   Building2,
-  FileWarning,
-  ChartNoAxesCombined,
   SwatchBook,
   TicketPercent,
-  UserPlus,
   UserCog,
 } from "lucide-react";
 import {
@@ -316,14 +310,7 @@ function SidebarGroupSection({
 export function AppSidebar() {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(true);
-  const {
-    isLoaded,
-    setIsLoaded,
-    toggleGroup,
-    openGroup,
-    closeAllGroups,
-    isGroupOpen,
-  } = useSidebarState();
+  const { toggleGroup, isGroupOpen } = useSidebarState();
   const { canAccessPath, isLoading: isRoleLoading } = useRole();
 
   // // Filter sidebar config based on user roles

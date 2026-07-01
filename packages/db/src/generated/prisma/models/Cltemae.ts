@@ -30,8 +30,8 @@ export type CltemaeAvgAggregateOutputType = {
   CId: number | null
   CCiudadId: number | null
   CVendedorVId: number | null
-  CDiasParaVencerFactura: runtime.Decimal | null
-  CRecordatorioPostVencido: runtime.Decimal | null
+  CDiasParaVencerFactura: number | null
+  CRecordatorioPostVencido: number | null
   CCupoAutorizado: number | null
   CAbonos: number | null
   COrgSecuencia: number | null
@@ -41,8 +41,8 @@ export type CltemaeSumAggregateOutputType = {
   CId: number | null
   CCiudadId: number | null
   CVendedorVId: number | null
-  CDiasParaVencerFactura: runtime.Decimal | null
-  CRecordatorioPostVencido: runtime.Decimal | null
+  CDiasParaVencerFactura: number | null
+  CRecordatorioPostVencido: number | null
   CCupoAutorizado: number | null
   CAbonos: number | null
   COrgSecuencia: number | null
@@ -61,8 +61,8 @@ export type CltemaeMinAggregateOutputType = {
   CTelefono2: string | null
   CCorreo1: string | null
   CCorreo2: string | null
-  CDiasParaVencerFactura: runtime.Decimal | null
-  CRecordatorioPostVencido: runtime.Decimal | null
+  CDiasParaVencerFactura: number | null
+  CRecordatorioPostVencido: number | null
   CCupoAutorizado: number | null
   CAbonos: number | null
   CFechaIngreso: Date | null
@@ -84,8 +84,8 @@ export type CltemaeMaxAggregateOutputType = {
   CTelefono2: string | null
   CCorreo1: string | null
   CCorreo2: string | null
-  CDiasParaVencerFactura: runtime.Decimal | null
-  CRecordatorioPostVencido: runtime.Decimal | null
+  CDiasParaVencerFactura: number | null
+  CRecordatorioPostVencido: number | null
   CCupoAutorizado: number | null
   CAbonos: number | null
   CFechaIngreso: Date | null
@@ -310,8 +310,8 @@ export type CltemaeGroupByOutputType = {
   CTelefono2: string | null
   CCorreo1: string
   CCorreo2: string | null
-  CDiasParaVencerFactura: runtime.Decimal
-  CRecordatorioPostVencido: runtime.Decimal
+  CDiasParaVencerFactura: number
+  CRecordatorioPostVencido: number
   CCupoAutorizado: number
   CAbonos: number
   CFechaIngreso: Date
@@ -356,8 +356,8 @@ export type CltemaeWhereInput = {
   CTelefono2?: Prisma.StringNullableFilter<"Cltemae"> | string | null
   CCorreo1?: Prisma.StringFilter<"Cltemae"> | string
   CCorreo2?: Prisma.StringNullableFilter<"Cltemae"> | string | null
-  CDiasParaVencerFactura?: Prisma.DecimalFilter<"Cltemae"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido?: Prisma.DecimalFilter<"Cltemae"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura?: Prisma.IntFilter<"Cltemae"> | number
+  CRecordatorioPostVencido?: Prisma.IntFilter<"Cltemae"> | number
   CCupoAutorizado?: Prisma.IntFilter<"Cltemae"> | number
   CAbonos?: Prisma.IntFilter<"Cltemae"> | number
   CFechaIngreso?: Prisma.DateTimeFilter<"Cltemae"> | Date | string
@@ -423,8 +423,8 @@ export type CltemaeWhereUniqueInput = Prisma.AtLeast<{
   CTelefono2?: Prisma.StringNullableFilter<"Cltemae"> | string | null
   CCorreo1?: Prisma.StringFilter<"Cltemae"> | string
   CCorreo2?: Prisma.StringNullableFilter<"Cltemae"> | string | null
-  CDiasParaVencerFactura?: Prisma.DecimalFilter<"Cltemae"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido?: Prisma.DecimalFilter<"Cltemae"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura?: Prisma.IntFilter<"Cltemae"> | number
+  CRecordatorioPostVencido?: Prisma.IntFilter<"Cltemae"> | number
   CCupoAutorizado?: Prisma.IntFilter<"Cltemae"> | number
   CAbonos?: Prisma.IntFilter<"Cltemae"> | number
   CFechaIngreso?: Prisma.DateTimeFilter<"Cltemae"> | Date | string
@@ -485,8 +485,8 @@ export type CltemaeScalarWhereWithAggregatesInput = {
   CTelefono2?: Prisma.StringNullableWithAggregatesFilter<"Cltemae"> | string | null
   CCorreo1?: Prisma.StringWithAggregatesFilter<"Cltemae"> | string
   CCorreo2?: Prisma.StringNullableWithAggregatesFilter<"Cltemae"> | string | null
-  CDiasParaVencerFactura?: Prisma.DecimalWithAggregatesFilter<"Cltemae"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido?: Prisma.DecimalWithAggregatesFilter<"Cltemae"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura?: Prisma.IntWithAggregatesFilter<"Cltemae"> | number
+  CRecordatorioPostVencido?: Prisma.IntWithAggregatesFilter<"Cltemae"> | number
   CCupoAutorizado?: Prisma.IntWithAggregatesFilter<"Cltemae"> | number
   CAbonos?: Prisma.IntWithAggregatesFilter<"Cltemae"> | number
   CFechaIngreso?: Prisma.DateTimeWithAggregatesFilter<"Cltemae"> | Date | string
@@ -504,8 +504,8 @@ export type CltemaeCreateInput = {
   CTelefono2?: string | null
   CCorreo1: string
   CCorreo2?: string | null
-  CDiasParaVencerFactura: runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido: runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura: number
+  CRecordatorioPostVencido: number
   CCupoAutorizado?: number
   CAbonos?: number
   CFechaIngreso: Date | string
@@ -535,8 +535,8 @@ export type CltemaeUncheckedCreateInput = {
   CTelefono2?: string | null
   CCorreo1: string
   CCorreo2?: string | null
-  CDiasParaVencerFactura: runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido: runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura: number
+  CRecordatorioPostVencido: number
   CCupoAutorizado?: number
   CAbonos?: number
   CFechaIngreso: Date | string
@@ -559,8 +559,8 @@ export type CltemaeUpdateInput = {
   CTelefono2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   CCorreo1?: Prisma.StringFieldUpdateOperationsInput | string
   CCorreo2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  CDiasParaVencerFactura?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura?: Prisma.IntFieldUpdateOperationsInput | number
+  CRecordatorioPostVencido?: Prisma.IntFieldUpdateOperationsInput | number
   CCupoAutorizado?: Prisma.IntFieldUpdateOperationsInput | number
   CAbonos?: Prisma.IntFieldUpdateOperationsInput | number
   CFechaIngreso?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -590,8 +590,8 @@ export type CltemaeUncheckedUpdateInput = {
   CTelefono2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   CCorreo1?: Prisma.StringFieldUpdateOperationsInput | string
   CCorreo2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  CDiasParaVencerFactura?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura?: Prisma.IntFieldUpdateOperationsInput | number
+  CRecordatorioPostVencido?: Prisma.IntFieldUpdateOperationsInput | number
   CCupoAutorizado?: Prisma.IntFieldUpdateOperationsInput | number
   CAbonos?: Prisma.IntFieldUpdateOperationsInput | number
   CFechaIngreso?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -618,8 +618,8 @@ export type CltemaeCreateManyInput = {
   CTelefono2?: string | null
   CCorreo1: string
   CCorreo2?: string | null
-  CDiasParaVencerFactura: runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido: runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura: number
+  CRecordatorioPostVencido: number
   CCupoAutorizado?: number
   CAbonos?: number
   CFechaIngreso: Date | string
@@ -637,8 +637,8 @@ export type CltemaeUpdateManyMutationInput = {
   CTelefono2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   CCorreo1?: Prisma.StringFieldUpdateOperationsInput | string
   CCorreo2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  CDiasParaVencerFactura?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura?: Prisma.IntFieldUpdateOperationsInput | number
+  CRecordatorioPostVencido?: Prisma.IntFieldUpdateOperationsInput | number
   CCupoAutorizado?: Prisma.IntFieldUpdateOperationsInput | number
   CAbonos?: Prisma.IntFieldUpdateOperationsInput | number
   CFechaIngreso?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -660,8 +660,8 @@ export type CltemaeUncheckedUpdateManyInput = {
   CTelefono2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   CCorreo1?: Prisma.StringFieldUpdateOperationsInput | string
   CCorreo2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  CDiasParaVencerFactura?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura?: Prisma.IntFieldUpdateOperationsInput | number
+  CRecordatorioPostVencido?: Prisma.IntFieldUpdateOperationsInput | number
   CCupoAutorizado?: Prisma.IntFieldUpdateOperationsInput | number
   CAbonos?: Prisma.IntFieldUpdateOperationsInput | number
   CFechaIngreso?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1000,8 +1000,8 @@ export type CltemaeCreateWithoutOrganizationInput = {
   CTelefono2?: string | null
   CCorreo1: string
   CCorreo2?: string | null
-  CDiasParaVencerFactura: runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido: runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura: number
+  CRecordatorioPostVencido: number
   CCupoAutorizado?: number
   CAbonos?: number
   CFechaIngreso: Date | string
@@ -1029,8 +1029,8 @@ export type CltemaeUncheckedCreateWithoutOrganizationInput = {
   CTelefono2?: string | null
   CCorreo1: string
   CCorreo2?: string | null
-  CDiasParaVencerFactura: runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido: runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura: number
+  CRecordatorioPostVencido: number
   CCupoAutorizado?: number
   CAbonos?: number
   CFechaIngreso: Date | string
@@ -1086,8 +1086,8 @@ export type CltemaeScalarWhereInput = {
   CTelefono2?: Prisma.StringNullableFilter<"Cltemae"> | string | null
   CCorreo1?: Prisma.StringFilter<"Cltemae"> | string
   CCorreo2?: Prisma.StringNullableFilter<"Cltemae"> | string | null
-  CDiasParaVencerFactura?: Prisma.DecimalFilter<"Cltemae"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido?: Prisma.DecimalFilter<"Cltemae"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura?: Prisma.IntFilter<"Cltemae"> | number
+  CRecordatorioPostVencido?: Prisma.IntFilter<"Cltemae"> | number
   CCupoAutorizado?: Prisma.IntFilter<"Cltemae"> | number
   CAbonos?: Prisma.IntFilter<"Cltemae"> | number
   CFechaIngreso?: Prisma.DateTimeFilter<"Cltemae"> | Date | string
@@ -1105,8 +1105,8 @@ export type CltemaeCreateWithoutCiudadInput = {
   CTelefono2?: string | null
   CCorreo1: string
   CCorreo2?: string | null
-  CDiasParaVencerFactura: runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido: runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura: number
+  CRecordatorioPostVencido: number
   CCupoAutorizado?: number
   CAbonos?: number
   CFechaIngreso: Date | string
@@ -1134,8 +1134,8 @@ export type CltemaeUncheckedCreateWithoutCiudadInput = {
   CTelefono2?: string | null
   CCorreo1: string
   CCorreo2?: string | null
-  CDiasParaVencerFactura: runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido: runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura: number
+  CRecordatorioPostVencido: number
   CCupoAutorizado?: number
   CAbonos?: number
   CFechaIngreso: Date | string
@@ -1184,8 +1184,8 @@ export type CltemaeCreateWithoutMovkarInput = {
   CTelefono2?: string | null
   CCorreo1: string
   CCorreo2?: string | null
-  CDiasParaVencerFactura: runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido: runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura: number
+  CRecordatorioPostVencido: number
   CCupoAutorizado?: number
   CAbonos?: number
   CFechaIngreso: Date | string
@@ -1214,8 +1214,8 @@ export type CltemaeUncheckedCreateWithoutMovkarInput = {
   CTelefono2?: string | null
   CCorreo1: string
   CCorreo2?: string | null
-  CDiasParaVencerFactura: runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido: runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura: number
+  CRecordatorioPostVencido: number
   CCupoAutorizado?: number
   CAbonos?: number
   CFechaIngreso: Date | string
@@ -1253,8 +1253,8 @@ export type CltemaeUpdateWithoutMovkarInput = {
   CTelefono2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   CCorreo1?: Prisma.StringFieldUpdateOperationsInput | string
   CCorreo2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  CDiasParaVencerFactura?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura?: Prisma.IntFieldUpdateOperationsInput | number
+  CRecordatorioPostVencido?: Prisma.IntFieldUpdateOperationsInput | number
   CCupoAutorizado?: Prisma.IntFieldUpdateOperationsInput | number
   CAbonos?: Prisma.IntFieldUpdateOperationsInput | number
   CFechaIngreso?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1283,8 +1283,8 @@ export type CltemaeUncheckedUpdateWithoutMovkarInput = {
   CTelefono2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   CCorreo1?: Prisma.StringFieldUpdateOperationsInput | string
   CCorreo2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  CDiasParaVencerFactura?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura?: Prisma.IntFieldUpdateOperationsInput | number
+  CRecordatorioPostVencido?: Prisma.IntFieldUpdateOperationsInput | number
   CCupoAutorizado?: Prisma.IntFieldUpdateOperationsInput | number
   CAbonos?: Prisma.IntFieldUpdateOperationsInput | number
   CFechaIngreso?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1306,8 +1306,8 @@ export type CltemaeCreateWithoutPcltegInput = {
   CTelefono2?: string | null
   CCorreo1: string
   CCorreo2?: string | null
-  CDiasParaVencerFactura: runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido: runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura: number
+  CRecordatorioPostVencido: number
   CCupoAutorizado?: number
   CAbonos?: number
   CFechaIngreso: Date | string
@@ -1336,8 +1336,8 @@ export type CltemaeUncheckedCreateWithoutPcltegInput = {
   CTelefono2?: string | null
   CCorreo1: string
   CCorreo2?: string | null
-  CDiasParaVencerFactura: runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido: runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura: number
+  CRecordatorioPostVencido: number
   CCupoAutorizado?: number
   CAbonos?: number
   CFechaIngreso: Date | string
@@ -1375,8 +1375,8 @@ export type CltemaeUpdateWithoutPcltegInput = {
   CTelefono2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   CCorreo1?: Prisma.StringFieldUpdateOperationsInput | string
   CCorreo2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  CDiasParaVencerFactura?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura?: Prisma.IntFieldUpdateOperationsInput | number
+  CRecordatorioPostVencido?: Prisma.IntFieldUpdateOperationsInput | number
   CCupoAutorizado?: Prisma.IntFieldUpdateOperationsInput | number
   CAbonos?: Prisma.IntFieldUpdateOperationsInput | number
   CFechaIngreso?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1405,8 +1405,8 @@ export type CltemaeUncheckedUpdateWithoutPcltegInput = {
   CTelefono2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   CCorreo1?: Prisma.StringFieldUpdateOperationsInput | string
   CCorreo2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  CDiasParaVencerFactura?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura?: Prisma.IntFieldUpdateOperationsInput | number
+  CRecordatorioPostVencido?: Prisma.IntFieldUpdateOperationsInput | number
   CCupoAutorizado?: Prisma.IntFieldUpdateOperationsInput | number
   CAbonos?: Prisma.IntFieldUpdateOperationsInput | number
   CFechaIngreso?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1428,8 +1428,8 @@ export type CltemaeCreateWithoutVendedorInput = {
   CTelefono2?: string | null
   CCorreo1: string
   CCorreo2?: string | null
-  CDiasParaVencerFactura: runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido: runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura: number
+  CRecordatorioPostVencido: number
   CCupoAutorizado?: number
   CAbonos?: number
   CFechaIngreso: Date | string
@@ -1457,8 +1457,8 @@ export type CltemaeUncheckedCreateWithoutVendedorInput = {
   CTelefono2?: string | null
   CCorreo1: string
   CCorreo2?: string | null
-  CDiasParaVencerFactura: runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido: runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura: number
+  CRecordatorioPostVencido: number
   CCupoAutorizado?: number
   CAbonos?: number
   CFechaIngreso: Date | string
@@ -1507,8 +1507,8 @@ export type CltemaeCreateWithoutDispatchOrderGsInput = {
   CTelefono2?: string | null
   CCorreo1: string
   CCorreo2?: string | null
-  CDiasParaVencerFactura: runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido: runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura: number
+  CRecordatorioPostVencido: number
   CCupoAutorizado?: number
   CAbonos?: number
   CFechaIngreso: Date | string
@@ -1537,8 +1537,8 @@ export type CltemaeUncheckedCreateWithoutDispatchOrderGsInput = {
   CTelefono2?: string | null
   CCorreo1: string
   CCorreo2?: string | null
-  CDiasParaVencerFactura: runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido: runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura: number
+  CRecordatorioPostVencido: number
   CCupoAutorizado?: number
   CAbonos?: number
   CFechaIngreso: Date | string
@@ -1576,8 +1576,8 @@ export type CltemaeUpdateWithoutDispatchOrderGsInput = {
   CTelefono2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   CCorreo1?: Prisma.StringFieldUpdateOperationsInput | string
   CCorreo2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  CDiasParaVencerFactura?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura?: Prisma.IntFieldUpdateOperationsInput | number
+  CRecordatorioPostVencido?: Prisma.IntFieldUpdateOperationsInput | number
   CCupoAutorizado?: Prisma.IntFieldUpdateOperationsInput | number
   CAbonos?: Prisma.IntFieldUpdateOperationsInput | number
   CFechaIngreso?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1606,8 +1606,8 @@ export type CltemaeUncheckedUpdateWithoutDispatchOrderGsInput = {
   CTelefono2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   CCorreo1?: Prisma.StringFieldUpdateOperationsInput | string
   CCorreo2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  CDiasParaVencerFactura?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura?: Prisma.IntFieldUpdateOperationsInput | number
+  CRecordatorioPostVencido?: Prisma.IntFieldUpdateOperationsInput | number
   CCupoAutorizado?: Prisma.IntFieldUpdateOperationsInput | number
   CAbonos?: Prisma.IntFieldUpdateOperationsInput | number
   CFechaIngreso?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1629,8 +1629,8 @@ export type CltemaeCreateWithoutFacturagInput = {
   CTelefono2?: string | null
   CCorreo1: string
   CCorreo2?: string | null
-  CDiasParaVencerFactura: runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido: runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura: number
+  CRecordatorioPostVencido: number
   CCupoAutorizado?: number
   CAbonos?: number
   CFechaIngreso: Date | string
@@ -1659,8 +1659,8 @@ export type CltemaeUncheckedCreateWithoutFacturagInput = {
   CTelefono2?: string | null
   CCorreo1: string
   CCorreo2?: string | null
-  CDiasParaVencerFactura: runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido: runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura: number
+  CRecordatorioPostVencido: number
   CCupoAutorizado?: number
   CAbonos?: number
   CFechaIngreso: Date | string
@@ -1698,8 +1698,8 @@ export type CltemaeUpdateWithoutFacturagInput = {
   CTelefono2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   CCorreo1?: Prisma.StringFieldUpdateOperationsInput | string
   CCorreo2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  CDiasParaVencerFactura?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura?: Prisma.IntFieldUpdateOperationsInput | number
+  CRecordatorioPostVencido?: Prisma.IntFieldUpdateOperationsInput | number
   CCupoAutorizado?: Prisma.IntFieldUpdateOperationsInput | number
   CAbonos?: Prisma.IntFieldUpdateOperationsInput | number
   CFechaIngreso?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1728,8 +1728,8 @@ export type CltemaeUncheckedUpdateWithoutFacturagInput = {
   CTelefono2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   CCorreo1?: Prisma.StringFieldUpdateOperationsInput | string
   CCorreo2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  CDiasParaVencerFactura?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura?: Prisma.IntFieldUpdateOperationsInput | number
+  CRecordatorioPostVencido?: Prisma.IntFieldUpdateOperationsInput | number
   CCupoAutorizado?: Prisma.IntFieldUpdateOperationsInput | number
   CAbonos?: Prisma.IntFieldUpdateOperationsInput | number
   CFechaIngreso?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1751,8 +1751,8 @@ export type CltemaeCreateWithoutRcltegInput = {
   CTelefono2?: string | null
   CCorreo1: string
   CCorreo2?: string | null
-  CDiasParaVencerFactura: runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido: runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura: number
+  CRecordatorioPostVencido: number
   CCupoAutorizado?: number
   CAbonos?: number
   CFechaIngreso: Date | string
@@ -1781,8 +1781,8 @@ export type CltemaeUncheckedCreateWithoutRcltegInput = {
   CTelefono2?: string | null
   CCorreo1: string
   CCorreo2?: string | null
-  CDiasParaVencerFactura: runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido: runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura: number
+  CRecordatorioPostVencido: number
   CCupoAutorizado?: number
   CAbonos?: number
   CFechaIngreso: Date | string
@@ -1820,8 +1820,8 @@ export type CltemaeUpdateWithoutRcltegInput = {
   CTelefono2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   CCorreo1?: Prisma.StringFieldUpdateOperationsInput | string
   CCorreo2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  CDiasParaVencerFactura?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura?: Prisma.IntFieldUpdateOperationsInput | number
+  CRecordatorioPostVencido?: Prisma.IntFieldUpdateOperationsInput | number
   CCupoAutorizado?: Prisma.IntFieldUpdateOperationsInput | number
   CAbonos?: Prisma.IntFieldUpdateOperationsInput | number
   CFechaIngreso?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1850,8 +1850,8 @@ export type CltemaeUncheckedUpdateWithoutRcltegInput = {
   CTelefono2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   CCorreo1?: Prisma.StringFieldUpdateOperationsInput | string
   CCorreo2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  CDiasParaVencerFactura?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura?: Prisma.IntFieldUpdateOperationsInput | number
+  CRecordatorioPostVencido?: Prisma.IntFieldUpdateOperationsInput | number
   CCupoAutorizado?: Prisma.IntFieldUpdateOperationsInput | number
   CAbonos?: Prisma.IntFieldUpdateOperationsInput | number
   CFechaIngreso?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1876,8 +1876,8 @@ export type CltemaeCreateManyOrganizationInput = {
   CTelefono2?: string | null
   CCorreo1: string
   CCorreo2?: string | null
-  CDiasParaVencerFactura: runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido: runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura: number
+  CRecordatorioPostVencido: number
   CCupoAutorizado?: number
   CAbonos?: number
   CFechaIngreso: Date | string
@@ -1895,8 +1895,8 @@ export type CltemaeUpdateWithoutOrganizationInput = {
   CTelefono2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   CCorreo1?: Prisma.StringFieldUpdateOperationsInput | string
   CCorreo2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  CDiasParaVencerFactura?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura?: Prisma.IntFieldUpdateOperationsInput | number
+  CRecordatorioPostVencido?: Prisma.IntFieldUpdateOperationsInput | number
   CCupoAutorizado?: Prisma.IntFieldUpdateOperationsInput | number
   CAbonos?: Prisma.IntFieldUpdateOperationsInput | number
   CFechaIngreso?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1924,8 +1924,8 @@ export type CltemaeUncheckedUpdateWithoutOrganizationInput = {
   CTelefono2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   CCorreo1?: Prisma.StringFieldUpdateOperationsInput | string
   CCorreo2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  CDiasParaVencerFactura?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura?: Prisma.IntFieldUpdateOperationsInput | number
+  CRecordatorioPostVencido?: Prisma.IntFieldUpdateOperationsInput | number
   CCupoAutorizado?: Prisma.IntFieldUpdateOperationsInput | number
   CAbonos?: Prisma.IntFieldUpdateOperationsInput | number
   CFechaIngreso?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1951,8 +1951,8 @@ export type CltemaeUncheckedUpdateManyWithoutOrganizationInput = {
   CTelefono2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   CCorreo1?: Prisma.StringFieldUpdateOperationsInput | string
   CCorreo2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  CDiasParaVencerFactura?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura?: Prisma.IntFieldUpdateOperationsInput | number
+  CRecordatorioPostVencido?: Prisma.IntFieldUpdateOperationsInput | number
   CCupoAutorizado?: Prisma.IntFieldUpdateOperationsInput | number
   CAbonos?: Prisma.IntFieldUpdateOperationsInput | number
   CFechaIngreso?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1973,8 +1973,8 @@ export type CltemaeCreateManyCiudadInput = {
   CTelefono2?: string | null
   CCorreo1: string
   CCorreo2?: string | null
-  CDiasParaVencerFactura: runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido: runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura: number
+  CRecordatorioPostVencido: number
   CCupoAutorizado?: number
   CAbonos?: number
   CFechaIngreso: Date | string
@@ -1992,8 +1992,8 @@ export type CltemaeUpdateWithoutCiudadInput = {
   CTelefono2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   CCorreo1?: Prisma.StringFieldUpdateOperationsInput | string
   CCorreo2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  CDiasParaVencerFactura?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura?: Prisma.IntFieldUpdateOperationsInput | number
+  CRecordatorioPostVencido?: Prisma.IntFieldUpdateOperationsInput | number
   CCupoAutorizado?: Prisma.IntFieldUpdateOperationsInput | number
   CAbonos?: Prisma.IntFieldUpdateOperationsInput | number
   CFechaIngreso?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2021,8 +2021,8 @@ export type CltemaeUncheckedUpdateWithoutCiudadInput = {
   CTelefono2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   CCorreo1?: Prisma.StringFieldUpdateOperationsInput | string
   CCorreo2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  CDiasParaVencerFactura?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura?: Prisma.IntFieldUpdateOperationsInput | number
+  CRecordatorioPostVencido?: Prisma.IntFieldUpdateOperationsInput | number
   CCupoAutorizado?: Prisma.IntFieldUpdateOperationsInput | number
   CAbonos?: Prisma.IntFieldUpdateOperationsInput | number
   CFechaIngreso?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2048,8 +2048,8 @@ export type CltemaeUncheckedUpdateManyWithoutCiudadInput = {
   CTelefono2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   CCorreo1?: Prisma.StringFieldUpdateOperationsInput | string
   CCorreo2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  CDiasParaVencerFactura?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura?: Prisma.IntFieldUpdateOperationsInput | number
+  CRecordatorioPostVencido?: Prisma.IntFieldUpdateOperationsInput | number
   CCupoAutorizado?: Prisma.IntFieldUpdateOperationsInput | number
   CAbonos?: Prisma.IntFieldUpdateOperationsInput | number
   CFechaIngreso?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2070,8 +2070,8 @@ export type CltemaeCreateManyVendedorInput = {
   CTelefono2?: string | null
   CCorreo1: string
   CCorreo2?: string | null
-  CDiasParaVencerFactura: runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido: runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura: number
+  CRecordatorioPostVencido: number
   CCupoAutorizado?: number
   CAbonos?: number
   CFechaIngreso: Date | string
@@ -2089,8 +2089,8 @@ export type CltemaeUpdateWithoutVendedorInput = {
   CTelefono2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   CCorreo1?: Prisma.StringFieldUpdateOperationsInput | string
   CCorreo2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  CDiasParaVencerFactura?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura?: Prisma.IntFieldUpdateOperationsInput | number
+  CRecordatorioPostVencido?: Prisma.IntFieldUpdateOperationsInput | number
   CCupoAutorizado?: Prisma.IntFieldUpdateOperationsInput | number
   CAbonos?: Prisma.IntFieldUpdateOperationsInput | number
   CFechaIngreso?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2118,8 +2118,8 @@ export type CltemaeUncheckedUpdateWithoutVendedorInput = {
   CTelefono2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   CCorreo1?: Prisma.StringFieldUpdateOperationsInput | string
   CCorreo2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  CDiasParaVencerFactura?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura?: Prisma.IntFieldUpdateOperationsInput | number
+  CRecordatorioPostVencido?: Prisma.IntFieldUpdateOperationsInput | number
   CCupoAutorizado?: Prisma.IntFieldUpdateOperationsInput | number
   CAbonos?: Prisma.IntFieldUpdateOperationsInput | number
   CFechaIngreso?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2145,8 +2145,8 @@ export type CltemaeUncheckedUpdateManyWithoutVendedorInput = {
   CTelefono2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   CCorreo1?: Prisma.StringFieldUpdateOperationsInput | string
   CCorreo2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  CDiasParaVencerFactura?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  CRecordatorioPostVencido?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  CDiasParaVencerFactura?: Prisma.IntFieldUpdateOperationsInput | number
+  CRecordatorioPostVencido?: Prisma.IntFieldUpdateOperationsInput | number
   CCupoAutorizado?: Prisma.IntFieldUpdateOperationsInput | number
   CAbonos?: Prisma.IntFieldUpdateOperationsInput | number
   CFechaIngreso?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2377,8 +2377,8 @@ export type $CltemaePayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     CTelefono2: string | null
     CCorreo1: string
     CCorreo2: string | null
-    CDiasParaVencerFactura: runtime.Decimal
-    CRecordatorioPostVencido: runtime.Decimal
+    CDiasParaVencerFactura: number
+    CRecordatorioPostVencido: number
     CCupoAutorizado: number
     CAbonos: number
     CFechaIngreso: Date
@@ -2828,8 +2828,8 @@ export interface CltemaeFieldRefs {
   readonly CTelefono2: Prisma.FieldRef<"Cltemae", 'String'>
   readonly CCorreo1: Prisma.FieldRef<"Cltemae", 'String'>
   readonly CCorreo2: Prisma.FieldRef<"Cltemae", 'String'>
-  readonly CDiasParaVencerFactura: Prisma.FieldRef<"Cltemae", 'Decimal'>
-  readonly CRecordatorioPostVencido: Prisma.FieldRef<"Cltemae", 'Decimal'>
+  readonly CDiasParaVencerFactura: Prisma.FieldRef<"Cltemae", 'Int'>
+  readonly CRecordatorioPostVencido: Prisma.FieldRef<"Cltemae", 'Int'>
   readonly CCupoAutorizado: Prisma.FieldRef<"Cltemae", 'Int'>
   readonly CAbonos: Prisma.FieldRef<"Cltemae", 'Int'>
   readonly CFechaIngreso: Prisma.FieldRef<"Cltemae", 'DateTime'>

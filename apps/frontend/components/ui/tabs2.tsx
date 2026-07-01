@@ -26,8 +26,7 @@ export const Tabs = ({
   contentClassName?: string;
 }) => {
   const initialTab =
-    (defaultValue && propTabs.find((t) => t.value === defaultValue)) ??
-    propTabs[0]!;
+    propTabs.find((t) => t.value === defaultValue) ?? propTabs[0]!;
   const [active, setActive] = useState<Tab>(initialTab);
   const [tabs, setTabs] = useState<Tab[]>(
     defaultValue
